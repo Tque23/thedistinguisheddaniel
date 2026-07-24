@@ -1,17 +1,327 @@
 ---
-
+// src/pages/index.astro
+import Layout from '../layouts/Layout.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="The Distinguished Daniel Network and Institute | Early Access">
+  <main>
+    <div class="bg-shape-1"></div>
+    <div class="bg-shape-2"></div>
+    
+    <div class="glass-panel">
+      <!-- Square Logo Placeholder -->
+      <img src="/favicon.svg" alt="Institute Emblem" class="panel-logo" />
+      
+      <h1>The Distinguished Daniel</h1>
+      <h2 class="subheading">Network & Institute</h2>
+      
+      <p>Step into an exclusive community designed for forward-thinking Kingdom Leaders. Secure your position today and join our inner circle before the official unveiling.</p>
+      
+      <!-- New Action Buttons -->
+      <div class="action-buttons">
+        <a href="#signup" class="btn btn-primary">Early Sign Up</a>
+        <a href="https://chat.whatsapp.com/YOUR_LINK_HERE" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp">Join WhatsApp Group</a>
+      </div>
+      
+	  <h2 class="subheading">Official Launch</h2>
+	  <h2 class="subheading">Saturday, 3 October 2026</h2>
+
+      <div id="countdown">
+        <div class="time-box">
+          <span class="time-value" id="days">00</span>
+          <span class="time-label">Days</span>
+        </div>
+        <div class="time-box">
+          <span class="time-value" id="hours">00</span>
+          <span class="time-label">Hours</span>
+        </div>
+        <div class="time-box">
+          <span class="time-value" id="minutes">00</span>
+          <span class="time-label">Minutes</span>
+        </div>
+        <div class="time-box">
+          <span class="time-value" id="seconds">00</span>
+          <span class="time-label">Seconds</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  /* Custom Font Declarations */
+  @font-face {
+    font-family: 'Trajan Pro 3';
+    src: url('/fonts/Trajan Pro 3 Semibold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Trajan Pro 3';
+    src: url('/fonts/Trajan Pro 3 Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  main {
+    flex: 1; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    position: relative;
+  }
+
+  /* Abstract background shapes */
+  .bg-shape-1, .bg-shape-2 {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0;
+  }
+
+  .bg-shape-1 {
+    width: 400px;
+    height: 400px;
+    background: var(--brand-navy);
+    top: -100px;
+    left: -100px;
+    opacity: 0.5;
+  }
+
+  .bg-shape-2 {
+    width: 300px;
+    height: 300px;
+    background: var(--accent-burgundy);
+    bottom: 0;
+    right: 0;
+    opacity: 0.3;
+  }
+
+  /* Glassmorphism Panel */
+  .glass-panel {
+    position: relative;
+    z-index: 1;
+    background: rgba(29, 53, 87, 0.15);
+    border: 1px solid rgba(243, 210, 122, 0.2);
+    border-radius: 16px;
+    padding: 3rem 3rem 4rem; /* Adjusted padding to accommodate the logo */
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  /* Square Logo Styling */
+  .panel-logo {
+    width: 90px;
+    height: 90px;
+    object-fit: contain; /* Prevents distortion */
+    margin: 0 auto 1.5rem;
+    display: block;
+  }
+
+  /* Typography Adjustments */
+  .glass-panel h1 {
+    font-family: 'Trajan Pro 3', serif;
+    font-weight: 600;
+    font-size: 1.8rem; /* Made the title smaller */
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+  }
+
+  .subheading {
+    font-family: 'Trajan Pro 3', serif;
+    font-weight: 400;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent-gold-end);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .glass-panel p {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+  }
+
+  .btn {
+    padding: 0.85rem 1.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-primary {
+    background: linear-gradient(90deg, var(--accent-gold-start), var(--accent-gold-end));
+    color: var(--bg-primary);
+    border: none;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(200, 155, 60, 0.3);
+  }
+
+  .btn-whatsapp {
+    background-color: #25D366; /* Official WhatsApp Green */
+    color: #ffffff;
+    border: 1px solid #25D366;
+  }
+
+  .btn-whatsapp:hover {
+    background-color: #1EBE5D;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+  }
+
+  /* Countdown Grid */
+  #countdown {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+  }
+
+  .time-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 70px;
+  }
+
+  .time-value {
+    font-size: 3rem; /* Slightly reduced to balance the new buttons */
+    font-weight: 700;
+    color: var(--text-primary);
+    background: linear-gradient(90deg, var(--accent-gold-start), var(--accent-gold-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+
+  .time-label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 2px;
+    margin-top: 0.75rem;
+  }
+
+  /* Mobile Optimization */
+  @media (max-width: 768px) {
+    main {
+      padding: 1rem;
+    }
+    
+    .glass-panel {
+      padding: 2.5rem 1.5rem;
+    }
+    
+    .panel-logo {
+      width: 75px;
+      height: 75px;
+    }
+
+    .glass-panel h1 {
+      font-size: 1.5rem;
+    }
+
+    .subheading {
+      font-size: 1rem;
+    }
+    
+    .glass-panel p {
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .btn {
+      width: 100%;
+    }
+
+    #countdown {
+      gap: 1.5rem;
+      flex-wrap: wrap; 
+    }
+
+    .time-value {
+      font-size: 2.25rem;
+    }
+    
+    .bg-shape-1 {
+      width: 250px;
+      height: 250px;
+    }
+    
+    .bg-shape-2 {
+      width: 200px;
+      height: 200px;
+    }
+  }
+</style>
+
+<script>
+  const launchDate = new Date("October 3, 2026 00:00:00").getTime();
+
+  const updateCountdown = () => {
+    const countdownEl = document.getElementById("countdown");
+    if (!countdownEl) return; 
+
+    const now = new Date().getTime();
+    const distance = launchDate - now;
+
+    if (distance < 0) {
+      countdownEl.innerHTML = "<h2>We have launched!</h2>";
+      return;
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    const updateEl = (id: string, value: number) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = value.toString().padStart(2, '0');
+    };
+
+    updateEl("days", days);
+    updateEl("hours", hours);
+    updateEl("minutes", minutes);
+    updateEl("seconds", seconds);
+  };
+
+  setInterval(updateCountdown, 1000);
+  updateCountdown(); 
+</script>

@@ -1,0 +1,298 @@
+---
+// src/layouts/Layout.astro
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+</head>
+<body>
+  
+  <nav>
+    <div class="nav-bg"></div>
+    
+    <div class="nav-content">
+      <a href="/" class="brand-logo" aria-label="The Distinguished Daniel - Home">
+        <img 
+          src="/logos/logoline.svg" 
+          alt="The Distinguished Daniel Logo" 
+          loading="eager"
+        />
+      </a>
+      <div class="nav-links">
+        <a href="#about">Early Access</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-section brand-section">
+        <img 
+          src="/logos/logoline.svg" 
+          alt="The Distinguished Daniel Logo" 
+          class="footer-logo"
+          loading="lazy"
+        />
+        <p>Elevating standards and building networks of excellence.</p>
+      </div>
+      
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#programs">Programs</a></li>
+          <li><a href="#events">Events</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#privacy">Privacy Policy</a></li>
+          <li><a href="#terms">Terms of Service</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#linkedin">LinkedIn</a></li>
+          <li><a href="#instagram">Instagram</a></li>
+          <li><a href="#facebook">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      &copy; {new Date().getFullYear()} The Distinguished Daniel Network and Institute. All rights reserved.
+    </div>
+  </footer>
+
+</body>
+</html>
+
+<style is:global>
+  :root {
+    --bg-primary: #0D0D0D;
+    --brand-navy: #1D3557;
+    --accent-gold-start: #C89B3C;
+    --accent-gold-end: #F3D27A;
+    --accent-burgundy: #90121E;
+    --text-primary: #F8F9FA;
+    --text-secondary: #C7C7C7;
+    --border-charcoal: #2A2A2A;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', 'Source Sans Pro', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden; 
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    flex-grow: 1;
+    padding-top: 100px; /* Increased to accommodate larger header */
+  }
+
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+  }
+
+  .nav-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 150%; 
+    z-index: -1;
+    background: linear-gradient(
+      to bottom, 
+      rgba(13, 13, 13, 0.95) 30%, 
+      rgba(13, 13, 13, 0.6) 70%, 
+      transparent 100%
+    );
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 3rem; /* Slightly larger padding */
+  }
+
+  .brand-logo {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    line-height: 0;
+  }
+
+  .brand-logo img {
+    height: 42px; /* Increased logo size */
+    width: auto;  
+    display: block;
+    transition: opacity 0.2s ease;
+  }
+
+  .brand-logo:hover img {
+    opacity: 0.85;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+
+  .nav-links a:hover {
+    color: var(--text-primary);
+  }
+
+  footer {
+    background-color: var(--bg-primary);
+    border-top: 1px solid var(--border-charcoal);
+    color: var(--text-secondary);
+    padding: 4rem 3rem 2rem;
+    position: relative;
+    z-index: 10;
+  }
+
+  .footer-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto 3rem;
+  }
+
+  .footer-logo {
+    height: 42px;
+    width: auto;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .brand-section p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 300px;
+  }
+
+  .footer-section h4 {
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .footer-section ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .footer-section a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+  }
+
+  .footer-section a:hover {
+    color: var(--accent-gold-start);
+  }
+
+  .footer-bottom {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-charcoal);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 768px) {
+    .nav-content {
+      padding: 1.25rem 1.5rem; /* Larger padding on mobile */
+    }
+
+    .brand-logo img {
+      height: 32px; /* Increased mobile logo size */
+    }
+
+    .nav-links {
+      gap: 1.25rem;
+    }
+
+    .nav-links a {
+      font-size: 0.875rem;
+    }
+
+    main {
+      padding-top: 85px; /* Adjusted spacing for larger mobile header */
+    }
+
+    footer {
+      padding: 3rem 1.5rem 1.5rem;
+    }
+
+    .footer-container {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      text-align: center;
+    }
+
+    .footer-logo {
+      margin: 0 auto 1rem auto; /* Centers the logo on mobile screens */
+    }
+
+    .brand-section p {
+      margin: 0 auto;
+    }
+  }
+</style>
