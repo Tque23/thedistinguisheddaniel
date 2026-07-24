@@ -1,30 +1,39 @@
 ---
 // src/pages/index.astro
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/layout.astro";
 ---
 
 <Layout title="The Distinguished Daniel Network and Institute | Early Access">
   <main>
     <div class="bg-shape-1"></div>
     <div class="bg-shape-2"></div>
-    
+
     <div class="glass-panel">
       <!-- Square Logo Placeholder -->
       <img src="/favicon.svg" alt="Institute Emblem" class="panel-logo" />
-      
+
       <h1>The Distinguished Daniel</h1>
       <h2 class="subheading">Network & Institute</h2>
-      
-      <p>Step into an exclusive community designed for forward-thinking Kingdom Leaders. Secure your position today and join our inner circle before the official unveiling.</p>
-      
+
+      <p>
+        Step into an exclusive community designed for forward-thinking Kingdom
+        Leaders. Secure your position today and join our inner circle before the
+        official unveiling.
+      </p>
+
       <!-- New Action Buttons -->
       <div class="action-buttons">
         <a href="#signup" class="btn btn-primary">Early Sign Up</a>
-        <a href="https://chat.whatsapp.com/YOUR_LINK_HERE" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp">Join WhatsApp Group</a>
+        <a
+          href="https://chat.whatsapp.com/YOUR_LINK_HERE"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-whatsapp">Join WhatsApp Group</a
+        >
       </div>
-      
-	  <h2 class="subheading">Official Launch</h2>
-	  <h2 class="subheading">Saturday, 3 October 2026</h2>
+
+      <h2 class="subheading">Official Launch</h2>
+      <h2 class="subheading">Saturday, 3 October 2026</h2>
 
       <div id="countdown">
         <div class="time-box">
@@ -51,23 +60,23 @@ import Layout from '../layouts/Layout.astro';
 <style>
   /* Custom Font Declarations */
   @font-face {
-    font-family: 'Trajan Pro 3';
-    src: url('/fonts/Trajan Pro 3 Semibold.otf') format('opentype');
+    font-family: "Trajan Pro 3";
+    src: url("/fonts/Trajan Pro 3 Semibold.otf") format("opentype");
     font-weight: 600;
     font-style: normal;
     font-display: swap;
   }
 
   @font-face {
-    font-family: 'Trajan Pro 3';
-    src: url('/fonts/Trajan Pro 3 Regular.otf') format('opentype');
+    font-family: "Trajan Pro 3";
+    src: url("/fonts/Trajan Pro 3 Regular.otf") format("opentype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
   }
 
   main {
-    flex: 1; 
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -76,7 +85,8 @@ import Layout from '../layouts/Layout.astro';
   }
 
   /* Abstract background shapes */
-  .bg-shape-1, .bg-shape-2 {
+  .bg-shape-1,
+  .bg-shape-2 {
     position: absolute;
     border-radius: 50%;
     filter: blur(80px);
@@ -128,7 +138,7 @@ import Layout from '../layouts/Layout.astro';
 
   /* Typography Adjustments */
   .glass-panel h1 {
-    font-family: 'Trajan Pro 3', serif;
+    font-family: "Trajan Pro 3", serif;
     font-weight: 600;
     font-size: 1.8rem; /* Made the title smaller */
     margin-bottom: 0.5rem;
@@ -137,7 +147,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .subheading {
-    font-family: 'Trajan Pro 3', serif;
+    font-family: "Trajan Pro 3", serif;
     font-weight: 400;
     font-size: 1.2rem;
     margin-bottom: 1.5rem;
@@ -177,7 +187,11 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .btn-primary {
-    background: linear-gradient(90deg, var(--accent-gold-start), var(--accent-gold-end));
+    background: linear-gradient(
+      90deg,
+      var(--accent-gold-start),
+      var(--accent-gold-end)
+    );
     color: var(--bg-primary);
     border: none;
   }
@@ -189,13 +203,13 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .btn-whatsapp {
-    background-color: #25D366; /* Official WhatsApp Green */
+    background-color: #25d366; /* Official WhatsApp Green */
     color: #ffffff;
-    border: 1px solid #25D366;
+    border: 1px solid #25d366;
   }
 
   .btn-whatsapp:hover {
-    background-color: #1EBE5D;
+    background-color: #1ebe5d;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
   }
@@ -218,7 +232,11 @@ import Layout from '../layouts/Layout.astro';
     font-size: 3rem; /* Slightly reduced to balance the new buttons */
     font-weight: 700;
     color: var(--text-primary);
-    background: linear-gradient(90deg, var(--accent-gold-start), var(--accent-gold-end));
+    background: linear-gradient(
+      90deg,
+      var(--accent-gold-start),
+      var(--accent-gold-end)
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     line-height: 1;
@@ -237,11 +255,11 @@ import Layout from '../layouts/Layout.astro';
     main {
       padding: 1rem;
     }
-    
+
     .glass-panel {
       padding: 2.5rem 1.5rem;
     }
-    
+
     .panel-logo {
       width: 75px;
       height: 75px;
@@ -254,7 +272,7 @@ import Layout from '../layouts/Layout.astro';
     .subheading {
       font-size: 1rem;
     }
-    
+
     .glass-panel p {
       font-size: 0.95rem;
       margin-bottom: 2rem;
@@ -272,18 +290,18 @@ import Layout from '../layouts/Layout.astro';
 
     #countdown {
       gap: 1.5rem;
-      flex-wrap: wrap; 
+      flex-wrap: wrap;
     }
 
     .time-value {
       font-size: 2.25rem;
     }
-    
+
     .bg-shape-1 {
       width: 250px;
       height: 250px;
     }
-    
+
     .bg-shape-2 {
       width: 200px;
       height: 200px;
@@ -296,7 +314,7 @@ import Layout from '../layouts/Layout.astro';
 
   const updateCountdown = () => {
     const countdownEl = document.getElementById("countdown");
-    if (!countdownEl) return; 
+    if (!countdownEl) return;
 
     const now = new Date().getTime();
     const distance = launchDate - now;
@@ -307,13 +325,15 @@ import Layout from '../layouts/Layout.astro';
     }
 
     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const hours = Math.floor(
+      (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+    );
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     const updateEl = (id: string, value: number) => {
       const el = document.getElementById(id);
-      if (el) el.innerText = value.toString().padStart(2, '0');
+      if (el) el.innerText = value.toString().padStart(2, "0");
     };
 
     updateEl("days", days);
@@ -323,5 +343,5 @@ import Layout from '../layouts/Layout.astro';
   };
 
   setInterval(updateCountdown, 1000);
-  updateCountdown(); 
+  updateCountdown();
 </script>

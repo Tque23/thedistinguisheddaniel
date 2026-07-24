@@ -1,5 +1,5 @@
 ---
-// src/layouts/Layout.astro
+// src/layouts/layout.astro
 interface Props {
   title: string;
 }
@@ -7,95 +7,98 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title}</title>
-</head>
-<body>
-  
-  <nav>
-    <div class="nav-bg"></div>
-    
-    <div class="nav-content">
-      <a href="/" class="brand-logo" aria-label="The Distinguished Daniel - Home">
-        <img 
-          src="/logos/logoline.svg" 
-          alt="The Distinguished Daniel Logo" 
-          loading="eager"
-        />
-      </a>
-      <div class="nav-links">
-        <a href="#about">Early Access</a>
-        <a href="#contact">Contact</a>
-      </div>
-    </div>
-  </nav>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-bg"></div>
 
-  <main>
-    <slot />
-  </main>
-
-  <footer>
-    <div class="footer-container">
-      <div class="footer-section brand-section">
-        <img 
-          src="/logos/logoline.svg" 
-          alt="The Distinguished Daniel Logo" 
-          class="footer-logo"
-          loading="lazy"
-        />
-        <p>Elevating standards and building networks of excellence.</p>
+      <div class="nav-content">
+        <a
+          href="/"
+          class="brand-logo"
+          aria-label="The Distinguished Daniel - Home"
+        >
+          <img
+            src="/logos/logoline.svg"
+            alt="The Distinguished Daniel Logo"
+            loading="eager"
+          />
+        </a>
+        <div class="nav-links">
+          <a href="#about">Early Access</a>
+          <a href="#contact">Contact</a>
+        </div>
       </div>
-      
-      <div class="footer-section">
-        <h4>Quick Links</h4>
-        <ul>
-          <li><a href="#about">About Us</a></li>
-          <li><a href="#programs">Programs</a></li>
-          <li><a href="#events">Events</a></li>
-        </ul>
+    </nav>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer>
+      <div class="footer-container">
+        <div class="footer-section brand-section">
+          <img
+            src="/logos/logoline.svg"
+            alt="The Distinguished Daniel Logo"
+            class="footer-logo"
+            loading="lazy"
+          />
+          <p>Elevating standards and building networks of excellence.</p>
+        </div>
+
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#programs">Programs</a></li>
+            <li><a href="#events">Events</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#privacy">Privacy Policy</a></li>
+            <li><a href="#terms">Terms of Service</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="#linkedin">LinkedIn</a></li>
+            <li><a href="#instagram">Instagram</a></li>
+            <li><a href="#facebook">Facebook</a></li>
+          </ul>
+        </div>
       </div>
 
-      <div class="footer-section">
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="#privacy">Privacy Policy</a></li>
-          <li><a href="#terms">Terms of Service</a></li>
-        </ul>
+      <div class="footer-bottom">
+        &copy; {new Date().getFullYear()} The Distinguished Daniel Network and Institute.
+        All rights reserved.
       </div>
-
-      <div class="footer-section">
-        <h4>Connect</h4>
-        <ul>
-          <li><a href="#linkedin">LinkedIn</a></li>
-          <li><a href="#instagram">Instagram</a></li>
-          <li><a href="#facebook">Facebook</a></li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="footer-bottom">
-      &copy; {new Date().getFullYear()} The Distinguished Daniel Network and Institute. All rights reserved.
-    </div>
-  </footer>
-
-</body>
+    </footer>
+  </body>
 </html>
 
 <style is:global>
   :root {
-    --bg-primary: #0D0D0D;
-    --brand-navy: #1D3557;
-    --accent-gold-start: #C89B3C;
-    --accent-gold-end: #F3D27A;
-    --accent-burgundy: #90121E;
-    --text-primary: #F8F9FA;
-    --text-secondary: #C7C7C7;
-    --border-charcoal: #2A2A2A;
+    --bg-primary: #0d0d0d;
+    --brand-navy: #1d3557;
+    --accent-gold-start: #c89b3c;
+    --accent-gold-end: #f3d27a;
+    --accent-burgundy: #90121e;
+    --text-primary: #f8f9fa;
+    --text-secondary: #c7c7c7;
+    --border-charcoal: #2a2a2a;
   }
 
   * {
@@ -104,12 +107,13 @@ const { title } = Astro.props;
     padding: 0;
   }
 
-  html, body {
+  html,
+  body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    font-family: 'Inter', 'Source Sans Pro', system-ui, sans-serif;
+    font-family: "Inter", "Source Sans Pro", system-ui, sans-serif;
     min-height: 100vh;
-    overflow-x: hidden; 
+    overflow-x: hidden;
   }
 
   body {
@@ -135,17 +139,17 @@ const { title } = Astro.props;
     top: 0;
     left: 0;
     width: 100%;
-    height: 150%; 
+    height: 150%;
     z-index: -1;
     background: linear-gradient(
-      to bottom, 
-      rgba(13, 13, 13, 0.95) 30%, 
-      rgba(13, 13, 13, 0.6) 70%, 
+      to bottom,
+      rgba(13, 13, 13, 0.95) 30%,
+      rgba(13, 13, 13, 0.6) 70%,
       transparent 100%
     );
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    
+
     mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
     pointer-events: none;
@@ -167,7 +171,7 @@ const { title } = Astro.props;
 
   .brand-logo img {
     height: 42px; /* Increased logo size */
-    width: auto;  
+    width: auto;
     display: block;
     transition: opacity 0.2s ease;
   }
