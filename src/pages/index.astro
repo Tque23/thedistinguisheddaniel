@@ -413,12 +413,7 @@ import Layout from "../layouts/layout.astro";
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(
-      0,
-      0,
-      0,
-      0.6
-    ); /* Slightly lighter overlay to let the glass pop */
+    background: rgba(0, 0, 0, 0.6);
     z-index: 9999;
     display: flex;
     justify-content: center;
@@ -437,17 +432,23 @@ import Layout from "../layouts/layout.astro";
 
   .modal-glass {
     position: relative;
-    /* Liquid gradient: high transparency with a subtle directional flow */
-    background: linear-gradient(
-      135deg,
-      rgba(29, 53, 87, 0.518) 0%,
-      rgba(29, 53, 87, 0.296) 100%
-    );
-    /* Frosted liquid edges: brighter on top/left to simulate light hitting it */
+    /* Blended background mimicking the website's bg-primary, navy, and burgundy shapes */
+    background:
+      radial-gradient(
+        circle at top left,
+        rgba(29, 53, 87, 0.8) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        circle at bottom right,
+        rgba(144, 18, 30, 0.5) 0%,
+        transparent 60%
+      ),
+      rgba(13, 13, 13, 0.92);
     border: 1px solid rgba(243, 210, 122, 0.15);
     border-top: 1px solid rgba(255, 255, 255, 0.25);
     border-left: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px; /* Softer, more fluid corners */
+    border-radius: 20px;
     padding: 2.5rem;
     width: 90%;
     max-width: 500px;
@@ -455,13 +456,11 @@ import Layout from "../layouts/layout.astro";
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    /* Deep blur + saturation creates the dense 'water/glass' distortion */
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
-    /* Layered shadows: ambient drop shadow + internal wet gleam */
     box-shadow:
       0 16px 40px rgba(0, 0, 0, 0.4),
-      inset 0 0 20px rgba(243, 211, 122, 0.348),
+      inset 0 0 20px rgba(243, 210, 122, 0.05),
       inset 0 2px 3px rgba(255, 255, 255, 0.1);
     transform: translateY(20px) scale(0.95);
     transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -520,7 +519,7 @@ import Layout from "../layouts/layout.astro";
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
     text-align: center;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Gives text depth inside the liquid */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   }
 
   .modal-subtitle {
@@ -556,13 +555,11 @@ import Layout from "../layouts/layout.astro";
   .form-group input[type="url"] {
     width: 100%;
     padding: 12px 15px;
-    /* Deep carved glass look */
     background: rgba(0, 0, 0, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     color: var(--text-primary);
     outline: none;
-    /* Inner shadow to look indented into the liquid glass */
     box-shadow:
       inset 0 2px 5px rgba(0, 0, 0, 0.2),
       0 1px 0 rgba(255, 255, 255, 0.08);
@@ -762,6 +759,7 @@ import Layout from "../layouts/layout.astro";
       "signupModal",
     ) as HTMLElement | null;
     const openSignupBtn = document.getElementById("openSignupModal");
+    const navOpenSignupBtn = document.getElementById("navOpenSignupModal");
     const closeSignupBtn = document.getElementById("closeSignupModal");
 
     const successPopup = document.getElementById(
@@ -772,21 +770,33 @@ import Layout from "../layouts/layout.astro";
       "closeSuccessPopupIcon",
     );
 
-    // Replace with your Google Apps Script Web App URL
+    // Pulls from Vercel environment variables securely, falling back to the hardcoded URL if not yet set
     const GOOGLE_API_URL =
+      import.meta.env.PUBLIC_GOOGLE_API_URL ||
       "https://script.google.com/macros/s/AKfycbys6hUSU-zPewgXmP5YNcQGizJJL1zu-sR8XjA7YZeP31P4y3Da8Ol6GzTZO7kzqtq5rg/exec";
 
-    // Open / Close Signup Modal
-    if (openSignupBtn && signupModal) {
-      openSignupBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        signupModal.classList.add("show");
-      });
-    }
+    // Unified function to open the modal
+    const openModal = (e?: Event) => {
+      if (e) e.preventDefault();
+      signupModal?.classList.add("show");
+    };
+
+    // Open Signup Modal Event Listeners
+    if (openSignupBtn) openSignupBtn.addEventListener("click", openModal);
+    if (navOpenSignupBtn) navOpenSignupBtn.addEventListener("click", openModal);
+
+    // Close Signup Modal
     if (closeSignupBtn && signupModal) {
       closeSignupBtn.addEventListener("click", () =>
         signupModal.classList.remove("show"),
       );
+    }
+
+    // Automatically open if navigating from the Contact page via the layout link
+    if (window.location.hash === "#early-access") {
+      openModal();
+      // Clean up the URL hash to prevent reopening on page refresh
+      window.history.replaceState(null, "", window.location.pathname);
     }
 
     // Close Modals on Outside Click
@@ -899,9 +909,10 @@ import Layout from "../layouts/layout.astro";
           signupModal?.classList.remove("show");
 
           if (data.success) {
-            if (popupIconContainer) popupIconContainer.innerHTML = "✅";
-            if (popupIconContainer)
+            if (popupIconContainer) {
+              popupIconContainer.innerHTML = "✅";
               popupIconContainer.style.color = "var(--accent-gold-start)";
+            }
             if (popupTitle) popupTitle.innerText = "Position Secured!";
             if (popupText)
               popupText.innerText =
@@ -910,8 +921,10 @@ import Layout from "../layouts/layout.astro";
             signupForm.reset();
             if (whatsappContainer) whatsappContainer.style.display = "none";
           } else {
-            if (popupIconContainer) popupIconContainer.innerHTML = "❌";
-            if (popupIconContainer) popupIconContainer.style.color = "#e45b5b";
+            if (popupIconContainer) {
+              popupIconContainer.innerHTML = "❌";
+              popupIconContainer.style.color = "#e45b5b";
+            }
             if (popupTitle) popupTitle.innerText = "That Did Not Work";
             if (popupText)
               popupText.innerText =
@@ -923,8 +936,10 @@ import Layout from "../layouts/layout.astro";
           console.error("Network Error:", error);
           signupModal?.classList.remove("show");
 
-          if (popupIconContainer) popupIconContainer.innerHTML = "⚠️";
-          if (popupIconContainer) popupIconContainer.style.color = "#e45b5b";
+          if (popupIconContainer) {
+            popupIconContainer.innerHTML = "⚠️";
+            popupIconContainer.style.color = "#e45b5b";
+          }
           if (popupTitle) popupTitle.innerText = "Connection Issue";
           if (popupText)
             popupText.innerText =
