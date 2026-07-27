@@ -21,11 +21,13 @@ import Layout from "../layouts/layout.astro";
         official unveiling.
       </p>
 
-      <!-- New Action Buttons -->
+      <!-- Action Buttons -->
       <div class="action-buttons">
-        <a href="#signup" class="btn btn-primary">Early Sign Up</a>
+        <a href="#" id="openSignupModal" class="btn btn-primary"
+          >Early Sign Up</a
+        >
         <a
-          href="https://chat.whatsapp.com/YOUR_LINK_HERE"
+          href="https://chat.whatsapp.com/GGKbAOLHWMcH8qVdozLTdB?s=cl&p=i&mlu=0"
           target="_blank"
           rel="noopener noreferrer"
           class="btn btn-whatsapp">Join WhatsApp Group</a
@@ -55,6 +57,153 @@ import Layout from "../layouts/layout.astro";
       </div>
     </div>
   </main>
+
+  <!-- Sign Up Modal -->
+  <div id="signupModal" class="modal-overlay">
+    <div class="modal-glass">
+      <span class="modal-close" id="closeSignupModal">&times;</span>
+
+      <div class="modal-scroll-wrapper">
+        <h3 class="modal-title">Secure Your Position</h3>
+        <p class="modal-subtitle">
+          Fill in your details to join the inner circle.
+        </p>
+
+        <form id="signupForm" class="modal-form">
+          <div class="form-group">
+            <label for="servFullName"
+              >Full Name <span class="required">*</span></label
+            >
+            <input
+              type="text"
+              id="servFullName"
+              name="servFullName"
+              required
+              placeholder="Daniel Doe"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="servEmail"
+              >Email Address <span class="required">*</span></label
+            >
+            <input
+              type="email"
+              id="servEmail"
+              name="servEmail"
+              required
+              placeholder="daniel@example.com"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="servPhone">Phone Number</label>
+            <input
+              type="tel"
+              id="servPhone"
+              name="servPhone"
+              placeholder="eg. +27 77 420 4639"
+            />
+
+            <div id="whatsappCheckboxContainer" class="whatsapp-container">
+              <input type="checkbox" id="servWhatsApp" name="servWhatsApp" />
+              <label for="servWhatsApp" class="modal-subtitle"
+                >Contact on WhatsApp</label
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="servCompany">Ministry / Company</label>
+            <input
+              type="text"
+              id="servCompany"
+              name="servCompany"
+              placeholder="Your Organization Ltd."
+            />
+          </div>
+
+          <div class="form-group" style="display: none;">
+            <!-- Hidden field to map to 'Website' payload to prevent script breakage -->
+            <input type="url" id="servWebsite" name="servWebsite" value="" />
+          </div>
+
+          <div class="form-group">
+            <label>Primary Interest <span class="required">*</span></label>
+            <div class="radio-wrapper">
+              <div class="radio-item">
+                <input
+                  type="radio"
+                  id="intNetwork"
+                  name="servRequired"
+                  value="Networking"
+                  required
+                />
+                <label for="intNetwork">Networking</label>
+              </div>
+              <div class="radio-item">
+                <input
+                  type="radio"
+                  id="intLeadership"
+                  name="servRequired"
+                  value="Leadership Training"
+                  required
+                />
+                <label for="intLeadership">Leadership Training</label>
+              </div>
+              <div class="radio-item">
+                <input
+                  type="radio"
+                  id="intEvents"
+                  name="servRequired"
+                  value="Exclusive Events"
+                  required
+                />
+                <label for="intEvents">Exclusive Events</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group confirm-group">
+            <input
+              type="checkbox"
+              id="servConfirm"
+              name="servConfirm"
+              required
+            />
+            <label for="servConfirm" class="modal-subtitle"
+              >I confirm that the details provided are accurate and I agree to
+              be contacted. <span class="required">*</span></label
+            >
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">
+            <span class="btn-text">Submit Application</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success / Error Popup -->
+  <div id="successPopup" class="modal-overlay">
+    <div class="modal-glass popup-glass">
+      <span class="modal-close" id="closeSuccessPopupIcon">&times;</span>
+
+      <div id="popupIconContainer" class="popup-icon">
+        <!-- JS Injected Icon -->
+      </div>
+
+      <h3 id="popupTitle" class="modal-title popup-title">Success!</h3>
+      <p id="popupText" class="modal-subtitle popup-text">
+        Your request was processed.
+      </p>
+
+      <button type="button" id="closeSuccessBtn" class="btn btn-primary w-100">
+        <span class="btn-text">Awesome</span>
+      </button>
+    </div>
+  </div>
 </Layout>
 
 <style>
@@ -118,7 +267,7 @@ import Layout from "../layouts/layout.astro";
     background: rgba(29, 53, 87, 0.15);
     border: 1px solid rgba(243, 210, 122, 0.2);
     border-radius: 16px;
-    padding: 3rem 3rem 4rem; /* Adjusted padding to accommodate the logo */
+    padding: 3rem 3rem 4rem;
     text-align: center;
     max-width: 800px;
     width: 100%;
@@ -131,16 +280,17 @@ import Layout from "../layouts/layout.astro";
   .panel-logo {
     width: 90px;
     height: 90px;
-    object-fit: contain; /* Prevents distortion */
+    object-fit: contain;
     margin: 0 auto 1.5rem;
     display: block;
   }
 
   /* Typography Adjustments */
-  .glass-panel h1 {
+  .glass-panel h1,
+  .modal-title {
     font-family: "Trajan Pro 3", serif;
     font-weight: 600;
-    font-size: 1.8rem; /* Made the title smaller */
+    font-size: 1.8rem;
     margin-bottom: 0.5rem;
     letter-spacing: 0.5px;
     color: var(--text-primary);
@@ -156,7 +306,8 @@ import Layout from "../layouts/layout.astro";
     text-transform: uppercase;
   }
 
-  .glass-panel p {
+  .glass-panel p,
+  .modal-subtitle {
     color: var(--text-secondary);
     font-size: 1.05rem;
     margin-bottom: 2.5rem;
@@ -184,6 +335,11 @@ import Layout from "../layouts/layout.astro";
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+  }
+
+  .w-100 {
+    width: 100%;
   }
 
   .btn-primary {
@@ -203,7 +359,7 @@ import Layout from "../layouts/layout.astro";
   }
 
   .btn-whatsapp {
-    background-color: #25d366; /* Official WhatsApp Green */
+    background-color: #25d366;
     color: #ffffff;
     border: 1px solid #25d366;
   }
@@ -229,7 +385,7 @@ import Layout from "../layouts/layout.astro";
   }
 
   .time-value {
-    font-size: 3rem; /* Slightly reduced to balance the new buttons */
+    font-size: 3rem;
     font-weight: 700;
     color: var(--text-primary);
     background: linear-gradient(
@@ -248,6 +404,256 @@ import Layout from "../layouts/layout.astro";
     color: var(--text-secondary);
     letter-spacing: 2px;
     margin-top: 0.75rem;
+  }
+
+  /* Modal Styles - Liquid Glass */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(
+      0,
+      0,
+      0,
+      0.6
+    ); /* Slightly lighter overlay to let the glass pop */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+      visibility 0.4s;
+  }
+
+  .modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-glass {
+    position: relative;
+    /* Liquid gradient: high transparency with a subtle directional flow */
+    background: linear-gradient(
+      135deg,
+      rgba(29, 53, 87, 0.35) 0%,
+      rgba(29, 53, 87, 0.05) 100%
+    );
+    /* Frosted liquid edges: brighter on top/left to simulate light hitting it */
+    border: 1px solid rgba(243, 210, 122, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px; /* Softer, more fluid corners */
+    padding: 2.5rem;
+    width: 90%;
+    max-width: 500px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Deep blur + saturation creates the dense 'water/glass' distortion */
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    /* Layered shadows: ambient drop shadow + internal wet gleam */
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.4),
+      inset 0 0 20px rgba(243, 210, 122, 0.05),
+      inset 0 2px 3px rgba(255, 255, 255, 0.1);
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .modal-overlay.show .modal-glass {
+    transform: translateY(0) scale(1);
+  }
+
+  .popup-glass {
+    max-width: 450px;
+    text-align: center;
+    padding: 40px 30px;
+    height: auto;
+  }
+
+  .modal-scroll-wrapper {
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    padding-right: 15px;
+    margin-right: -5px;
+    flex-grow: 1;
+  }
+
+  .modal-scroll-wrapper::-webkit-scrollbar {
+    width: 4px;
+  }
+  .modal-scroll-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .modal-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(243, 210, 122, 0.3);
+    border-radius: 10px;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    z-index: 2;
+    transition:
+      color 0.3s,
+      transform 0.3s;
+  }
+
+  .modal-close:hover {
+    color: var(--accent-gold-end);
+    transform: rotate(90deg);
+  }
+
+  .modal-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Gives text depth inside the liquid */
+  }
+
+  .modal-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* Form Styles - Engraved Liquid Glass Inputs */
+  .modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: left;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="email"],
+  .form-group input[type="tel"],
+  .form-group input[type="url"] {
+    width: 100%;
+    padding: 12px 15px;
+    /* Deep carved glass look */
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    color: var(--text-primary);
+    outline: none;
+    /* Inner shadow to look indented into the liquid glass */
+    box-shadow:
+      inset 0 2px 5px rgba(0, 0, 0, 0.2),
+      0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+  }
+
+  .form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .form-group input:focus {
+    background: rgba(0, 0, 0, 0.25);
+    border-color: rgba(243, 210, 122, 0.4);
+    box-shadow:
+      inset 0 2px 5px rgba(0, 0, 0, 0.3),
+      0 0 10px rgba(243, 210, 122, 0.1);
+  }
+
+  .required {
+    color: #e45b5b;
+  }
+
+  .whatsapp-container {
+    display: none;
+    margin-top: 8px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .whatsapp-container input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--accent-gold-end);
+  }
+
+  .whatsapp-container label {
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .radio-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 5px;
+  }
+
+  .radio-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .radio-item input[type="radio"] {
+    cursor: pointer;
+    accent-color: var(--accent-gold-end);
+  }
+
+  .confirm-group {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .confirm-group input {
+    margin-top: 4px;
+    cursor: pointer;
+    accent-color: var(--accent-gold-end);
+  }
+
+  .confirm-group label {
+    text-align: left;
+    margin-bottom: 0;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+
+  /* Popup Specifics */
+  .popup-icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  }
+  .popup-title {
+    margin-bottom: 15px;
+  }
+  .popup-text {
+    margin-bottom: 30px;
   }
 
   /* Mobile Optimization */
@@ -306,10 +712,15 @@ import Layout from "../layouts/layout.astro";
       width: 200px;
       height: 200px;
     }
+
+    .modal-glass {
+      padding: 2rem 1.5rem;
+    }
   }
 </style>
 
 <script>
+  // -- 1. Countdown Logic --
   const launchDate = new Date("October 3, 2026 00:00:00").getTime();
 
   const updateCountdown = () => {
@@ -344,4 +755,192 @@ import Layout from "../layouts/layout.astro";
 
   setInterval(updateCountdown, 1000);
   updateCountdown();
+
+  // -- 2. Modal & Form Submission Logic --
+  document.addEventListener("DOMContentLoaded", () => {
+    const signupModal = document.getElementById(
+      "signupModal",
+    ) as HTMLElement | null;
+    const openSignupBtn = document.getElementById("openSignupModal");
+    const closeSignupBtn = document.getElementById("closeSignupModal");
+
+    const successPopup = document.getElementById(
+      "successPopup",
+    ) as HTMLElement | null;
+    const closeSuccessBtn = document.getElementById("closeSuccessBtn");
+    const closeSuccessPopupIcon = document.getElementById(
+      "closeSuccessPopupIcon",
+    );
+
+    // Replace with your Google Apps Script Web App URL
+    const GOOGLE_API_URL =
+      "https://script.google.com/macros/s/AKfycbys6hUSU-zPewgXmP5YNcQGizJJL1zu-sR8XjA7YZeP31P4y3Da8Ol6GzTZO7kzqtq5rg/exec";
+
+    // Open / Close Signup Modal
+    if (openSignupBtn && signupModal) {
+      openSignupBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        signupModal.classList.add("show");
+      });
+    }
+    if (closeSignupBtn && signupModal) {
+      closeSignupBtn.addEventListener("click", () =>
+        signupModal.classList.remove("show"),
+      );
+    }
+
+    // Close Modals on Outside Click
+    window.addEventListener("click", (event) => {
+      if (event.target === signupModal) signupModal?.classList.remove("show");
+      if (event.target === successPopup) successPopup?.classList.remove("show");
+    });
+
+    // WhatsApp Dynamic Toggle Logic
+    const phoneInput = document.getElementById(
+      "servPhone",
+    ) as HTMLInputElement | null;
+    const whatsappContainer = document.getElementById(
+      "whatsappCheckboxContainer",
+    ) as HTMLElement | null;
+    const whatsappCheckbox = document.getElementById(
+      "servWhatsApp",
+    ) as HTMLInputElement | null;
+
+    if (phoneInput && whatsappContainer) {
+      phoneInput.addEventListener("input", function () {
+        if (phoneInput.value.trim().length > 0) {
+          whatsappContainer.style.display = "flex";
+        } else {
+          whatsappContainer.style.display = "none";
+          if (whatsappCheckbox) whatsappCheckbox.checked = false;
+        }
+      });
+    }
+
+    // Form Submission & Success Popup Logic
+    const signupForm = document.getElementById(
+      "signupForm",
+    ) as HTMLFormElement | null;
+
+    const popupIconContainer = document.getElementById(
+      "popupIconContainer",
+    ) as HTMLElement | null;
+    const popupTitle = document.getElementById(
+      "popupTitle",
+    ) as HTMLElement | null;
+    const popupText = document.getElementById(
+      "popupText",
+    ) as HTMLElement | null;
+
+    if (signupForm) {
+      signupForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const name =
+          (document.getElementById("servFullName") as HTMLInputElement | null)
+            ?.value ?? "";
+        const email =
+          (document.getElementById("servEmail") as HTMLInputElement | null)
+            ?.value ?? "";
+        const phone =
+          (document.getElementById("servPhone") as HTMLInputElement | null)
+            ?.value ?? "";
+        const company =
+          (document.getElementById("servCompany") as HTMLInputElement | null)
+            ?.value ?? "";
+        const website =
+          (document.getElementById("servWebsite") as HTMLInputElement | null)
+            ?.value ?? "";
+        const whatsapp = (
+          document.getElementById("servWhatsApp") as HTMLInputElement | null
+        )?.checked
+          ? "Yes"
+          : "No";
+        const projectType =
+          (
+            document.querySelector(
+              'input[name="servRequired"]:checked',
+            ) as HTMLInputElement | null
+          )?.value ?? "";
+
+        const now = new Date();
+        const projectDate = now.toLocaleDateString("en-GB");
+        const time = now.toLocaleTimeString("en-US", { hour12: false });
+
+        const payload = {
+          action: "signup",
+          Name: name,
+          Contact: email,
+          Phone: phone,
+          Company: company,
+          Website: website,
+          WhatsApp: whatsapp,
+          ProjectType: projectType,
+          ProjectDate: projectDate,
+          Time: time,
+          Completion: "New",
+        };
+
+        const submitBtnText = signupForm.querySelector(
+          ".btn-text",
+        ) as HTMLElement | null;
+        const originalText = submitBtnText?.innerText ?? "Submit";
+        if (submitBtnText) submitBtnText.innerText = "Submitting...";
+
+        try {
+          const response = await fetch(GOOGLE_API_URL, {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+          });
+
+          const data = await response.json();
+
+          signupModal?.classList.remove("show");
+
+          if (data.success) {
+            if (popupIconContainer) popupIconContainer.innerHTML = "✅";
+            if (popupIconContainer)
+              popupIconContainer.style.color = "var(--accent-gold-start)";
+            if (popupTitle) popupTitle.innerText = "Position Secured!";
+            if (popupText)
+              popupText.innerText =
+                "Thank you! Your details have been successfully logged. We will review them and touch base with you shortly.";
+
+            signupForm.reset();
+            if (whatsappContainer) whatsappContainer.style.display = "none";
+          } else {
+            if (popupIconContainer) popupIconContainer.innerHTML = "❌";
+            if (popupIconContainer) popupIconContainer.style.color = "#e45b5b";
+            if (popupTitle) popupTitle.innerText = "That Did Not Work";
+            if (popupText)
+              popupText.innerText =
+                "Unfortunately, we stumbled upon an issue processing your request. Please try again or join our WhatsApp group directly.";
+          }
+
+          successPopup?.classList.add("show");
+        } catch (error) {
+          console.error("Network Error:", error);
+          signupModal?.classList.remove("show");
+
+          if (popupIconContainer) popupIconContainer.innerHTML = "⚠️";
+          if (popupIconContainer) popupIconContainer.style.color = "#e45b5b";
+          if (popupTitle) popupTitle.innerText = "Connection Issue";
+          if (popupText)
+            popupText.innerText =
+              "We can't reach the server right now. Please check your internet connection, or try again later.";
+
+          successPopup?.classList.add("show");
+        } finally {
+          if (submitBtnText) submitBtnText.innerText = originalText;
+        }
+      });
+    }
+
+    const hideSuccessPopup = () => successPopup?.classList.remove("show");
+    if (closeSuccessBtn)
+      closeSuccessBtn.addEventListener("click", hideSuccessPopup);
+    if (closeSuccessPopupIcon)
+      closeSuccessPopupIcon.addEventListener("click", hideSuccessPopup);
+  });
 </script>
