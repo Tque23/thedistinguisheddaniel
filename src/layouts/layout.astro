@@ -1,10 +1,9 @@
 ---
-// src/layouts/layout.astro
-interface Props {
-  title: string;
+export interface Props {
+  title?: string;
 }
 
-const { title } = Astro.props;
+const { title } = Astro.props as Props;
 ---
 
 <!doctype html>
@@ -21,6 +20,21 @@ const { title } = Astro.props;
     />
   </head>
   <body>
+    <!-- Global Loader -->
+    <div id="website-loader" class="loader-container">
+      <div class="loader-bg-shape-1"></div>
+      <div class="loader-bg-shape-2"></div>
+
+      <!-- Frame removed, video placed directly in the container -->
+      <video
+        src="/logos/logoline.webm"
+        class="loader-logo"
+        autoplay
+        loop
+        muted
+        playsinline></video>
+    </div>
+
     <nav>
       <div class="nav-bg"></div>
 
@@ -115,9 +129,10 @@ const { title } = Astro.props;
       </div>
     </footer>
 
-    <!-- Added JavaScript to handle opening and closing the mobile panel -->
+    <!-- Added JavaScript to handle opening and closing the mobile panel & Loader -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
+        // --- Mobile Menu Logic ---
         const openBtn = document.querySelector(".open-btn");
         const closeBtn = document.querySelector(".close-btn");
         const sidePanel = document.getElementById("sidePanel");
@@ -147,6 +162,32 @@ const { title } = Astro.props;
           link.addEventListener("click", closeMenu);
         });
       });
+
+      // --- Loader Logic ---
+      const loader = document.getElementById("website-loader");
+
+      if (loader) {
+        // Check if the user has already seen the loader in this session
+        if (sessionStorage.getItem("hasSeenLoader")) {
+          // If they have, immediately hide the loader without delay
+          loader.style.display = "none";
+        } else {
+          // If they haven't, run the loader for the 3-second minimum
+          const loaderStartTime = Date.now();
+          const minLoaderDuration = 3000; // Minimum 3 seconds (3000ms)
+
+          window.addEventListener("load", () => {
+            const elapsedTime = Date.now() - loaderStartTime;
+            const remainingTime = Math.max(0, minLoaderDuration - elapsedTime);
+
+            setTimeout(() => {
+              loader.classList.add("hide");
+              // Set the session storage flag so it doesn't load again on other pages
+              sessionStorage.setItem("hasSeenLoader", "true");
+            }, remainingTime);
+          });
+        }
+      }
     </script>
   </body>
 </html>
@@ -183,9 +224,68 @@ const { title } = Astro.props;
     flex-direction: column;
   }
 
+  /* --- Website Loader Styles --- */
+  .loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bg-primary);
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition:
+      opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1),
+      visibility 0.6s;
+  }
+
+  .loader-container.hide {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .loader-bg-shape-1,
+  .loader-bg-shape-2 {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0;
+  }
+
+  .loader-bg-shape-1 {
+    width: 400px;
+    height: 400px;
+    background: var(--brand-navy);
+    top: -100px;
+    left: -100px;
+    opacity: 0.5;
+  }
+
+  .loader-bg-shape-2 {
+    width: 300px;
+    height: 300px;
+    background: var(--accent-burgundy);
+    bottom: 0;
+    right: 0;
+    opacity: 0.3;
+  }
+
+  .loader-logo {
+    position: relative;
+    z-index: 1; /* Keeps the logo above the blurred background shapes */
+    height: 400px; /* Increased size significantly */
+    width: auto;
+    display: block;
+  }
+
+  /* -------------------------- */
+
   main {
     flex-grow: 1;
-    padding-top: 100px; /* Increased to accommodate larger header */
+    padding-top: 100px;
   }
 
   nav {
@@ -221,7 +321,7 @@ const { title } = Astro.props;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 3rem; /* Slightly larger padding */
+    padding: 1.5rem 3rem;
   }
 
   .brand-logo {
@@ -232,7 +332,7 @@ const { title } = Astro.props;
   }
 
   .brand-logo img {
-    height: 42px; /* Increased logo size */
+    height: 42px;
     width: auto;
     display: block;
     transition: opacity 0.2s ease;
@@ -322,7 +422,7 @@ const { title } = Astro.props;
     font-size: 0.85rem;
   }
 
-  /* --- New Side Panel Styles --- */
+  /* --- Side Panel Styles --- */
   .mobile-menu-btn {
     display: none;
     background: none;
@@ -341,7 +441,7 @@ const { title } = Astro.props;
   .side-panel {
     position: fixed;
     top: 0;
-    right: -100%; /* Hidden off-screen by default */
+    right: -100%;
     width: 300px;
     max-width: 80vw;
     height: 100vh;
@@ -356,14 +456,14 @@ const { title } = Astro.props;
   }
 
   .side-panel.open {
-    right: 0; /* Slides in */
+    right: 0;
   }
 
   .side-panel .close-btn {
     position: absolute;
     top: 1.5rem;
     right: 1.5rem;
-    display: block; /* Always visible inside the panel */
+    display: block;
   }
 
   .side-panel-links {
@@ -416,7 +516,6 @@ const { title } = Astro.props;
       height: 32px;
     }
 
-    /* Hide standard links, show hamburger button */
     .desktop-only {
       display: none !important;
     }
@@ -445,6 +544,22 @@ const { title } = Astro.props;
 
     .brand-section p {
       margin: 0 auto;
+    }
+
+    /* Shrink the shapes on smaller devices */
+    .loader-bg-shape-1 {
+      width: 250px;
+      height: 250px;
+    }
+
+    .loader-bg-shape-2 {
+      width: 200px;
+      height: 200px;
+    }
+
+    /* Slightly shrink loader logo on mobile */
+    .loader-logo {
+      height: 200px;
     }
   }
 </style>
