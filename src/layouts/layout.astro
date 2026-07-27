@@ -295,6 +295,10 @@ const { title } = Astro.props as Props;
     height: 400px; /* Increased size significantly */
     width: auto;
     display: block;
+
+    /* Fix for mobile/iOS rendering WebM transparency as a black block */
+    background: transparent;
+    mix-blend-mode: screen;
   }
 
   main {
