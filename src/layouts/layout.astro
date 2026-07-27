@@ -26,13 +26,13 @@ const { title } = Astro.props as Props;
       <div class="loader-bg-shape-2"></div>
 
       <!-- Frame removed, video placed directly in the container -->
-      <video
-        src="/logos/logoline.webm"
-        class="loader-logo"
-        autoplay
-        loop
-        muted
-        playsinline></video>
+      <video class="loader-logo" autoplay loop muted playsinline>
+        <!-- Safari / iOS will read this and render the transparent MP4 -->
+        <source src="/logos/logoline.mp4" type="video/mp4; codecs=hvc1" />
+
+        <!-- Chrome / Android / Firefox will skip the MP4 and load the WebM -->
+        <source src="/logos/logoline.webm" type="video/webm" />
+      </video>
     </div>
 
     <nav>
@@ -565,18 +565,9 @@ const { title } = Astro.props as Props;
     }
 
     /* Shrink the shapes on smaller devices */
-    .loader-bg-shape-1 {
-      width: 250px;
-      height: 250px;
-      top: calc(50% - 150px);
-      left: calc(50% - 150px);
-    }
-
+    .loader-bg-shape-1,
     .loader-bg-shape-2 {
-      width: 200px;
-      height: 200px;
-      bottom: calc(50% - 125px);
-      right: calc(50% - 125px);
+      display: none; /* Hide the shapes on mobile for performance and clarity */
     }
 
     /* Slightly shrink loader logo on mobile */
