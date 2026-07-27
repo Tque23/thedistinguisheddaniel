@@ -31,12 +31,35 @@ const { title } = Astro.props;
             loading="eager"
           />
         </a>
-        <div class="nav-links">
+
+        <!-- Desktop Navigation Links -->
+        <div class="nav-links desktop-only">
+          <a href="/">Home</a>
           <a href="/#early-access" id="navOpenSignupModal">Early Access</a>
           <a href="/contact">Contact</a>
         </div>
+
+        <!-- Mobile Menu Open Button -->
+        <button class="mobile-menu-btn open-btn" aria-label="Open Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
       </div>
     </nav>
+
+    <!-- Dark Overlay for when the panel is open -->
+    <div id="panelOverlay" class="panel-overlay"></div>
+
+    <!-- Mobile Side Panel -->
+    <div id="sidePanel" class="side-panel">
+      <button class="mobile-menu-btn close-btn" aria-label="Close Menu">
+        <i class="fa-solid fa-bars-staggered"></i>
+      </button>
+      <div class="side-panel-links">
+        <a href="/">Home</a>
+        <a href="/#early-access" class="mobileOpenSignupModal">Early Access</a>
+        <a href="/contact">Contact</a>
+      </div>
+    </div>
 
     <main>
       <slot />
@@ -260,25 +283,111 @@ const { title } = Astro.props;
     font-size: 0.85rem;
   }
 
+  /* --- New Side Panel Styles --- */
+  .mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 201;
+    transition: color 0.3s ease;
+  }
+
+  .mobile-menu-btn:hover {
+    color: var(--accent-gold-start);
+  }
+
+  .side-panel {
+    position: fixed;
+    top: 0;
+    right: -100%; /* Hidden off-screen by default */
+    width: 300px;
+    max-width: 80vw;
+    height: 100vh;
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-charcoal);
+    padding: 5rem 2rem 2rem;
+    transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -5px 0 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .side-panel.open {
+    right: 0; /* Slides in */
+  }
+
+  .side-panel .close-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    display: block; /* Always visible inside the panel */
+  }
+
+  .side-panel-links {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .side-panel-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+
+  .side-panel-links a:hover {
+    color: var(--text-primary);
+  }
+
+  .panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 199;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.4s ease,
+      visibility 0.4s ease;
+  }
+
+  .panel-overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
   @media (max-width: 768px) {
     .nav-content {
-      padding: 1.25rem 1.5rem; /* Larger padding on mobile */
+      padding: 1.25rem 1.5rem;
     }
 
     .brand-logo img {
-      height: 32px; /* Increased mobile logo size */
+      height: 32px;
     }
 
-    .nav-links {
-      gap: 1.25rem;
+    /* Hide standard links, show hamburger button */
+    .desktop-only {
+      display: none !important;
     }
 
-    .nav-links a {
-      font-size: 0.875rem;
+    .mobile-menu-btn.open-btn {
+      display: block;
     }
 
     main {
-      padding-top: 85px; /* Adjusted spacing for larger mobile header */
+      padding-top: 85px;
     }
 
     footer {
@@ -292,7 +401,7 @@ const { title } = Astro.props;
     }
 
     .footer-logo {
-      margin: 0 auto 1rem auto; /* Centers the logo on mobile screens */
+      margin: 0 auto 1rem auto;
     }
 
     .brand-section p {
