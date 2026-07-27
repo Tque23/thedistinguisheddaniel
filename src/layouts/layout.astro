@@ -225,6 +225,7 @@ const { title } = Astro.props as Props;
   }
 
   /* --- Website Loader Styles --- */
+  /* --- Website Loader Styles --- */
   .loader-container {
     position: fixed;
     top: 0;
@@ -253,24 +254,39 @@ const { title } = Astro.props as Props;
     border-radius: 50%;
     filter: blur(80px);
     z-index: 0;
+    /* Added transition to animate them back to the corners */
+    transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
   .loader-bg-shape-1 {
     width: 400px;
     height: 400px;
     background: var(--brand-navy);
-    top: -100px;
-    left: -100px;
     opacity: 0.5;
+    /* Start in the center, offset to the top-left behind the logo */
+    top: calc(50% - 250px);
+    left: calc(50% - 250px);
   }
 
   .loader-bg-shape-2 {
     width: 300px;
     height: 300px;
     background: var(--accent-burgundy);
+    opacity: 0.3;
+    /* Start in the center, offset to the bottom-right behind the logo */
+    bottom: calc(50% - 200px);
+    right: calc(50% - 200px);
+  }
+
+  /* Move shapes to their original corners when the loader fades out */
+  .loader-container.hide .loader-bg-shape-1 {
+    top: -100px;
+    left: -100px;
+  }
+
+  .loader-container.hide .loader-bg-shape-2 {
     bottom: 0;
     right: 0;
-    opacity: 0.3;
   }
 
   .loader-logo {
@@ -280,8 +296,6 @@ const { title } = Astro.props as Props;
     width: auto;
     display: block;
   }
-
-  /* -------------------------- */
 
   main {
     flex-grow: 1;
@@ -550,11 +564,15 @@ const { title } = Astro.props as Props;
     .loader-bg-shape-1 {
       width: 250px;
       height: 250px;
+      top: calc(50% - 150px);
+      left: calc(50% - 150px);
     }
 
     .loader-bg-shape-2 {
       width: 200px;
       height: 200px;
+      bottom: calc(50% - 125px);
+      right: calc(50% - 125px);
     }
 
     /* Slightly shrink loader logo on mobile */
