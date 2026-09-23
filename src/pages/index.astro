@@ -5,7 +5,15 @@ import Layout from "../layouts/layout.astro";
 
 <Layout title="The Distinguished Daniel Network and Institute | Early Access">
   <main>
-    <section class="hero" aria-labelledby="hero-title">
+    <section class="hero hero-agent" aria-labelledby="hero-title">
+      <div class="hero-video" aria-hidden="true">
+        <video autoplay muted loop playsinline>
+          <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/bg-hero-0BnFGdr81Ifnj3WbBZoNt1KE4D5DMT.mp4" type="video/mp4" />
+        </video>
+        <div class="video-wash"></div>
+        <div class="hero-grid-lines"></div>
+      </div>
+
       <nav class="hero-nav" aria-label="Primary navigation">
         <a href="#top" class="hero-brand">
           <img src="/favicon.svg" alt="The Distinguished Daniel emblem" />
@@ -18,34 +26,17 @@ import Layout from "../layouts/layout.astro";
         </div>
       </nav>
 
-      <div class="hero-grid" id="top">
-        <div class="hero-copy">
-          <p class="eyebrow">The private network for Kingdom Ambassadors</p>
-          <h1 id="hero-title">Lead with<br /><em>distinction.</em></h1>
-          <p class="hero-description">
-            A carefully curated institute for forward-thinking leaders building
-            legacy, influence, and meaningful connection.
-          </p>
-          <div class="hero-actions">
-            <a href="#early-access" class="btn btn-primary">Request early access</a>
-            <a href="#principles" class="text-link">Discover the vision <span aria-hidden="true">↘</span></a>
-          </div>
-        </div>
-
-        <div class="hero-art" aria-hidden="true">
-          <div class="orbit orbit-one"></div>
-          <div class="orbit orbit-two"></div>
-          <div class="orbit orbit-three"></div>
-          <div class="hero-seal"><img src="/favicon.svg" alt="" /></div>
-          <span class="art-label art-label-top">Est. 2026</span>
-          <span class="art-label art-label-bottom">Network · Institute</span>
+      <div class="agent-hero-content" id="top">
+        <div class="agent-hero-copy">
+          <p class="agent-eyebrow"><span></span> Autonomous leadership for a distributed world</p>
+          <h1 id="hero-title">Distributed influence,<br />leaders that <span class="blur-word" aria-live="polite">lead</span></h1>
         </div>
       </div>
 
-      <div class="hero-footer">
-        <span>01 / 04</span>
-        <span>Scroll to explore</span>
-        <span class="hero-line"></span>
+      <div class="agent-stats" aria-label="Network statistics">
+        <div><strong>3500+</strong><span>ambassadors active</span></div>
+        <div><strong>99.7%</strong><span>network uptime</span></div>
+        <div><strong>&lt;50ms</strong><span>connection latency</span></div>
       </div>
     </section>
 
@@ -293,10 +284,24 @@ import Layout from "../layouts/layout.astro";
       position: relative;
       overflow: hidden;
       border-bottom: 1px solid rgba(243, 210, 122, 0.16);
-      background:
-        radial-gradient(circle at 82% 42%, rgba(144, 18, 30, 0.18), transparent 30%),
-        linear-gradient(135deg, rgba(29, 53, 87, 0.56), rgba(13, 13, 13, 0.15));
+      background: #050505;
     }
+
+    .hero-agent { isolation: isolate; }
+    .hero-video { position: absolute; inset: 0; z-index: -1; overflow: hidden; background: #050505; }
+    .hero-video video { width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0.72; }
+    .video-wash { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.82), rgba(0,0,0,.3) 58%, rgba(0,0,0,.35)), linear-gradient(180deg, rgba(0,0,0,.2), transparent 38%, rgba(0,0,0,.75)); }
+    .hero-grid-lines { position: absolute; inset: 0; opacity: .16; background-image: linear-gradient(rgba(255,255,255,.14) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.14) 1px, transparent 1px); background-size: 8.33% 12.5%; }
+    .agent-hero-content { position: relative; z-index: 1; width: 100%; max-width: 1400px; margin: auto; padding: clamp(5rem, 14vh, 10rem) 0 5rem; }
+    .agent-hero-copy { max-width: 900px; }
+    .agent-eyebrow { display: flex; align-items: center; gap: .75rem; margin: 0 0 2.2rem; color: rgba(255,255,255,.62); font: .72rem/1.2 monospace; letter-spacing: .04em; }
+    .agent-eyebrow span { width: 2rem; height: 1px; background: rgba(255,255,255,.45); }
+    .agent-hero-copy h1 { margin: 0; color: #fff; font-family: "Trajan Pro 3", serif; font-size: clamp(2.8rem, 7vw, 7.3rem); font-weight: 600; line-height: .92; letter-spacing: -.055em; }
+    .blur-word { display: inline-block; min-width: 4.4ch; color: #fff; transition: filter .5s ease, opacity .5s ease; }
+    .agent-stats { position: relative; z-index: 1; display: flex; gap: clamp(2rem, 6vw, 6rem); max-width: 1400px; width: 100%; margin: 0 auto; }
+    .agent-stats div { display: flex; flex-direction: column; gap: .35rem; }
+    .agent-stats strong { color: #fff; font: 600 clamp(1.6rem, 3vw, 2.7rem)/1 "Trajan Pro 3", serif; }
+    .agent-stats span { color: rgba(255,255,255,.5); font-size: .7rem; letter-spacing: .02em; }
 
     .hero::before {
       content: "";
@@ -782,15 +787,12 @@ import Layout from "../layouts/layout.astro";
 
       .hero { min-height: 720px; padding: 1.25rem 1.25rem 1.5rem; }
       .hero-links a:not(.nav-cta) { display: none; }
-      .hero-grid { grid-template-columns: 1fr; gap: 1rem; padding: 5rem 0 2rem; }
-      .hero h1 { font-size: clamp(3.5rem, 17vw, 6rem); }
-      .hero-description { font-size: 0.92rem; }
-      .hero-art { min-height: 245px; margin-top: -1rem; }
-      .orbit-one { width: 82vw; height: 55vw; }
-      .orbit-two { width: 68vw; height: 90vw; }
-      .orbit-three { width: 48vw; height: 48vw; }
-      .art-label-top { top: 3%; right: 4%; } .art-label-bottom { bottom: 3%; left: 4%; }
-      .hero-footer { font-size: 0.55rem; }
+      .agent-hero-content { padding: 5rem 0 7rem; }
+      .agent-hero-copy h1 { font-size: clamp(3.4rem, 16vw, 6rem); }
+      .agent-eyebrow { font-size: .62rem; }
+      .agent-stats { gap: 1.25rem; flex-wrap: wrap; }
+      .agent-stats strong { font-size: 1.55rem; }
+      .agent-stats span { font-size: .58rem; }
 
       .glass-panel {
         padding: 2.5rem 1.5rem;
@@ -850,6 +852,23 @@ import Layout from "../layouts/layout.astro";
   </style>
 
   <script>
+    // -- Hero word animation --
+    const rotatingWords = ["lead", "influence", "connect", "scale"];
+    const rotatingWord = document.querySelector(".blur-word");
+    let rotatingIndex = 0;
+    if (rotatingWord) {
+      setInterval(() => {
+        rotatingWord.style.filter = "blur(18px)";
+        rotatingWord.style.opacity = "0";
+        setTimeout(() => {
+          rotatingIndex = (rotatingIndex + 1) % rotatingWords.length;
+          rotatingWord.textContent = rotatingWords[rotatingIndex];
+          rotatingWord.style.filter = "blur(0)";
+          rotatingWord.style.opacity = "1";
+        }, 350);
+      }, 2500);
+    }
+
     // -- 1. Countdown Logic --
     const launchDate = new Date("October 3, 2026 00:00:00").getTime();
 
