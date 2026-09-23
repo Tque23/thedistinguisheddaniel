@@ -5,10 +5,54 @@ import Layout from "../layouts/layout.astro";
 
 <Layout title="The Distinguished Daniel Network and Institute | Early Access">
   <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <nav class="hero-nav" aria-label="Primary navigation">
+        <a href="#top" class="hero-brand">
+          <img src="/favicon.svg" alt="The Distinguished Daniel emblem" />
+          <span>The Distinguished<br />Daniel</span>
+        </a>
+        <div class="hero-links">
+          <a href="#principles">Principles</a>
+          <a href="#launch">Launch</a>
+          <a href="#early-access" class="nav-cta">Enter the circle</a>
+        </div>
+      </nav>
+
+      <div class="hero-grid" id="top">
+        <div class="hero-copy">
+          <p class="eyebrow">The private network for Kingdom Ambassadors</p>
+          <h1 id="hero-title">Lead with<br /><em>distinction.</em></h1>
+          <p class="hero-description">
+            A carefully curated institute for forward-thinking leaders building
+            legacy, influence, and meaningful connection.
+          </p>
+          <div class="hero-actions">
+            <a href="#early-access" class="btn btn-primary">Request early access</a>
+            <a href="#principles" class="text-link">Discover the vision <span aria-hidden="true">↘</span></a>
+          </div>
+        </div>
+
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="orbit orbit-three"></div>
+          <div class="hero-seal"><img src="/favicon.svg" alt="" /></div>
+          <span class="art-label art-label-top">Est. 2026</span>
+          <span class="art-label art-label-bottom">Network · Institute</span>
+        </div>
+      </div>
+
+      <div class="hero-footer">
+        <span>01 / 04</span>
+        <span>Scroll to explore</span>
+        <span class="hero-line"></span>
+      </div>
+    </section>
+
     <div class="bg-shape-1"></div>
     <div class="bg-shape-2"></div>
 
-    <div class="glass-panel">
+    <div class="glass-panel" id="early-access">
       <!-- Square Logo Placeholder -->
       <img src="/favicon.svg" alt="Institute Emblem" class="panel-logo" />
 
@@ -239,6 +283,60 @@ import Layout from "../layouts/layout.astro";
       font-style: normal;
       font-display: swap;
     }
+
+    .hero {
+      width: 100%;
+      min-height: min(760px, 100vh);
+      padding: 1.5rem clamp(1.25rem, 5vw, 5.5rem) 1.75rem;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(243, 210, 122, 0.16);
+      background:
+        radial-gradient(circle at 82% 42%, rgba(144, 18, 30, 0.18), transparent 30%),
+        linear-gradient(135deg, rgba(29, 53, 87, 0.56), rgba(13, 13, 13, 0.15));
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.18;
+      background-image: linear-gradient(rgba(243, 210, 122, 0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(243, 210, 122, 0.12) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+      pointer-events: none;
+    }
+
+    .hero-nav, .hero-grid, .hero-footer { position: relative; z-index: 1; }
+    .hero-nav { display: flex; align-items: center; justify-content: space-between; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.12); }
+    .hero-brand { display: inline-flex; align-items: center; gap: 0.7rem; color: var(--text-primary); text-decoration: none; text-transform: uppercase; font: 600 0.72rem/1.25 "Trajan Pro 3", serif; letter-spacing: 0.14em; }
+    .hero-brand img { width: 34px; height: 34px; object-fit: contain; }
+    .hero-links { display: flex; align-items: center; gap: clamp(1rem, 3vw, 3rem); }
+    .hero-links a, .hero-footer { color: var(--text-secondary); text-decoration: none; text-transform: uppercase; font-size: 0.62rem; letter-spacing: 0.18em; }
+    .hero-links a:hover, .text-link:hover { color: var(--accent-gold-end); }
+    .nav-cta { padding: 0.8rem 1rem; border: 1px solid rgba(243,210,122,0.35); color: var(--accent-gold-end) !important; }
+    .hero-grid { flex: 1; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr); align-items: center; gap: 3rem; padding: clamp(4rem, 11vh, 8rem) 0 3rem; }
+    .hero-copy { max-width: 630px; }
+    .eyebrow { color: var(--accent-gold-end); text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.22em; margin: 0 0 1.5rem; }
+    .hero h1 { max-width: 700px; margin: 0; color: var(--text-primary); font: 600 clamp(3.8rem, 9vw, 8.5rem)/0.88 "Trajan Pro 3", serif; letter-spacing: -0.06em; }
+    .hero h1 em { color: var(--accent-gold-end); font-style: normal; }
+    .hero-description { max-width: 390px; color: var(--text-secondary); font-size: 1rem; line-height: 1.7; margin: 2rem 0; }
+    .hero-actions { display: flex; align-items: center; gap: 1.75rem; flex-wrap: wrap; }
+    .text-link { color: var(--text-primary); text-decoration: none; font-size: 0.75rem; letter-spacing: 0.08em; transition: color 0.3s ease; }
+    .text-link span { color: var(--accent-gold-end); font-size: 1rem; margin-left: 0.35rem; }
+    .hero-art { min-height: 420px; position: relative; display: grid; place-items: center; }
+    .orbit { position: absolute; border: 1px solid rgba(243,210,122,0.25); border-radius: 50%; transform: rotate(-26deg); }
+    .orbit-one { width: min(38vw, 520px); height: min(28vw, 380px); }
+    .orbit-two { width: min(32vw, 430px); height: min(48vw, 610px); transform: rotate(38deg); border-color: rgba(144,18,30,0.55); }
+    .orbit-three { width: min(25vw, 330px); height: min(25vw, 330px); border-style: dashed; animation: spin 24s linear infinite; }
+    .hero-seal { width: clamp(120px, 15vw, 210px); aspect-ratio: 1; display: grid; place-items: center; border: 1px solid rgba(243,210,122,0.55); border-radius: 50%; background: radial-gradient(circle, rgba(144,18,30,0.45), rgba(13,13,13,0.65)); box-shadow: 0 0 80px rgba(144,18,30,0.25); }
+    .hero-seal img { width: 46%; filter: sepia(1) saturate(0.7) brightness(1.4); }
+    .art-label { position: absolute; color: rgba(255,255,255,0.55); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.2em; }
+    .art-label-top { top: 14%; right: 10%; } .art-label-bottom { bottom: 12%; left: 7%; }
+    .hero-footer { display: flex; align-items: center; gap: 1rem; } .hero-line { height: 1px; flex: 1; background: rgba(255,255,255,0.18); }
+    @keyframes spin { to { transform: rotate(334deg); } }
 
     main {
       flex: 1;
@@ -679,8 +777,20 @@ import Layout from "../layouts/layout.astro";
     /* Mobile Optimization */
     @media (max-width: 768px) {
       main {
-        padding: 1rem;
+        padding: 0;
       }
+
+      .hero { min-height: 720px; padding: 1.25rem 1.25rem 1.5rem; }
+      .hero-links a:not(.nav-cta) { display: none; }
+      .hero-grid { grid-template-columns: 1fr; gap: 1rem; padding: 5rem 0 2rem; }
+      .hero h1 { font-size: clamp(3.5rem, 17vw, 6rem); }
+      .hero-description { font-size: 0.92rem; }
+      .hero-art { min-height: 245px; margin-top: -1rem; }
+      .orbit-one { width: 82vw; height: 55vw; }
+      .orbit-two { width: 68vw; height: 90vw; }
+      .orbit-three { width: 48vw; height: 48vw; }
+      .art-label-top { top: 3%; right: 4%; } .art-label-bottom { bottom: 3%; left: 4%; }
+      .hero-footer { font-size: 0.55rem; }
 
       .glass-panel {
         padding: 2.5rem 1.5rem;
