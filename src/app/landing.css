@@ -1,0 +1,386 @@
+/* Custom Font Declarations */
+@font-face {
+  font-family: "Trajan Pro 3";
+  src: url("/fonts/Trajan Pro 3 Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Trajan Pro 3";
+  src: url("/fonts/Trajan Pro 3 Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.tdd {
+  --bg-primary: #0d0d0d;
+  --brand-navy: #1d3557;
+  --accent-gold-start: #c89b3c;
+  --accent-gold-end: #f3d27a;
+  --accent-burgundy: #90121e;
+  --text-primary: #f8f9fa;
+  --text-secondary: #c7c7c7;
+  --border-charcoal: #2a2a2a;
+
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: "Inter", "Source Sans Pro", system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tdd * {
+  box-sizing: border-box;
+}
+
+/* ---------------- HERO ---------------- */
+.hero {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--bg-primary);
+  isolation: isolate;
+}
+
+/* Top Section encapsulating Video, Copy, Stats, and Countdown */
+.hero-top-section {
+  width: 100%;
+  min-height: min(760px, 100vh);
+  padding: 1.5rem clamp(1.25rem, 5vw, 5.5rem) 2.5rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: #050505;
+}
+
+/* Fade Overlay covering the bottom of the video only */
+.hero-top-section::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 180px;
+  max-height: 35%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(13, 13, 13, 0) 0%,
+    rgba(13, 13, 13, 0.65) 55%,
+    var(--bg-primary) 100%
+  );
+}
+
+.hero-top-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  background-image: linear-gradient(rgba(243, 210, 122, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(243, 210, 122, 0.12) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, black, transparent 80%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #050505;
+}
+
+.hero-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.72;
+}
+
+.video-wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.3) 58%, rgba(0, 0, 0, 0.35)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.2), transparent 38%, rgba(0, 0, 0, 0.75));
+}
+
+.hero-grid-lines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.16;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-size: 8.33% 12.5%;
+}
+
+.hero-nav {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hero-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  text-transform: uppercase;
+  font: 600 0.72rem/1.25 "Trajan Pro 3", serif;
+  letter-spacing: 0.14em;
+}
+
+.hero-brand img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.hero-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 3rem);
+}
+
+.hero-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  transition: color 0.3s ease;
+}
+
+.hero-links a:hover {
+  color: var(--accent-gold-end);
+}
+
+.nav-cta {
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(243, 210, 122, 0.35);
+  color: var(--accent-gold-end) !important;
+}
+
+.agent-hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1400px;
+  margin: auto auto 0;
+  padding: clamp(4rem, 10vh, 8rem) 0 0;
+}
+
+.agent-hero-copy {
+  max-width: 900px;
+}
+
+.agent-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 2.2rem;
+  color: rgba(255, 255, 255, 0.62);
+  font: 0.72rem/1.2 monospace;
+  letter-spacing: 0.04em;
+}
+
+.agent-eyebrow span {
+  width: 2rem;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.agent-hero-copy h1 {
+  margin: 0;
+  color: #fff;
+  font-family: "Trajan Pro 3", serif;
+  font-size: clamp(1.96rem, 4.9vw, 5.11rem);
+  font-weight: 600;
+  line-height: 0.92;
+  letter-spacing: -0.055em;
+}
+
+.blur-word {
+  display: inline-block;
+  min-width: 4.4ch;
+  color: var(--accent-gold-end);
+  transition: filter 0.5s ease, opacity 0.5s ease;
+}
+
+/* ---------------- HERO BOTTOM ROW ---------------- */
+.hero-bottom {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.agent-stats {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding-bottom: 0.5rem;
+}
+
+.agent-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.agent-stats strong {
+  color: #fff;
+  font: 600 clamp(1.6rem, 3vw, 2.7rem)/1 "Trajan Pro 3", serif;
+}
+
+.agent-stats span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+}
+
+/* Container for Lecture Library Showcase */
+.hero-showcase-container {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  background: var(--bg-primary);
+}
+
+/* ---------------- OFFICIAL LAUNCH WIDGET ---------------- */
+.launch-section {
+  position: relative;
+  z-index: 1;
+  width: auto;
+  max-width: 460px;
+  text-align: right;
+  padding: 0 2rem 8px;
+  margin-left: auto;
+}
+
+.launch-eyebrow {
+  font-family: "Trajan Pro 3", serif;
+  font-weight: 400;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  color: var(--accent-gold-end);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.launch-date {
+  font-family: "Trajan Pro 3", serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+}
+
+#countdown {
+  display: flex;
+  justify-content: flex-end;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  flex-wrap: wrap;
+}
+
+.time-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 52px;
+}
+
+.time-value {
+  font-size: clamp(1.8rem, 3.5vw, 2.2rem);
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--accent-gold-start), var(--accent-gold-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+
+.time-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 1.5px;
+  margin-top: 0.4rem;
+}
+
+/* ---------------- RESPONSIVE STYLES ---------------- */
+@media (min-width: 992px) {
+  .hero-top-section {
+    min-height: min(800px, 100vh);
+  }
+  .hero-video video {
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+@media (max-width: 991px) {
+  .hero-top-section {
+    min-height: auto;
+    padding-bottom: 3.5rem;
+  }
+  .hero-video video {
+    object-fit: cover;
+    object-position: center;
+  }
+  .hero-bottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2rem;
+  }
+  .launch-section {
+    max-width: 100%;
+    text-align: center;
+    margin-left: 0;
+  }
+  #countdown {
+    justify-content: center;
+  }
+  .time-box {
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-links .desktop-only {
+    display: none;
+  }
+  .agent-stats {
+    gap: 2rem;
+    justify-content: center;
+  }
+  .launch-section {
+    padding: 1.75rem 1.25rem 2rem;
+  }
+}
