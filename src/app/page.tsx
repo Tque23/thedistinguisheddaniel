@@ -5,7 +5,6 @@ import { Footer } from "@/components/footer"
 import { FacultySection } from "@/components/board"
 import { TimeMachineRolodex } from "@/components/time-machine-rolodex"
 import { PhilosophySection } from "@/components/philosophy-section";
-import { FeaturedProductsSection } from "@/components/featured-products-section";
 
 export default function Page() {
   return (
@@ -23,7 +22,6 @@ export default function Page() {
         <div className="separator-line line-bottom"></div>
       </div>
       <PhilosophySection />
-      <FeaturedProductsSection />
       <Footer />
     </div>
   )
