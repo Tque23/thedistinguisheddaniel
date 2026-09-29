@@ -4,7 +4,9 @@ dist/
 .vercel/
 
 # generated types
-.astro/
+# Next.js
+/.next/
+/out/
 
 # dependencies
 node_modules/
