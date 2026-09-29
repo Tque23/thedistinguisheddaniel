@@ -256,3 +256,41 @@ footer {
     margin: 0 auto;
   }
 }
+
+@layer components {
+  /* Common styles for both sets */
+  .separator-base {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    background-color: #e8ecef;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .separator-line {
+    width: 100%;
+    background-color: #90121e;
+  }
+
+  /* Set 1: Thick top, thin bottom */
+  .separator-set-1 .line-top {
+    height: 3px;
+    margin-bottom: 8px; /* space between lines */
+  }
+  .separator-set-1 .line-bottom {
+    height: 1px;
+  }
+
+  /* Set 2: Thin top, thick bottom */
+  .separator-set-2 .line-top {
+    height: 1px;
+    margin-bottom: 8px; /* space between lines */
+  }
+  .separator-set-2 .line-bottom {
+    height: 3px;
+  }
+}

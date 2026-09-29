@@ -139,8 +139,6 @@ export function Hero() {
           <OfficialLaunch />
         </div>
       </div>
-
-      {/* 2. Lecture Library Showcase Section (Positioned below the video fade) */}
       <div className="hero-showcase-container">
         <LectureLibraryShowcase />
       </div>
