@@ -13,7 +13,6 @@ interface Card {
   dateLabel: string
   image: string
 }
-
 const cards: Card[] = [
   {
     id: 1,
