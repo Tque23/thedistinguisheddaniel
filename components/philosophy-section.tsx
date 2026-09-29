@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
+import { NewsletterForm } from "@/components/newsletter-form";
 
 const titles = [
   "Sustainable Architecture.",
@@ -9,125 +9,88 @@ const titles = [
   "Eco-Responsible.",
 ];
 
+const description =
+  "A design home that combines contemporary aesthetics and energy performance. Built with eco-friendly materials, it minimizes carbon footprint while offering optimal comfort.";
+
+const words = description.split(" ");
+
+// Portion of the pinned scroll spent rotating titles; the rest reveals the words.
+const TITLE_PHASE = 0.45;
+
 export function PhilosophySection() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const descriptionRef = useRef<HTMLDivElement>(null);
-  const [titleOpacity, setTitleOpacity] = useState(0);
-  const [descriptionProgress, setDescriptionProgress] = useState(0);
-  const rafRef = useRef<number | null>(null);
-
-  const updateTransforms = useCallback(() => {
-    if (!sectionRef.current) return;
-    
-    const rect = sectionRef.current.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
-    const sectionHeight = sectionRef.current.offsetHeight;
-    
-    // Calculate progress based on scroll position
-    const scrollableRange = sectionHeight - windowHeight;
-    const scrolled = -rect.top;
-    const progress = Math.max(0, Math.min(1, scrolled / scrollableRange));
-    
-    // Title rotates through 3 texts based on scroll progress
-    setTitleOpacity(progress);
-
-    // Description word animation
-    if (descriptionRef.current) {
-      const descRect = descriptionRef.current.getBoundingClientRect();
-      const descTop = descRect.top;
-      const descHeight = descRect.height;
-      
-      // Start animation when element enters viewport
-      const startTrigger = windowHeight * 0.8;
-      const endTrigger = windowHeight * 0.2;
-      
-      if (descTop < startTrigger && descTop > endTrigger - descHeight) {
-        const descProgress = Math.max(0, Math.min(1, (startTrigger - descTop) / (startTrigger - endTrigger)));
-        setDescriptionProgress(descProgress);
-      }
-    }
-  }, []);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      // Cancel any pending animation frame
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-      
-      // Use requestAnimationFrame for smooth updates
-      rafRef.current = requestAnimationFrame(updateTransforms);
+    let raf: number | null = null;
+
+    const update = () => {
+      const el = sectionRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const scrollable = el.offsetHeight - window.innerHeight;
+      const next = scrollable > 0 ? Math.max(0, Math.min(1, -rect.top / scrollable)) : 1;
+      setProgress(next);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    updateTransforms();
-    
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
+    const onScroll = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
     };
-  }, [updateTransforms]);
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  const titleProgress = Math.min(1, progress / TITLE_PHASE);
+  const wordProgress = Math.max(0, (progress - TITLE_PHASE) / (1 - TITLE_PHASE));
+  const segmentSize = 1 / titles.length;
 
   return (
-    <section id="products" className="bg-background">
-      {/* Scroll-Animated Product Grid */}
-      <div ref={sectionRef} className="relative" style={{ height: "200vh" }}>
-        <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
-          <div className="relative w-full max-w-7xl px-4">
-            {/* Title - centered with 3D rotation */}
-            <div 
-              className="flex items-center justify-center pointer-events-none"
-              style={{ 
-                perspective: '1000px',
-              }}
-            >
-              <div className="relative w-full" style={{ transformStyle: 'preserve-3d', minHeight: '150px' }}>
+    <section id="products" className="bg-[#071520] text-white">
+      {/* Tall scroll track; the inner sticky panel pins the page while content animates */}
+      <div ref={sectionRef} className="relative" style={{ height: "400vh" }}>
+        <div className="sticky top-0 flex h-screen flex-col items-center justify-center overflow-hidden">
+          <div className="flex w-full max-w-7xl flex-col items-center gap-10 section-px md:gap-14">
+            <div className="w-full" style={{ perspective: "1000px" }}>
+              <div
+                className="relative w-full"
+                style={{ transformStyle: "preserve-3d", minHeight: "clamp(80px, 12vw, 150px)" }}
+              >
                 {titles.map((title, index) => {
-                  // Last text "Built to last" stays visible at the end
-                  const isLastText = index === titles.length - 1;
-                  
-                  // Calculate which text should be visible based on scroll progress
-                  const segmentSize = 1 / titles.length;
-                  const startProgress = index * segmentSize;
-                  const endProgress = (index + 1) * segmentSize;
-                  
-                  let rotateX = 0;
+                  const isLast = index === titles.length - 1;
+                  const start = index * segmentSize;
+                  const end = (index + 1) * segmentSize;
+
+                  let rotateX = 90;
                   let opacity = 0;
-                  
-                  if (titleOpacity >= startProgress && titleOpacity < endProgress) {
-                    // Active text - rotating in
-                    const localProgress = (titleOpacity - startProgress) / segmentSize;
-                    rotateX = (1 - localProgress) * 90;
-                    opacity = localProgress;
-                  } else if (titleOpacity >= endProgress) {
-                    // Text that has passed - last text stays visible
-                    if (isLastText) {
-                      rotateX = 0;
-                      opacity = 1;
-                    } else {
-                      rotateX = -90;
-                      opacity = 0;
-                    }
-                  } else {
-                    // Text that hasn't appeared yet
-                    rotateX = 90;
-                    opacity = 0;
+
+                  if (titleProgress >= start && titleProgress < end) {
+                    const local = (titleProgress - start) / segmentSize;
+                    rotateX = (1 - local) * 90;
+                    opacity = local;
+                  } else if (titleProgress >= end) {
+                    rotateX = isLast ? 0 : -90;
+                    opacity = isLast ? 1 : 0;
                   }
-                  
+
                   return (
-                    <h2 
-                      key={index}
-                      className="absolute inset-0 flex items-center justify-center text-[8vw] sm:text-[7vw] font-medium leading-tight tracking-tighter text-foreground md:text-[6vw] lg:text-[5vw] text-center px-4"
+                    <h2
+                      key={title}
+                      aria-hidden={opacity < 0.5}
+                      className="pointer-events-none absolute inset-0 flex items-center justify-center text-center font-serif text-[9vw] font-normal leading-tight tracking-tight text-white sm:text-[7vw] md:text-[6vw] lg:text-[5vw]"
                       style={{
                         transform: `rotateX(${rotateX}deg) translateZ(0)`,
                         opacity,
-                        transformStyle: 'preserve-3d',
-                        backfaceVisibility: 'hidden',
-                        WebkitBackfaceVisibility: 'hidden',
-                        willChange: 'transform, opacity',
-                        WebkitFontSmoothing: 'antialiased',
+                        backfaceVisibility: "hidden",
+                        WebkitBackfaceVisibility: "hidden",
+                        willChange: "transform, opacity",
                       }}
                     >
                       {title}
@@ -136,36 +99,30 @@ export function PhilosophySection() {
                 })}
               </div>
             </div>
+
+            <p className="max-w-4xl text-center text-xl leading-relaxed text-white/80 md:text-3xl">
+              {words.map((word, index) => {
+                const p = Math.max(0, Math.min(1, wordProgress * words.length - index));
+                return (
+                  <span
+                    key={index}
+                    style={{
+                      opacity: 0.08 + p * 0.92,
+                      filter: `blur(${(1 - p) * 12}px)`,
+                      transition: "opacity 0.2s ease, filter 0.2s ease",
+                    }}
+                  >
+                    {word}
+                    {index < words.length - 1 ? " " : ""}
+                  </span>
+                );
+              })}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Description */}
-      <div ref={descriptionRef} className="px-6 pt-8 pb-20 md:px-12 md:pt-12 md:pb-28 lg:px-20 lg:pt-16 lg:pb-36">
-        <div className="text-center">
-          
-          <p className="mt-8 leading-relaxed text-muted-foreground text-3xl text-center">
-            {("A design home that combines contemporary aesthetics and energy performance. Built with eco-friendly materials, it minimizes carbon footprint while offering optimal comfort.").split(" ").map((word, index, array) => {
-              const wordProgress = Math.max(0, Math.min(1, (descriptionProgress * array.length) - index));
-              const opacity = wordProgress;
-              const blur = (1 - wordProgress) * 40;
-              
-              return (
-                <span
-                  key={index}
-                  style={{
-                    opacity,
-                    filter: `blur(${blur}px)`,
-                    transition: 'opacity 0.3s ease, filter 0.3s ease',
-                  }}
-                >
-                  {word}{index < array.length - 1 ? " " : ""}
-                </span>
-              );
-            })}
-          </p>
-        </div>
-      </div>
+      <NewsletterForm />
     </section>
   );
 }

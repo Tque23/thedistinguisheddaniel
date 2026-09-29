@@ -14,23 +14,23 @@ interface FacultyMember {
 const facultyData: FacultyMember[] = [
   {
     id: 1,
-    name: "Dr. Stephen R. C. Hicks",
+    name: "Apostle K. Zungu",
     bio: "An eminent Professor of Philosophy and Senior Scholar at The Atlas Society...",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+    image: "/ApostleK.jpg",
     profileUrl: "#",
   },
   {
     id: 2,
-    name: "Max Lugavere",
+    name: "Mr Lindelwa Zungu",
     bio: "Acclaimed health and wellness expert, researcher, and filmmaker...",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+    image: "/Lindelwa.jpeg",
     profileUrl: "#",
   },
   {
     id: 3,
-    name: "Dr. Heather Heying",
+    name: "Mr Lungelo Gwala",
     bio: "Distinguished evolutionary biologist and educator, has conducted extensive research...",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop",
+    image: "/Lungelo.jpeg",
     profileUrl: "#",
   },
   {
@@ -63,7 +63,7 @@ const facultyData: FacultyMember[] = [
   },
 ];
 
-const TOTAL_DOTS = 3;
+const TOTAL_DOTS = 5;
 
 export function FacultySection() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -105,7 +105,7 @@ export function FacultySection() {
   };
 
   return (
-    <section className="bg-[#E8ECEF] min-h-screen py-16 px-6 md:px-12 font-sans text-[#1A202C]">
+    <section className="bg-[#E8ECEF] min-h-screen py-16 section-px font-sans text-[#1A202C]">
       <div className="max-w-7xl mx-auto">
         {/* Top Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
@@ -120,10 +120,7 @@ export function FacultySection() {
 
           {/* University Crest Logos Placeholder */}
           <div className="flex items-center space-x-4 opacity-40 grayscale">
-            <CrestIcon symbol="OX" />
-            <CrestIcon symbol="CAM" />
-            <CrestIcon symbol="HAR" />
-            <CrestIcon symbol="STAN" />
+            <CrestIcon />
           </div>
         </div>
 
@@ -138,7 +135,7 @@ export function FacultySection() {
         <div
           ref={sliderRef}
           onScroll={handleScroll}
-          className="flex overflow-x-auto gap-4 snap-x snap-mandatory scroll-smooth pb-6 -mx-6 px-6 md:-mx-12 md:px-12 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+          className="flex overflow-x-auto gap-4 snap-x snap-mandatory scroll-smooth pb-6 -mx-[var(--section-px)] px-[var(--section-px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
         >
           {facultyData.map((member) => (
             <div
@@ -164,12 +161,6 @@ export function FacultySection() {
                 <p className="text-xs text-gray-300 font-light line-clamp-3 mb-4 leading-relaxed">
                   {member.bio}
                 </p>
-                <a
-                  href={member.profileUrl}
-                  className="inline-block text-[11px] font-medium tracking-wider uppercase underline underline-offset-4 decoration-white/60 hover:decoration-white transition-colors"
-                >
-                  VIEW PROFILE
-                </a>
               </div>
             </div>
           ))}
@@ -196,10 +187,14 @@ export function FacultySection() {
 }
 
 {/* Simple Crest SVG Placeholder */}
-function CrestIcon({ symbol }: { symbol: string }) {
+function CrestIcon() {
   return (
-    <div className="w-10 h-10 border-2 border-slate-700 rounded-md flex items-center justify-center font-serif text-[10px] font-bold tracking-tighter text-slate-800">
-      {symbol}
-    </div>
+    <Image
+      src="/TDDCrest.svg"
+      alt="TDD Crest"
+      width={40}
+      height={40}
+      className="w-10 h-10 object-contain"
+    />
   );
 }

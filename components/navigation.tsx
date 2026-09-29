@@ -44,7 +44,7 @@ export function Navigation() {
           </p>
           <a
             href="/#Earlyaccess"
-            className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-red-600 transition-colors hover:bg-white/90"
+            className="rounded-full bg-gradient-to-r from-[#c89b3c] to-[#f3d27a] px-3 py-1 text-xs font-semibold text-[#1a1200] transition-opacity hover:opacity-90"
           >
             Sign up now
           </a>
@@ -53,7 +53,7 @@ export function Navigation() {
 
       {/* 2. Mobile Blurred Background with Bottom Gradient Fade */}
       <div
-        className="md:hidden fixed top-0 left-0 right-0 h-32 pointer-events-none z-30 bg-background/80 backdrop-blur-xl [mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)]"
+        className="md:hidden fixed top-0 left-0 right-0 h-32 pointer-events-none z-30 bg-[#071520]/80 backdrop-blur-xl [mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)]"
       />
 
       {/* 3. Navigation Header (z-[70] keeps it above announcement bar) */}
@@ -67,7 +67,7 @@ export function Navigation() {
         <nav
           className={`mx-auto transition-all duration-500 ${
             isScrolled || isMobileMenuOpen
-              ? "bg-background/80 backdrop-blur-xl border border-foreground/10 rounded-2xl shadow-lg max-w-[1200px]"
+              ? "bg-[#071520]/80 backdrop-blur-xl border border-foreground/10 rounded-2xl shadow-lg max-w-[1200px]"
               : "bg-transparent max-w-[1400px]"
           }`}
         >
@@ -150,7 +150,7 @@ export function Navigation() {
 
       {/* 4. Full-Screen Mobile Menu Overlay (Moved to top level fragment at z-[50]) */}
       <div
-        className={`md:hidden fixed inset-0 bg-background z-[50] transition-all duration-500 ${
+        className={`md:hidden fixed inset-0 bg-[#071520] z-[50] transition-all duration-500 ${
           isMobileMenuOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"

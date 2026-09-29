@@ -168,7 +168,7 @@ export function LectureLibraryShowcase() {
 
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-800/80 pb-4">
-          <h2 className="text-base sm:text-4xl lg:text-4xl font-serif font-light tracking-tight text-white">
+          <h2 className="font-serif text-4xl md:text-5xl font-normal text-white tracking-tight mb-3">
             Countless Hours of Powerful Lectures.
           </h2>
 

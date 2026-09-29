@@ -164,7 +164,7 @@
 }
 
 :root {
-  --bg-primary: #0d0d0d;
+  --bg-primary: #071520;
   --text-primary: #f8f9fa;
   --text-secondary: #c7c7c7;
   --border-charcoal: #2a2a2a;
@@ -175,7 +175,7 @@ footer {
   background-color: var(--bg-primary);
   border-top: 1px solid var(--border-charcoal);
   color: var(--text-secondary);
-  padding: 4rem 3rem 2rem;
+  padding: 4rem clamp(1.25rem, 5vw, 5.5rem) 2rem;
   position: relative;
   z-index: 10;
   
@@ -239,7 +239,7 @@ footer {
 
 @media (max-width: 768px) {
   footer {
-    padding: 3rem 1.5rem 1.5rem;
+    padding: 3rem clamp(1.25rem, 5vw, 5.5rem) 1.5rem;
   }
 
   .footer-container {
@@ -266,14 +266,14 @@ footer {
     right: 50%;
     margin-left: -50vw;
     margin-right: -50vw;
-    background-color: #e8ecef;
+    background-color: #E8ECEF;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
   }
 
   .separator-line {
     width: 100%;
-    background-color: #90121e;
+    background-color: #071520;
   }
 
   /* Set 1: Thick top, thin bottom */

@@ -97,7 +97,6 @@ export function Hero() {
         {/* Main Hero Content */}
         <div className="agent-hero-content">
           <div className="agent-hero-copy">
-            <br />
             <h1 id="hero-title">
               ...Daniel
               <br />
