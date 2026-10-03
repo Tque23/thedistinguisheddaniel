@@ -851,7 +851,18 @@ import Layout from "../layouts/layout.astro";
     }
   </style>
 
-  <script>
+  <script
+    define:vars={{
+      supabaseUrl: import.meta.env.SUPABASE_URL,
+      supabaseKey:
+        import.meta.env.SUPABASE_PUBLISHABLE_KEY || import.meta.env.SUPABASE_ANON_KEY,
+    }}
+  >
+    import { createClient } from "@supabase/supabase-js";
+
+    const supabase =
+      supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+
     // -- Hero word animation --
     const rotatingWords = ["lead", "influence", "connect", "scale"];
     const rotatingWord = document.querySelector(".blur-word");
@@ -921,11 +932,6 @@ import Layout from "../layouts/layout.astro";
       const closeSuccessPopupIcon = document.getElementById(
         "closeSuccessPopupIcon",
       );
-
-      // Pulls from Vercel environment variables securely, falling back to the hardcoded URL if not yet set
-      const GOOGLE_API_URL =
-        import.meta.env.PUBLIC_GOOGLE_API_URL ||
-        "https://script.google.com/macros/s/AKfycbys6hUSU-zPewgXmP5YNcQGizJJL1zu-sR8XjA7YZeP31P4y3Da8Ol6GzTZO7kzqtq5rg/exec";
 
       // Unified function to open the modal
       const openModal = (e?: Event) => {
@@ -1027,24 +1033,6 @@ import Layout from "../layouts/layout.astro";
               ) as HTMLInputElement | null
             )?.value ?? "";
 
-          const now = new Date();
-          const projectDate = now.toLocaleDateString("en-GB");
-          const time = now.toLocaleTimeString("en-US", { hour12: false });
-
-          const payload = {
-            action: "signup",
-            Name: name,
-            Contact: email,
-            Phone: phone,
-            Company: company,
-            Website: website,
-            WhatsApp: whatsapp,
-            ProjectType: projectType,
-            ProjectDate: projectDate,
-            Time: time,
-            Completion: "New",
-          };
-
           const submitBtnText = signupForm.querySelector(
             ".btn-text",
           ) as HTMLElement | null;
@@ -1052,17 +1040,24 @@ import Layout from "../layouts/layout.astro";
           if (submitBtnText) submitBtnText.innerText = "Submitting...";
 
           try {
-            const response = await fetch(GOOGLE_API_URL, {
-              method: "POST",
-              body: JSON.stringify(payload),
-              headers: { "Content-Type": "text/plain;charset=utf-8" },
+            if (!supabase) {
+              throw new Error("Supabase is not configured");
+            }
+
+            const { error } = await supabase.from("early_access_signups").insert({
+              full_name: name.trim(),
+              email: email.trim().toLowerCase(),
+              phone: phone.trim() || null,
+              whatsapp: whatsapp === "Yes",
+              company: company.trim() || null,
+              interest: projectType,
             });
 
-            const data = await response.json();
+            if (error) throw error;
 
             signupModal?.classList.remove("show");
 
-            if (data.success) {
+            if (!error) {
               if (popupIconContainer) {
                 popupIconContainer.innerHTML = "✅";
                 popupIconContainer.style.color = "var(--accent-gold-start)";
