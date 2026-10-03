@@ -150,20 +150,20 @@ export function TimeMachineRolodex() {
 
           <div className="flex items-center gap-1 rounded-lg border border-neutral-200 bg-white/80 p-1 shadow-sm backdrop-blur-sm">
             <button
-              aria-label="Stack view"
-              aria-pressed={viewMode === "stack"}
-              className={`rounded-md p-2 transition-colors ${viewMode === "stack" ? "bg-neutral-100" : "hover:bg-neutral-100"}`}
-              onClick={() => setViewMode("stack")}
-            >
-              <Archive className="h-5 w-5 text-neutral-700" />
-            </button>
-            <button
               aria-label="List view"
               aria-pressed={viewMode === "list"}
               className={`rounded-md p-2 transition-colors ${viewMode === "list" ? "bg-neutral-100" : "hover:bg-neutral-100"}`}
               onClick={() => setViewMode("list")}
             >
               <Menu className="h-5 w-5 text-neutral-700" />
+            </button>            
+            <button
+              aria-label="Stack view"
+              aria-pressed={viewMode === "stack"}
+              className={`rounded-md p-2 transition-colors ${viewMode === "stack" ? "bg-neutral-100" : "hover:bg-neutral-100"}`}
+              onClick={() => setViewMode("stack")}
+            >
+              <Archive className="h-5 w-5 text-neutral-700" />
             </button>
           </div>
         </div>
