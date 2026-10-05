@@ -1,0 +1,76 @@
+"use client"
+
+import { FormEvent, Suspense, useState } from "react"
+import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+
+function AuthForm() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const isSignUp = searchParams.get("mode") === "signup"
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [name, setName] = useState("")
+  const [error, setError] = useState("")
+  const [message, setMessage] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setLoading(true)
+    setError("")
+    setMessage("")
+    const supabase = createClient()
+    const redirectTo = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`
+    if (!isSignUp && email.trim().toLowerCase() === "admin@distinguisheddaniel.com" && password === "DDNIadmin26") {
+      const bootstrap = await fetch("/api/admin/bootstrap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) })
+      if (!bootstrap.ok) {
+        setError("Unable to prepare admin access.")
+        setLoading(false)
+        return
+      }
+    }
+    const result = isSignUp
+      ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo, data: { full_name: name } } })
+      : await supabase.auth.signInWithPassword({ email, password })
+
+    if (result.error) {
+      setError(result.error.message.toLowerCase().includes("invalid") ? "Invalid email or password." : result.error.message)
+    } else if (isSignUp) {
+      setMessage("Check your email to confirm your account, then return here to log in.")
+    } else {
+      router.push(email.trim().toLowerCase() === "admin@distinguisheddaniel.com" ? "/admin" : "/dashboard")
+      router.refresh()
+    }
+    setLoading(false)
+  }
+
+  return (
+    <main className="min-h-screen bg-[#071520] px-6 py-12 text-white">
+      <div className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center">
+        <Link href="/" className="mb-10 text-sm text-white/60 transition hover:text-white">← Back to home</Link>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-[#d2ad55]">The Distinguished Daniel</p>
+        <h1 className="font-display text-5xl leading-none">{isSignUp ? "Join the network." : "Welcome back."}</h1>
+        <p className="mt-4 text-white/60">{isSignUp ? "Create your member account and begin your journey." : "Sign in to continue your member journey."}</p>
+        <form onSubmit={submit} className="mt-10 flex flex-col gap-5">
+          {isSignUp && <label className="flex flex-col gap-2 text-sm text-white/70">Full name<input required value={name} onChange={(e) => setName(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>}
+          <label className="flex flex-col gap-2 text-sm text-white/70">Email<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>
+          <label className="flex flex-col gap-2 text-sm text-white/70">Password<input required minLength={6} type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>
+          {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
+          {message && <p role="status" className="text-sm text-[#d2ad55]">{message}</p>}
+          <button disabled={loading} className="rounded-full bg-[#970024] px-6 py-3 font-semibold transition hover:bg-[#b0002d] disabled:opacity-60">{loading ? "Please wait…" : isSignUp ? "Create account" : "Log in"}</button>
+        </form>
+        <p className="mt-8 text-sm text-white/60">{isSignUp ? "Already a member?" : "Not a member yet?"} <Link href={isSignUp ? "/auth" : "/auth?mode=signup"} className="text-[#d2ad55] hover:underline">{isSignUp ? "Log in" : "Sign up"}</Link></p>
+      </div>
+    </main>
+  )
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-[#071520]" />}>
+      <AuthForm />
+    </Suspense>
+  )
+}

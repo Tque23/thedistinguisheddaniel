@@ -1,0 +1,87 @@
+/* The Distinguished Daniel — Member Dashboard theme
+   Reuses the brand palette from landing.css (.tdd) and maps it onto the
+   shadcn/ui semantic tokens so every dashboard component inherits the
+   brand's navy/gold/burgundy identity automatically. */
+
+.tdd-dashboard {
+  color-scheme: dark;
+
+  --background: #071520;
+  --foreground: #f8f9fa;
+
+  --card: #0c1e2c;
+  --card-foreground: #f8f9fa;
+
+  --popover: #0e2233;
+  --popover-foreground: #f8f9fa;
+
+  --primary: #dcb567;
+  --primary-foreground: #1a1200;
+
+  --secondary: #1d3557;
+  --secondary-foreground: #f8f9fa;
+
+  --muted: #0e2233;
+  --muted-foreground: #a9b4bd;
+
+  --accent: #132c40;
+  --accent-foreground: #f3d27a;
+
+  --destructive: #c4283a;
+  --destructive-foreground: #f8f9fa;
+
+  --burgundy: #970024;
+  --burgundy-foreground: #f8f9fa;
+
+  --border: #1c2e3d;
+  --input: #1c2e3d;
+  --ring: #f3d27a;
+
+  --sidebar: #050f18;
+  --sidebar-foreground: #f8f9fa;
+  --sidebar-primary: #dcb567;
+  --sidebar-primary-foreground: #1a1200;
+  --sidebar-accent: #101f2c;
+  --sidebar-accent-foreground: #f3d27a;
+  --sidebar-border: #1c2e3d;
+  --sidebar-ring: #f3d27a;
+
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Inter", "Source Sans Pro", system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+.tdd-dashboard .font-display {
+  font-family: "Trajan Pro 3", serif;
+}
+
+.tdd-dashboard .text-gold {
+  background: linear-gradient(90deg, #c89b3c, #f3d27a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.tdd-dashboard .btn-gold {
+  background: linear-gradient(90deg, #c89b3c, #f3d27a) !important;
+  color: #1a1200 !important;
+  border-color: transparent !important;
+  transition: opacity 0.3s ease;
+}
+
+.tdd-dashboard .btn-gold:hover {
+  opacity: 0.88;
+}
+
+.tdd-dashboard .bg-burgundy {
+  background-color: var(--burgundy);
+}
+
+.tdd-dashboard .text-burgundy {
+  color: var(--burgundy);
+}
+
+.tdd-dashboard .border-burgundy {
+  border-color: var(--burgundy);
+}
