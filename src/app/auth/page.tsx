@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, Suspense, useState } from "react"
+import { FormEvent, Suspense, useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -13,6 +13,14 @@ function AuthForm() {
   const isReset = mode === "reset"
   const isForgot = mode === "forgot"
   const [email, setEmail] = useState("")
+
+  useEffect(() => {
+    if (mode === "reset" || typeof window === "undefined") return
+    const hash = new URLSearchParams(window.location.hash.slice(1))
+    if (hash.get("type") === "recovery" || hash.has("access_token")) {
+      router.replace("/auth?mode=reset")
+    }
+  }, [mode, router])
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
   const [error, setError] = useState("")
@@ -48,8 +56,10 @@ function AuthForm() {
       }
     }
     if (isForgot) {
+      const recoveryUrl = new URL(redirectTo)
+      recoveryUrl.searchParams.set("next", "/auth?mode=reset")
       const result = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${redirectTo}?next=${encodeURIComponent("/auth?mode=reset")}`,
+        redirectTo: recoveryUrl.toString(),
       })
       if (result.error) {
         setError("Unable to send a reset email. Please check your email and try again.")
@@ -84,7 +94,7 @@ function AuthForm() {
         <p className="mt-4 text-white/60">{isSignUp ? "Create your member account and begin your journey." : isForgot ? "Enter your email and we'll send you a secure reset link." : isReset ? "Enter a new password for your account." : "Sign in to continue your member journey."}</p>
         <form onSubmit={submit} className="mt-10 flex flex-col gap-5">
           {isSignUp && <label className="flex flex-col gap-2 text-sm text-white/70">Full name<input required value={name} onChange={(e) => setName(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>}
-          <label className="flex flex-col gap-2 text-sm text-white/70">Email<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>
+          {!isReset && <label className="flex flex-col gap-2 text-sm text-white/70">Email<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>}
           {!isForgot && <label className="flex flex-col gap-2 text-sm text-white/70">{isReset ? "New password" : "Password"}<input required minLength={6} type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>}
           {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
           {message && <p role="status" className="text-sm text-[#d2ad55]">{message}</p>}
