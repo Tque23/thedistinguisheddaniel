@@ -33,15 +33,10 @@ function AuthForm() {
     setError("")
     setMessage("")
     const supabase = createClient()
-    // Production auth emails must never use the local development origin.
-    // The v0 redirect proxy remains available only for the embedded preview.
-    const configuredRedirect = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL
-    const isLocalPreview = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    // Auth emails must always return to the public production site. Using the
+    // browser origin here can cause preview/local URLs to be embedded in emails.
     const productionOrigin = "https://distinguisheddaniel.com"
-    const redirectBase = isLocalPreview && configuredRedirect
-      ? configuredRedirect.replace(/\/$/, "")
-      : productionOrigin
-    const redirectTo = `${redirectBase}/auth/callback`
+    const redirectTo = `${productionOrigin}/auth/callback`
 
     if (isReset) {
       const result = await supabase.auth.updateUser({ password })
@@ -66,7 +61,7 @@ function AuthForm() {
     if (isForgot) {
       // Recovery tokens are delivered in the URL hash, so land directly on the
       // reset screen instead of passing through a server redirect that drops it.
-      const recoveryUrl = `${redirectBase}/auth?mode=reset`
+      const recoveryUrl = `${productionOrigin}/auth?mode=reset`
       const result = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: recoveryUrl,
       })
