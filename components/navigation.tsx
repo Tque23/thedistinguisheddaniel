@@ -125,7 +125,7 @@ export function Navigation() {
               </a>
               <a
                 href="/auth?mode=signup"
-                className={`btn-primary inline-flex items-center justify-center rounded-full transition-all duration-500 ${
+                className={`btn-primary inline-flex items-center justify-center rounded-full font-semibold transition-all duration-500 ${
                   isScrolled ? "h-8 px-4 text-xs" : "px-6 py-2"
                 }`}
               >
