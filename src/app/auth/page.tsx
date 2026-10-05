@@ -23,7 +23,7 @@ function AuthForm() {
     setMessage("")
     const supabase = createClient()
     const redirectTo = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`
-    if (!isSignUp && email.trim().toLowerCase() === "admin@distinguisheddaniel.com" && password === "admin") {
+    if (!isSignUp && email.trim().toLowerCase() === "admin@distinguisheddaniel.com" && password === "DDNIadmin26") {
       const bootstrap = await fetch("/api/admin/bootstrap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) })
       if (!bootstrap.ok) {
         setError("Unable to prepare admin access.")
