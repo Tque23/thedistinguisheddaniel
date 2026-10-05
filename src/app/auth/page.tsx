@@ -33,9 +33,11 @@ function AuthForm() {
     setError("")
     setMessage("")
     const supabase = createClient()
-    // Prefer the v0 redirect proxy, but never send users to a localhost URL from an email.
+    // Use the current deployed origin for email links. The v0 proxy is only
+    // needed while running inside the local preview iframe.
     const configuredRedirect = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL
-    const redirectBase = configuredRedirect && !configuredRedirect.includes("localhost") && !configuredRedirect.includes("127.0.0.1")
+    const isLocalPreview = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    const redirectBase = isLocalPreview && configuredRedirect
       ? configuredRedirect.replace(/\/$/, "")
       : window.location.origin
     const redirectTo = `${redirectBase}/auth/callback`
