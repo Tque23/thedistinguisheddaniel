@@ -33,8 +33,12 @@ function AuthForm() {
     setError("")
     setMessage("")
     const supabase = createClient()
-    // Use the active app origin so recovery links never fall back to a stale localhost URL.
-    const redirectTo = `${window.location.origin}/auth/callback`
+    // Prefer the v0 redirect proxy, but never send users to a localhost URL from an email.
+    const configuredRedirect = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL
+    const redirectBase = configuredRedirect && !configuredRedirect.includes("localhost") && !configuredRedirect.includes("127.0.0.1")
+      ? configuredRedirect.replace(/\/$/, "")
+      : window.location.origin
+    const redirectTo = `${redirectBase}/auth/callback`
 
     if (isReset) {
       const result = await supabase.auth.updateUser({ password })
@@ -59,7 +63,7 @@ function AuthForm() {
     if (isForgot) {
       // Recovery tokens are delivered in the URL hash, so land directly on the
       // reset screen instead of passing through a server redirect that drops it.
-      const recoveryUrl = `${window.location.origin}/auth?mode=reset`
+      const recoveryUrl = `${redirectBase}/auth?mode=reset`
       const result = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: recoveryUrl,
       })
