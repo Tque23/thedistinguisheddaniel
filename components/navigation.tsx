@@ -123,15 +123,14 @@ export function Navigation() {
               >
                 Login
               </a>
-              <Button
-                asChild
-                size="sm"
-                className={`btn-primary rounded-full transition-all duration-500 ${
-                  isScrolled ? "px-4 h-8 text-xs" : "px-6"
+              <a
+                href="/auth?mode=signup"
+                className={`btn-primary inline-flex items-center justify-center rounded-full transition-all duration-500 ${
+                  isScrolled ? "h-8 px-4 text-xs" : "px-6 py-2"
                 }`}
               >
-                <a href="/auth?mode=signup">Sign Up</a>
-              </Button>
+                Sign Up
+              </a>
             </div>
 
             {/* Mobile Menu Toggle Button (z-[80] ensures top-level interactivity) */}
@@ -184,22 +183,20 @@ export function Navigation() {
             }`}
             style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
-            <Button
-              variant="outline"
-              className="flex-1 rounded-full h-14 text-base"
-              asChild
-              className="flex-1 rounded-full h-14 text-base"
+            <a
+              href="/auth"
+              className="inline-flex h-14 flex-1 items-center justify-center rounded-full border border-border bg-background px-4 text-base text-foreground"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <a href="/auth">Login</a>
-            </Button>
-            <Button
-              asChild
-              className="flex-1 btn-primary rounded-full h-14 text-base"
+              Login
+            </a>
+            <a
+              href="/auth?mode=signup"
+              className="btn-primary inline-flex h-14 flex-1 items-center justify-center rounded-full px-4 text-base"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <a href="/auth?mode=signup">Sign Up</a>
-            </Button>
+              Sign Up
+            </a>
           </div>
         </div>
       </div>
