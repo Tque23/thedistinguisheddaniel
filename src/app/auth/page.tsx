@@ -33,13 +33,14 @@ function AuthForm() {
     setError("")
     setMessage("")
     const supabase = createClient()
-    // Use the current deployed origin for email links. The v0 proxy is only
-    // needed while running inside the local preview iframe.
+    // Production auth emails must never use the local development origin.
+    // The v0 redirect proxy remains available only for the embedded preview.
     const configuredRedirect = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL
     const isLocalPreview = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    const productionOrigin = "https://distinguisheddaniel.com"
     const redirectBase = isLocalPreview && configuredRedirect
       ? configuredRedirect.replace(/\/$/, "")
-      : window.location.origin
+      : productionOrigin
     const redirectTo = `${redirectBase}/auth/callback`
 
     if (isReset) {
