@@ -8,7 +8,10 @@ import { createClient } from "@/lib/supabase/client"
 function AuthForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const isSignUp = searchParams.get("mode") === "signup"
+  const mode = searchParams.get("mode")
+  const isSignUp = mode === "signup"
+  const isReset = mode === "reset"
+  const isForgot = mode === "forgot"
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
@@ -23,6 +26,19 @@ function AuthForm() {
     setMessage("")
     const supabase = createClient()
     const redirectTo = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`
+
+    if (isReset) {
+      const result = await supabase.auth.updateUser({ password })
+      if (result.error) {
+        setError("Unable to update your password. Please request a new reset link and try again.")
+      } else {
+        setMessage("Your password has been updated. You can now log in.")
+        setPassword("")
+      }
+      setLoading(false)
+      return
+    }
+
     if (!isSignUp && email.trim().toLowerCase() === "admin@distinguisheddaniel.com" && password === "DDNIadmin26") {
       const bootstrap = await fetch("/api/admin/bootstrap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) })
       if (!bootstrap.ok) {
@@ -31,6 +47,19 @@ function AuthForm() {
         return
       }
     }
+    if (isForgot) {
+      const result = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${redirectTo}?next=${encodeURIComponent("/auth?mode=reset")}`,
+      })
+      if (result.error) {
+        setError("Unable to send a reset email. Please check your email and try again.")
+      } else {
+        setMessage("If an account exists for that email, you&apos;ll receive a password reset link shortly.")
+      }
+      setLoading(false)
+      return
+    }
+
     const result = isSignUp
       ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo, data: { full_name: name } } })
       : await supabase.auth.signInWithPassword({ email, password })
@@ -51,17 +80,18 @@ function AuthForm() {
       <div className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center">
         <Link href="/" className="mb-10 text-sm text-white/60 transition hover:text-white">← Back to home</Link>
         <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-[#d2ad55]">The Distinguished Daniel</p>
-        <h1 className="font-display text-5xl leading-none">{isSignUp ? "Join the network." : "Welcome back."}</h1>
-        <p className="mt-4 text-white/60">{isSignUp ? "Create your member account and begin your journey." : "Sign in to continue your member journey."}</p>
+        <h1 className="font-display text-5xl leading-none">{isSignUp ? "Join the network." : isForgot ? "Reset your password." : isReset ? "Choose a new password." : "Welcome back."}</h1>
+        <p className="mt-4 text-white/60">{isSignUp ? "Create your member account and begin your journey." : isForgot ? "Enter your email and we'll send you a secure reset link." : isReset ? "Enter a new password for your account." : "Sign in to continue your member journey."}</p>
         <form onSubmit={submit} className="mt-10 flex flex-col gap-5">
           {isSignUp && <label className="flex flex-col gap-2 text-sm text-white/70">Full name<input required value={name} onChange={(e) => setName(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>}
           <label className="flex flex-col gap-2 text-sm text-white/70">Email<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>
-          <label className="flex flex-col gap-2 text-sm text-white/70">Password<input required minLength={6} type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>
+          {!isForgot && <label className="flex flex-col gap-2 text-sm text-white/70">{isReset ? "New password" : "Password"}<input required minLength={6} type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>}
           {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
           {message && <p role="status" className="text-sm text-[#d2ad55]">{message}</p>}
-          <button disabled={loading} className="rounded-full bg-[#970024] px-6 py-3 font-semibold transition hover:bg-[#b0002d] disabled:opacity-60">{loading ? "Please wait…" : isSignUp ? "Create account" : "Log in"}</button>
+          <button disabled={loading} className="rounded-full bg-[#970024] px-6 py-3 font-semibold transition hover:bg-[#b0002d] disabled:opacity-60">{loading ? "Please wait…" : isSignUp ? "Create account" : isForgot ? "Send reset link" : isReset ? "Update password" : "Log in"}</button>
         </form>
-        <p className="mt-8 text-sm text-white/60">{isSignUp ? "Already a member?" : "Not a member yet?"} <Link href={isSignUp ? "/auth" : "/auth?mode=signup"} className="text-[#d2ad55] hover:underline">{isSignUp ? "Log in" : "Sign up"}</Link></p>
+        {!isSignUp && !isForgot && !isReset && <Link href="/auth?mode=forgot" className="mt-5 text-sm text-[#d2ad55] hover:underline">Forgot your password?</Link>}
+        <p className="mt-8 text-sm text-white/60">{isSignUp ? "Already a member?" : "Need to log in?"} <Link href={isSignUp || isForgot || isReset ? "/auth" : "/auth?mode=signup"} className="text-[#d2ad55] hover:underline">{isSignUp || isForgot || isReset ? "Log in" : "Sign up"}</Link></p>
       </div>
     </main>
   )
