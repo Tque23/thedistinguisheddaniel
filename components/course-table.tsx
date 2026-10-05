@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { ArrowUpRight, Play } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 
 // Types
 export interface Lecture {
@@ -78,6 +79,23 @@ const TOTAL_DOTS = 3;
 
 export function LectureLibraryShowcase() {
   const [activeTab, setActiveTab] = useState("All")
+  const [managedLectures, setManagedLectures] = useState<Lecture[]>(ALL_LECTURES)
+
+  useEffect(() => {
+    let active = true
+    void createClient().from("courses").select("id,title,instructor,category,thumbnail_url").eq("published", true).order("created_at", { ascending: false }).then(({ data }) => {
+      if (!active || !data?.length) return
+      setManagedLectures(data.map((course) => ({
+        id: course.id,
+        title: course.title,
+        speaker: course.instructor,
+        category: course.category || "Lectures",
+        tags: [course.category || "Lectures"],
+        image: course.thumbnail_url || "/placeholder.svg",
+      })))
+    })
+    return () => { active = false }
+  }, [])
   
   // Swiper State
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -85,8 +103,8 @@ export function LectureLibraryShowcase() {
 
   const filteredLectures =
     activeTab === "All"
-      ? ALL_LECTURES
-      : ALL_LECTURES.filter(
+      ? managedLectures
+      : managedLectures.filter(
           (item) => item.category === activeTab || item.tags.includes(activeTab)
         )
 
