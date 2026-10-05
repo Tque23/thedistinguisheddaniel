@@ -33,7 +33,12 @@ function AuthForm() {
     setError("")
     setMessage("")
     const supabase = createClient()
-    const redirectTo = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`
+    // Prefer the v0 redirect proxy, but never send users to a localhost URL from an email.
+    const configuredRedirect = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL
+    const redirectBase = configuredRedirect && !configuredRedirect.includes("localhost") && !configuredRedirect.includes("127.0.0.1")
+      ? configuredRedirect.replace(/\/$/, "")
+      : window.location.origin
+    const redirectTo = `${redirectBase}/auth/callback`
 
     if (isReset) {
       const result = await supabase.auth.updateUser({ password })
@@ -56,10 +61,11 @@ function AuthForm() {
       }
     }
     if (isForgot) {
-      const recoveryUrl = new URL(redirectTo)
-      recoveryUrl.searchParams.set("next", "/auth?mode=reset")
+      // Recovery tokens are delivered in the URL hash, so land directly on the
+      // reset screen instead of passing through a server redirect that drops it.
+      const recoveryUrl = `${redirectBase}/auth?mode=reset`
       const result = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: recoveryUrl.toString(),
+        redirectTo: recoveryUrl,
       })
       if (result.error) {
         setError("Unable to send a reset email. Please check your email and try again.")
