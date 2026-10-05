@@ -33,7 +33,8 @@ function AuthForm() {
     setError("")
     setMessage("")
     const supabase = createClient()
-    const redirectTo = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`
+    // Use the active app origin so recovery links never fall back to a stale localhost URL.
+    const redirectTo = `${window.location.origin}/auth/callback`
 
     if (isReset) {
       const result = await supabase.auth.updateUser({ password })
@@ -56,10 +57,11 @@ function AuthForm() {
       }
     }
     if (isForgot) {
-      const recoveryUrl = new URL(redirectTo)
-      recoveryUrl.searchParams.set("next", "/auth?mode=reset")
+      // Recovery tokens are delivered in the URL hash, so land directly on the
+      // reset screen instead of passing through a server redirect that drops it.
+      const recoveryUrl = `${window.location.origin}/auth?mode=reset`
       const result = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: recoveryUrl.toString(),
+        redirectTo: recoveryUrl,
       })
       if (result.error) {
         setError("Unable to send a reset email. Please check your email and try again.")
