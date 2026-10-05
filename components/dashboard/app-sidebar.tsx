@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import {
   Sidebar,
   SidebarContent,
@@ -12,7 +13,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { currentMember } from "@/lib/dashboard-data"
-import { GraduationCap, LayoutGrid, Settings, UserRound, Users2 } from "lucide-react"
+import { GraduationCap, LayoutGrid, Settings, UserRound, Users2, ShieldCheck } from "lucide-react"
 import type { DashboardView } from "@/components/dashboard/dashboard-shell"
 
 const navItems: { id: DashboardView; label: string; icon: typeof LayoutGrid }[] = [
@@ -60,6 +61,11 @@ export function AppSidebar({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Admin dashboard">
+                  <Link href="/admin"><ShieldCheck /><span>Admin dashboard</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -11,6 +11,7 @@ import { InstituteView } from "@/components/dashboard/views/institute-view"
 import { NetworkView } from "@/components/dashboard/views/network-view"
 import { ProfileView } from "@/components/dashboard/views/profile-view"
 import { SettingsView } from "@/components/dashboard/views/settings-view"
+import { ProfileEditor } from "@/components/dashboard/profile-editor"
 
 export type DashboardView = "overview" | "institute" | "network" | "profile" | "settings"
 
@@ -39,7 +40,7 @@ export function DashboardShell() {
                 )}
                 {activeView === "institute" && <InstituteView />}
                 {activeView === "network" && <NetworkView />}
-                {activeView === "profile" && <ProfileView />}
+                {activeView === "profile" && <><ProfileEditor /><ProfileView /></>}
                 {activeView === "settings" && <SettingsView />}
               </motion.div>
             </AnimatePresence>
