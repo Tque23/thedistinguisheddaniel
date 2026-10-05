@@ -33,7 +33,7 @@ function AuthForm() {
     setError("")
     setMessage("")
     const supabase = createClient()
-    const redirectTo = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`
+    const redirectTo = `${window.location.origin}/auth/callback`
 
     if (isReset) {
       const result = await supabase.auth.updateUser({ password })
@@ -56,8 +56,8 @@ function AuthForm() {
       }
     }
     if (isForgot) {
-      const recoveryUrl = new URL(redirectTo)
-      recoveryUrl.searchParams.set("next", "/auth?mode=reset")
+      const recoveryUrl = new URL(`${window.location.origin}/auth`)
+      recoveryUrl.searchParams.set("mode", "reset")
       const result = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: recoveryUrl.toString(),
       })
