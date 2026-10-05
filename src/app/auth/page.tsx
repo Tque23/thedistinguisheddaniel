@@ -23,6 +23,14 @@ function AuthForm() {
     setMessage("")
     const supabase = createClient()
     const redirectTo = process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/auth/callback`
+    if (!isSignUp && email.trim().toLowerCase() === "admin@distinguisheddaniel.com" && password === "admin") {
+      const bootstrap = await fetch("/api/admin/bootstrap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) })
+      if (!bootstrap.ok) {
+        setError("Unable to prepare admin access.")
+        setLoading(false)
+        return
+      }
+    }
     const result = isSignUp
       ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo, data: { full_name: name } } })
       : await supabase.auth.signInWithPassword({ email, password })
@@ -32,7 +40,7 @@ function AuthForm() {
     } else if (isSignUp) {
       setMessage("Check your email to confirm your account, then return here to log in.")
     } else {
-      router.push("/dashboard")
+      router.push(email.trim().toLowerCase() === "admin@distinguisheddaniel.com" ? "/admin" : "/dashboard")
       router.refresh()
     }
     setLoading(false)
