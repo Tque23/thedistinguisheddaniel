@@ -96,15 +96,6 @@ export function Footer() {
           <h4>Contact</h4>
           <ul><li><Link href="/contact">Contact the team</Link></li></ul>
         </div>
-
-        <div className="footer-section">
-          <h4>Connect</h4>
-          <ul>
-            <li><Link href="#linkedin">LinkedIn</Link></li>
-            <li><Link href="#instagram">Instagram</Link></li>
-            <li><Link href="#facebook">Facebook</Link></li>
-          </ul>
-        </div>
       </div>
 
       <div className="footer-bottom">

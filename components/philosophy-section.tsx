@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { NewsletterForm } from "@/components/newsletter-form";
 
 const titles = [
-  "One Vision. Two Pillars.",
   "The Network: Connect. Collaborate. Build.",
   "The Institute: Learn. Grow. Lead.",
+  "One Vision. Two Pillars.",
 ];
 
 const description =
