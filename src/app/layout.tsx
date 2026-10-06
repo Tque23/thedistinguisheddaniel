@@ -3,9 +3,9 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'The Distinguished Daniel Network and Institute | Early Access',
+  title: 'The Distinguished Daniel Network & Institute',
   description:
-    'Step into an exclusive community for forward-thinking Kingdom Ambassadors. Secure early access before the official launch on 3 October 2026.',
+    'An apostolic hub training, equipping and empowering believers to become distinguished Kingdom pioneers.',
   generator: 'v0.app',
   icons: {
     icon: [
