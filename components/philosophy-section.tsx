@@ -4,13 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { NewsletterForm } from "@/components/newsletter-form";
 
 const titles = [
-  "Sustainable Architecture.",
-  "Built for Tomorrow.",
-  "Eco-Responsible.",
+  "One Vision. Two Pillars.",
+  "The Network: Connect. Collaborate. Build.",
+  "The Institute: Learn. Grow. Lead.",
 ];
 
 const description =
-  "A design home that combines contemporary aesthetics and energy performance. Built with eco-friendly materials, it minimizes carbon footprint while offering optimal comfort.";
+  "Connect with believers across professions, industries and nations. Discover shared interests, exchange knowledge and explore opportunities for enterprise, partnership and collective growth. Grow through biblical instruction, spiritual formation and practical learning designed to equip you for leadership and influence in your field.";
 
 const words = description.split(" ");
 

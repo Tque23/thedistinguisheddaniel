@@ -24,7 +24,7 @@ export default function EventsPage() {
             <p className="about-lead">Discover the gatherings and resources designed to deepen understanding, develop capacity and prepare believers for greater responsibility.</p>
             <a className="about-scroll" href="#upcoming">Explore what&apos;s ahead <ArrowDown aria-hidden="true" /></a>
           </div>
-          <div className="events-mark" aria-hidden="true"><span>DDNI</span><strong>2024</strong></div>
+          <div className="events-mark" aria-hidden="true"><span>DDNI</span><strong>2026</strong></div>
         </section>
 
         <section id="upcoming" className="events-intro section-px">
