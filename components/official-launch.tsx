@@ -53,7 +53,10 @@ export function OfficialLaunch() {
             </div>
           ))
         ) : (
-          <h2 className="launch-eyebrow">We have launched!</h2>
+          <div className="launch-live">
+            <h2 className="launch-eyebrow">We have launched!</h2>
+            <a className="btn-primary launch-signup" href="/auth?mode=signup">Sign up to join</a>
+          </div>
         )}
       </div>
     </section>

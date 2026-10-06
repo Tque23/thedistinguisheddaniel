@@ -121,19 +121,8 @@ export function Hero() {
 
         {/* Bottom Container: Stats + Launch Widget */}
         <div className="hero-bottom">
-          <div className="agent-stats" aria-label="Network statistics">
-            <div>
-              <strong>100+</strong>
-              <span>Registrations</span>
-            </div>
-            <div>
-              <strong>50+</strong>
-              <span>Testimonies</span>
-            </div>
-            <div>
-              <strong>65</strong>
-              <span>Active Pioneers</span>
-            </div>
+          <div className="agent-stats" aria-label="Our purpose">
+            <p className="hero-purpose">Distinguished for Purpose.<br />Equipped for Influence.</p>
           </div>
           <OfficialLaunch />
         </div>

@@ -43,7 +43,7 @@ export default function EventsPage() {
           </div>
         </section>
 
-        <section id="interest" className="about-cta events-cta section-px"><div><p className="about-kicker">Stay informed</p><h2>Be part of<br /><em>what&apos;s next.</em></h2><p className="institute-cta-copy">Register your interest to receive announcements about DDNI events, Institute programmes and new resources.</p></div><a className="about-cta-link" href="/#contact">Register your interest <ArrowUpRight aria-hidden="true" /></a></section>
+        <section id="interest" className="about-cta events-cta section-px"><div><p className="about-kicker">Stay informed</p><h2>Be part of<br /><em>what&apos;s next.</em></h2><p className="institute-cta-copy">Register your interest to receive announcements about DDNI events, Institute programmes and new resources.</p></div><a className="about-cta-link" href="/contact">Register your interest <ArrowUpRight aria-hidden="true" /></a></section>
       </main>
       <Footer />
     </div>

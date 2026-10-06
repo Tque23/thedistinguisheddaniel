@@ -72,7 +72,7 @@ export default function GetInvolvedPage() {
                 <h3>{title}</h3>
                 <p>{description}</p>
                 <p className="involvement-detail">{detail}</p>
-                <a href="/#contact">{action}<ArrowUpRight aria-hidden="true" /></a>
+                <a href="/contact">{action}<ArrowUpRight aria-hidden="true" /></a>
               </article>
             ))}
           </div>
@@ -80,7 +80,7 @@ export default function GetInvolvedPage() {
 
         <section className="about-cta involvement-cta section-px">
           <div><p className="about-kicker">The next step</p><h2>Your contribution<br /><em>matters.</em></h2><p className="institute-cta-copy">Tell us where you would like to begin, and we will help you find the right way to connect.</p></div>
-          <a className="about-cta-link" href="/#contact">Start a conversation <ArrowUpRight aria-hidden="true" /></a>
+          <a className="about-cta-link" href="/contact">Start a conversation <ArrowUpRight aria-hidden="true" /></a>
         </section>
       </main>
       <Footer />

@@ -46,10 +46,10 @@ export default function NetworkPage() {
 
         <section className="network-audience section-px">
           <div className="about-section-label"><span>03</span><span className="label-line" /><span>Who is it for?</span></div>
-          <div className="network-audience-grid"><h2>A place for every<br /><em>stage of the journey.</em></h2><div className="about-copy"><p>The Network welcomes believers at different stages of their journey, including professionals, entrepreneurs, creatives, students, emerging leaders and people serving in government, education, ministry and community development.</p><a className="text-link" href="/#contact">Register your interest <ArrowUpRight aria-hidden="true" /></a></div></div>
+          <div className="network-audience-grid"><h2>A place for every<br /><em>stage of the journey.</em></h2><div className="about-copy"><p>The Network welcomes believers at different stages of their journey, including professionals, entrepreneurs, creatives, students, emerging leaders and people serving in government, education, ministry and community development.</p><a className="text-link" href="/contact">Register your interest <ArrowUpRight aria-hidden="true" /></a></div></div>
         </section>
 
-        <section className="about-cta network-cta section-px"><div><p className="about-kicker">Your next connection</p><h2>There is room<br /><em>for your contribution.</em></h2></div><a className="about-cta-link" href="/#contact">Register to be part of the Network <ArrowUpRight aria-hidden="true" /></a></section>
+        <section className="about-cta network-cta section-px"><div><p className="about-kicker">Your next connection</p><h2>There is room<br /><em>for your contribution.</em></h2></div><a className="about-cta-link" href="/contact">Register to be part of the Network <ArrowUpRight aria-hidden="true" /></a></section>
       </main>
       <Footer />
     </div>

@@ -82,6 +82,7 @@ export function LectureLibraryShowcase() {
   const [managedLectures, setManagedLectures] = useState<Lecture[]>(ALL_LECTURES)
 
   useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)) return
     let active = true
     void createClient().from("courses").select("id,title,instructor,category,thumbnail_url").eq("published", true).order("created_at", { ascending: false }).then(({ data }) => {
       if (!active || !data?.length) return
@@ -113,8 +114,8 @@ export function LectureLibraryShowcase() {
 
   // Layout Logic Constraints
   const count = displayedLectures.length;
-  const isSwiperOnMobile = count > 4;
-  const isSwiperOnDesktop = count > 8;
+  const isSwiperOnMobile = true;
+  const isSwiperOnDesktop = true;
 
   // Track swiper scroll position to update dots
   const handleScroll = () => {

@@ -96,6 +96,13 @@ function AuthForm() {
         <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-[#d2ad55]">The Distinguished Daniel</p>
         <h1 className="font-display text-5xl leading-none">{isSignUp ? "Join the network." : isForgot ? "Reset your password." : isReset ? "Choose a new password." : "Welcome back."}</h1>
         <p className="mt-4 text-white/60">{isSignUp ? "Create your member account and begin your journey." : isForgot ? "Enter your email and we'll send you a secure reset link." : isReset ? "Enter a new password for your account." : "Sign in to continue your member journey."}</p>
+        {isSignUp && (
+          <aside className="mt-8 rounded-2xl border border-[#d2ad55]/30 bg-white/5 p-5 text-sm text-white/70" aria-label="Payment information">
+            <p className="font-semibold uppercase tracking-[0.18em] text-[#d2ad55]">EFT payments</p>
+            <p className="mt-3 leading-relaxed">More payment options are coming soon. For now, please use EFT and email your proof of payment to <a className="text-[#d2ad55] underline" href="mailto:hello@distinguisheddaniel.com">hello@distinguisheddaniel.com</a>.</p>
+            <dl className="mt-4 grid gap-1 text-white/80"><div className="flex justify-between gap-4"><dt>Account name</dt><dd className="text-right">The Distinguished Daniel</dd></div><div className="flex justify-between gap-4"><dt>Bank</dt><dd className="text-right">Contact us for details</dd></div><div className="flex justify-between gap-4"><dt>Reference</dt><dd className="text-right">Your full name</dd></div></dl>
+          </aside>
+        )}
         <form onSubmit={submit} className="mt-10 flex flex-col gap-5">
           {isSignUp && <label className="flex flex-col gap-2 text-sm text-white/70">Full name<input required value={name} onChange={(e) => setName(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>}
           {!isReset && <label className="flex flex-col gap-2 text-sm text-white/70">Email<input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#d2ad55]" /></label>}

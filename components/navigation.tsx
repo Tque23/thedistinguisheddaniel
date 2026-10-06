@@ -11,7 +11,7 @@ const navLinks = [
   { name: "The Institute", href: "/institute" },
   { name: "Events & Resources", href: "/events" },
   { name: "Get Involved", href: "/get-involved" },
-  { name: "Contact", href: "/#contact" },
+  { name: "Contact", href: "/contact" },
 ]
 
 export function Navigation() {

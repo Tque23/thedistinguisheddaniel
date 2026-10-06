@@ -67,7 +67,16 @@ export default function AboutPage() {
           <div className="values-grid">{values.map(([title, description], index) => <article className="value-item" key={title}><span>{String(index + 1).padStart(2, "0")}</span><h3>{title}</h3><p>{description}</p></article>)}</div>
         </section>
 
-        <section className="about-cta section-px" id="get-involved"><div><p className="about-kicker">The work continues</p><h2>There is a place<br /><em>for your calling.</em></h2></div><a className="about-cta-link" href="/#contact">Get involved <ArrowUpRight aria-hidden="true" /></a></section>
+        <section className="about-gallery section-px" aria-label="DDNI moments">
+          {["/Poster.jpg", "/Poster1.jpg", "/Poster2.jpeg", "/poster.jpg"].map((image, index) => (
+            <div className="about-gallery-slide" key={image}>
+              <img src={image} alt="" aria-hidden="true" />
+              <span>{String(index + 1).padStart(2, "0")}</span>
+            </div>
+          ))}
+        </section>
+
+        <section className="about-cta section-px" id="get-involved"><div><p className="about-kicker">The work continues</p><h2>There is a place<br /><em>for your calling.</em></h2></div><a className="about-cta-link" href="/contact">Get involved <ArrowUpRight aria-hidden="true" /></a></section>
       </main>
       <Footer />
     </div>

@@ -51,7 +51,7 @@ export default function InstitutePage() {
           <div className="institute-format-grid"><h2>Learning that<br /><em>meets you there.</em></h2><div className="about-copy"><p>The Institute&apos;s vision includes online and in-person courses, seminars, camps and other gatherings.</p><p>Programme topics, facilitators, schedules, participation requirements and any fees will be published as they are confirmed.</p><a className="text-link" href="#interest">Stay informed <ArrowUpRight aria-hidden="true" /></a></div></div>
         </section>
 
-        <section id="interest" className="about-cta institute-cta section-px"><div><p className="about-kicker">Express your interest</p><h2>Prepare for<br /><em>greater responsibility.</em></h2><p className="institute-cta-copy">Whether you are beginning your career, building an enterprise or already serving in leadership, the Institute&apos;s vision is to support purposeful growth and distinguished service.</p></div><a className="about-cta-link" href="/#contact">Register your interest <ArrowUpRight aria-hidden="true" /></a></section>
+        <section id="interest" className="about-cta institute-cta section-px"><div><p className="about-kicker">Express your interest</p><h2>Prepare for<br /><em>greater responsibility.</em></h2><p className="institute-cta-copy">Whether you are beginning your career, building an enterprise or already serving in leadership, the Institute&apos;s vision is to support purposeful growth and distinguished service.</p></div><a className="about-cta-link" href="/contact">Register your interest <ArrowUpRight aria-hidden="true" /></a></section>
       </main>
       <Footer />
     </div>

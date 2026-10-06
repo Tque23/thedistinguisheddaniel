@@ -3,6 +3,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+:root { --background: #f4f0e7; --foreground: #172b3a; --brand-ink: #071520; --brand-gold: #d8b865; --brand-muted: #52606b; }
+html { background: var(--background); }
+body { background: var(--background); color: var(--foreground); }
+@keyframes ddni-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.ddni-loader { min-height: 5rem; border-radius: 1rem; background: linear-gradient(90deg, rgba(23,43,58,.08), rgba(216,184,101,.2), rgba(23,43,58,.08)); background-size: 200% 100%; animation: ddni-shimmer 1.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .ddni-loader { animation: none; } }
+
 @theme inline {
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);

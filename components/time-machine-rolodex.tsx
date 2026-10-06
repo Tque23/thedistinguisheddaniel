@@ -114,7 +114,7 @@ const cards: Card[] = [
 
 export function TimeMachineRolodex() {
   const [position, setPosition] = useState(0)
-  const [viewMode, setViewMode] = useState<"stack" | "list">("stack")
+  const [viewMode, setViewMode] = useState<"stack" | "list">("list")
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
@@ -141,7 +141,7 @@ export function TimeMachineRolodex() {
               id="rolodex-title"
               className="mb-3 font-serif text-4xl font-normal tracking-tight text-[#1C2536] md:text-5xl"
             >
-              Blog
+              News
             </h2>
             <p className="text-base text-[#5A6578] md:text-lg">
               Our board is composed of some of the world&apos;s most respected minds.
