@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata: Metadata = {
   title: 'The Distinguished Daniel Network & Institute',
@@ -48,3 +49,4 @@ export default function RootLayout({
     </html>
   )
 }
+
