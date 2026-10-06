@@ -118,8 +118,8 @@ function AuthForm() {
                 <p className="font-semibold uppercase tracking-[0.18em] text-[#d2ad55]">EFT payments</p>
                 <p className="mt-3 leading-relaxed">
                   More payment options are coming soon. For now, please use EFT and email your proof of payment to{" "}
-                  <a className="text-[#d2ad55] underline" href="mailto:hello@distinguisheddaniel.com">
-                    hello@distinguisheddaniel.com
+                  <a className="text-[#d2ad55] underline" href="mailto:info@distinguisheddaniel.com">
+                    info@distinguisheddaniel.com
                   </a>
                   .
                 </p>
