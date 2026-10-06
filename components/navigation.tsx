@@ -44,7 +44,7 @@ export function Navigation() {
       <div className="fixed top-0 left-0 right-0 z-[60] bg-[#970024] text-white">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
           <p className="text-xs font-medium sm:text-sm">
-            The launch is right around the corner. Don&apos;t miss your spot.
+            We have launched. Don&apos;t miss your spot.
           </p>
           <a
             href="/#Earlyaccess"
