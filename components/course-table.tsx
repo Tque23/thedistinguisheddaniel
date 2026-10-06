@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react"
 import { ArrowUpRight, Play } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { COURSES, type Course } from "@/lib/courses"
+import { CourseDialog } from "@/components/course-dialog"
 
 // Types
 export interface Lecture {
@@ -12,74 +14,26 @@ export interface Lecture {
   category: string
   tags: string[]
   image: string
+  course?: Course
 }
 
-// Data matching the screenshot items
-const ALL_LECTURES: Lecture[] = [
-  {
-    id: "1",
-    title: "The Distinguished Daniel: A Journey of Self-Discovery",
-    speaker: "Apostle K. Zungu",
-    category: "Events",
-    tags: ["Psychology", "Philosophy"],
-    image: "/poster.jpg",
-  },
-  {
-    id: "2",
-    title: "Introduction to Intelligence",
-    speaker: "Dr. John Vervaeke",
-    category: "Lectures",
-    tags: ["Psychology", "Social Sciences"],
-    image: "/placeholder.svg",
-  },
-  {
-    id: "3",
-    title: "Introduction to Abnormal Psychology",
-    speaker: "Dr. Robert O. Pihl",
-    category: "Lectures",
-    tags: ["Psychology"],
-    image: "/placeholder.svg",
-  },
-  {
-    id: "4",
-    title: "On Narcissism",
-    speaker: "Dr. Keith Campbell",
-    category: "Lectures",
-    tags: ["Psychology", "Social Sciences"],
-    image: "/placeholder.svg",
-  },
-  {
-    id: "5",
-    title: "Intro to Psychology",
-    speaker: "Dr. Keith Campbell",
-    category: "Lectures",
-    tags: ["Psychology", "Social Sciences"],
-    image: "/placeholder.svg",
-  },
-  {
-    id: "6",
-    title: "The Psychology of Social Status",
-    speaker: "Dr. Rob Henderson",
-    category: "Lectures",
-    tags: ["Psychology", "Social Sciences"],
-    image: "/placeholder.svg",
-  },
-  {
-    id: "7",
-    title: "The Boy Crisis",
-    speaker: "Dr. Warren Farrell",
-    category: "Lectures",
-    tags: ["Psychology", "Social Sciences"],
-    image: "/placeholder.svg",
-  },
-]
+const FEATURED_COURSES: Lecture[] = COURSES.map((course) => ({
+  id: course.id,
+  title: course.title,
+  speaker: course.free ? "Free · In-person" : "In-person and online",
+  category: "Short Courses",
+  tags: course.free ? ["Short Courses", "Free"] : ["Short Courses", "Paid"],
+  image: course.image,
+  course,
+}))
 
-const CATEGORIES = ["All", "Lectures", "Events"]
+const CATEGORIES = ["All", "Paid", "Free"]
 const TOTAL_DOTS = 3;
 
 export function LectureLibraryShowcase() {
   const [activeTab, setActiveTab] = useState("All")
-  const [managedLectures, setManagedLectures] = useState<Lecture[]>(ALL_LECTURES)
+  const [managedLectures, setManagedLectures] = useState<Lecture[]>([])
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)) return
@@ -102,15 +56,12 @@ export function LectureLibraryShowcase() {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const filteredLectures =
-    activeTab === "All"
-      ? managedLectures
-      : managedLectures.filter(
-          (item) => item.category === activeTab || item.tags.includes(activeTab)
-        )
+  const allLectures = [...FEATURED_COURSES, ...managedLectures]
 
   const displayedLectures =
-    filteredLectures.length > 0 ? filteredLectures : ALL_LECTURES.slice(0, 10)
+    activeTab === "All"
+      ? allLectures
+      : allLectures.filter((item) => item.category === activeTab || item.tags.includes(activeTab))
 
   // Layout Logic Constraints
   const count = displayedLectures.length;
@@ -188,7 +139,7 @@ export function LectureLibraryShowcase() {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-800/80 pb-4">
           <h2 className="font-serif text-4xl md:text-5xl font-normal text-white tracking-tight mb-3">
-            Countless Hours of Powerful Lectures.
+            Short Courses to Equip You.
           </h2>
 
           <a
@@ -233,9 +184,12 @@ export function LectureLibraryShowcase() {
           className={containerClasses}
         >
           {displayedLectures.map((lecture) => (
-            <div
+            <button
+              type="button"
               key={lecture.id}
-              className={childClasses}
+              className={`${childClasses} text-left`}
+              onClick={() => setSelectedCourse(lecture.course ?? { id: lecture.id, title: lecture.title, tagline: "", badge: lecture.category, free: false, image: lecture.image, description: `Presented by ${lecture.speaker}. Sign up to receive the dates, pricing and registration details for this course.`, formats: [] })}
+              aria-haspopup="dialog"
             >
               {/* YouTube Thumbnail Frame (16:9 aspect ratio) */}
               <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-slate-900 border border-slate-800/80 shadow-md">
@@ -263,7 +217,7 @@ export function LectureLibraryShowcase() {
                   {lecture.speaker}
                 </p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
 
@@ -288,6 +242,7 @@ export function LectureLibraryShowcase() {
         </div>
 
       </div>
+      <CourseDialog course={selectedCourse} onClose={() => setSelectedCourse(null)} />
     </section>
   )
 }

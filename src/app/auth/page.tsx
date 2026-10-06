@@ -4,6 +4,7 @@ import { FormEvent, Suspense, useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { CourseInfo } from "@/components/course-info"
 
 function AuthForm() {
   const router = useRouter()
@@ -113,6 +114,7 @@ function AuthForm() {
         </form>
         {!isSignUp && !isForgot && !isReset && <Link href="/auth?mode=forgot" className="mt-5 text-sm text-[#d2ad55] hover:underline">Forgot your password?</Link>}
         <p className="mt-8 text-sm text-white/60">{isSignUp ? "Already a member?" : "Need to log in?"} <Link href={isSignUp || isForgot || isReset ? "/auth" : "/auth?mode=signup"} className="text-[#d2ad55] hover:underline">{isSignUp || isForgot || isReset ? "Log in" : "Sign up"}</Link></p>
+        {!isForgot && !isReset && <CourseInfo />}
       </div>
     </main>
   )

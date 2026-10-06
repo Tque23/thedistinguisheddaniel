@@ -3,6 +3,7 @@ import "./about.css"
 import { ArrowDown, ArrowUpRight, BookOpen, Compass, Handshake, Landmark } from "lucide-react"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
+import { PageHeroVideo } from "@/components/page-hero-video"
 
 const values = [
   ["Biblical grounding", "We seek to understand and apply God’s Word in our lives and work."],
@@ -21,6 +22,7 @@ export default function AboutPage() {
       <Navigation />
       <main>
         <section className="about-hero">
+          <PageHeroVideo />
           <div className="about-hero-orbit" aria-hidden="true" />
           <div className="about-hero-inner">
             <p className="about-kicker">About DDNI <span /> Established for such a time as this</p>

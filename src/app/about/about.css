@@ -4,6 +4,9 @@
 .about-hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(120deg, rgba(7,21,32,.95), rgba(7,21,32,.54)), url('/Poster.jpg'); opacity: .9; z-index: -2; }
 .about-hero::after { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(243,210,122,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(243,210,122,.08) 1px, transparent 1px); background-size: 72px 72px; mask-image: linear-gradient(to bottom, black, transparent 80%); z-index: -1; }
 .about-hero-inner { max-width: 890px; position: relative; z-index: 1; }
+.page-hero-video { position: absolute; inset: 0; z-index: -3; overflow: hidden; background: #050505; }
+.page-hero-video video { width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: .72; }
+.about-hero:has(.page-hero-video)::before { background: linear-gradient(90deg, rgba(0,0,0,.82), rgba(0,0,0,.3) 58%, rgba(0,0,0,.35)), linear-gradient(180deg, rgba(0,0,0,.2), transparent 38%, rgba(7,21,32,.9)); opacity: 1; }
 .about-kicker { text-transform: uppercase; letter-spacing: .2em; font-size: .68rem; color: #d8b865; display: flex; align-items: center; gap: .8rem; }
 .about-kicker span { display: inline-block; width: 42px; height: 1px; background: #d8b865; }
 .about-hero h1 { font-family: "Trajan Pro 3", Georgia, serif; font-size: clamp(3.2rem, 8vw, 8rem); line-height: .98; font-weight: 400; margin: 2rem 0; letter-spacing: -.04em; }
