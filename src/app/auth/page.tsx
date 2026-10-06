@@ -125,14 +125,13 @@ function AuthForm() {
                 </p>
                 <dl className="mt-4 grid gap-1 text-white/80">
                   <div className="flex justify-between gap-4">
-                    <dt>Account name</dt>
-                    <dd className="text-right">The Distinguished Daniel</dd>
+                    <dt>Account Holder</dt>
+                    <dd className="text-right">LAWYAL SOLUTIONS PTY LTD</dd>
                   </div>
 
                   <div className="flex justify-between items-start gap-4">
                     <dt>Bank</dt>
                     <dd className="text-right flex flex-col">
-                      <span>Account Holder: LAWYAL SOLUTIONS PTY LTD</span>
                       <span>Account Type: CURRENT</span>
                       <span>Account Number: 10 14 497 087 0</span>
                       <span>Branch: CENTURION MALL</span>
