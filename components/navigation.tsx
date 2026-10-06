@@ -47,7 +47,7 @@ export function Navigation() {
             We have launched. Don&apos;t miss your spot.
           </p>
           <a
-            href="/#Earlyaccess"
+            href="/auth?mode=signup"
             className="rounded-full bg-gradient-to-r from-[#c89b3c] to-[#f3d27a] px-3 py-1 text-xs font-semibold text-[#1a1200] transition-opacity hover:opacity-90"
           >
             Sign up now
@@ -81,7 +81,7 @@ export function Navigation() {
             }`}
           >
             {/* Logo */}
-            <a href="#" className="flex items-center gap-2 group z-10">
+            <a href="/" className="flex items-center gap-2 group z-10">
               <span className="flex items-center transition-all duration-500">
                 <img
                   src="/logos/TDD Network Logo Line Full.svg"
