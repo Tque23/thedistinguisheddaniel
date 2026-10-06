@@ -5,6 +5,14 @@ import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { PageHeroVideo } from "@/components/page-hero-video"
 
+// Dynamically load all image types from public/gallery (Vite)
+const globGallery = import.meta.glob(
+  "/public/gallery/*.{jpg,jpeg,png,webp,avif,svg,gif,JPG,JPEG,PNG,WEBP,AVIF,SVG,GIF}",
+  { eager: true }
+)
+
+const galleryImages = Object.keys(globGallery).map((path) => path.replace("/public", ""))
+
 const values = [
   ["Biblical grounding", "We seek to understand and apply God’s Word in our lives and work."],
   ["Excellence", "We cultivate discipline, competence and the commitment to serve well."],
@@ -70,7 +78,7 @@ export default function AboutPage() {
         </section>
 
         <section className="about-gallery section-px" aria-label="DDNI moments">
-          {["/Poster.jpg", "/Poster1.jpg", "/Poster2.jpeg", "/poster.jpg"].map((image, index) => (
+          {galleryImages.map((image, index) => (
             <div className="about-gallery-slide" key={image}>
               <img src={image} alt="" aria-hidden="true" />
               <span>{String(index + 1).padStart(2, "0")}</span>
