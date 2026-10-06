@@ -40,9 +40,11 @@ export function AppSidebar({
             alt="TDD Network"
             className="h-6 w-auto shrink-0 object-contain group-data-[collapsible=icon]:hidden"
           />
-          <span className="font-display text-sm font-semibold text-sidebar-primary group-data-[collapsible=icon]:block hidden">
-            TDD
-          </span>
+          <img
+            src="/TDDCrest.svg"
+            alt="TDD Network crest"
+            className="hidden size-8 shrink-0 object-contain group-data-[collapsible=icon]:block"
+          />
         </div>
       </SidebarHeader>
       <SidebarContent>
