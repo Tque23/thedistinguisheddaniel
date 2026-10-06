@@ -101,7 +101,7 @@ function AuthForm() {
           <aside className="mt-8 rounded-2xl border border-[#d2ad55]/30 bg-white/5 p-5 text-sm text-white/70" aria-label="Payment information">
             <p className="font-semibold uppercase tracking-[0.18em] text-[#d2ad55]">EFT payments</p>
             <p className="mt-3 leading-relaxed">More payment options are coming soon. For now, please use EFT and email your proof of payment to <a className="text-[#d2ad55] underline" href="mailto:hello@distinguisheddaniel.com">hello@distinguisheddaniel.com</a>.</p>
-            <dl className="mt-4 grid gap-1 text-white/80"><div className="flex justify-between gap-4"><dt>Account name</dt><dd className="text-right">The Distinguished Daniel</dd></div><div className="flex justify-between gap-4"><dt>Bank</dt><dd className="text-right">Account holder: LAWYAL SOLUTIONS PTY LTD, Account type: CURRENT, Account number: 10 14 497 087 0, Branch: CENTURION MALL, Branch code: 000945, SWIFT code: SBZAZAJJ</dd></div><div className="flex justify-between gap-4"><dt>Reference</dt><dd className="text-right">Your full name</dd></div></dl>
+            <dl className="mt-4 grid gap-1 text-white/80"><div className="flex justify-between gap-4"><dt>Account name</dt><dd className="text-right">The Distinguished Daniel</dd></div><div className="flex justify-between gap-4"><dt>Bank</dt><dd className="text-right">Account Holder: LAWYAL SOLUTIONS PTY LTD, Account Type: CURRENT, Account Number: 10 14 497 087 0, Branch: CENTURION MALL, Branch Code: 000945, SWIFT Code: SBZAZAJJ</dd></div><div className="flex justify-between gap-4"><dt>Reference</dt><dd className="text-right">Your full name</dd></div></dl>
           </aside>
         )}
         <form onSubmit={submit} className="mt-10 flex flex-col gap-5">
