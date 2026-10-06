@@ -5,9 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 
 const navLinks = [
-  { name: "Home", href: "#" },
-  { name: "Blog", href: "#blog" },
-  { name: "Directory", href: "#directory" },
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "The Network", href: "/network" },
+  { name: "The Institute", href: "/institute" },
+  { name: "Events & Resources", href: "/events" },
+  { name: "Get Involved", href: "/get-involved" },
+  { name: "Contact", href: "/#contact" },
 ]
 
 export function Navigation() {
@@ -90,7 +94,7 @@ export function Navigation() {
             </a>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-12">
+            <div className="hidden lg:flex items-center gap-6 xl:gap-9">
               {navLinks.map((link) => (
                 <a
                   key={link.name}
