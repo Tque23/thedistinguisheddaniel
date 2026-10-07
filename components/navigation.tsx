@@ -141,7 +141,7 @@ export function Navigation() {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              className={`md:hidden relative z-[80] p-2 cursor-pointer transition-colors duration-500 ${
+              className={`lg:hidden relative z-[80] p-2 cursor-pointer transition-colors duration-500 ${
                 isScrolled || isMobileMenuOpen ? "text-foreground" : "text-white"
               }`}
               aria-label="Toggle menu"
