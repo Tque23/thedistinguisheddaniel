@@ -1,221 +1,25 @@
-import fs from "fs"
-import path from "path"
-import Image from "next/image"
-import Link from "next/link"
-import { ArrowDown, ArrowUpRight, BookOpen, Compass, Handshake, Landmark } from "lucide-react"
-
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
-import { PageHeroVideo } from "@/components/page-hero-video"
-
+import { BriefHero } from "./brief-hero"
 import "../landing.css"
 import "./about.css"
 
-// Server-side function to retrieve images from public/gallery
-function getGalleryImages(): string[] {
-  const galleryDir = path.join(process.cwd(), "public", "gallery")
-
-  if (!fs.existsSync(galleryDir)) {
-    return []
-  }
-
-  const allowedExtensions = new Set([
-    ".jpg",
-    ".jpeg",
-    ".png",
-    ".webp",
-    ".avif",
-    ".svg",
-    ".gif",
-  ])
-
-  const filenames = fs.readdirSync(galleryDir)
-
-  return filenames
-    .filter((file) => allowedExtensions.has(path.extname(file).toLowerCase()))
-    .map((file) => `/gallery/${file}`)
-}
-
-const values = [
-  ["Biblical grounding", "We seek to understand and apply God’s Word in our lives and work."],
-  ["Excellence", "We cultivate discipline, competence and the commitment to serve well."],
-  ["Integrity", "We pursue honesty, accountability and consistency between belief and conduct."],
-  ["Wisdom", "We value discernment and the responsible application of knowledge."],
-  ["Faithfulness", "We seek to remain obedient to God across changing circumstances."],
-  ["Stewardship", "We use our gifts, time, relationships and resources responsibly."],
-  ["Collaboration", "We build purposeful relationships that enable shared learning and contribution."],
-  ["Service", "We understand influence as a responsibility to serve God and others."],
+const seasons = [
+  ["Glory Season", <>This is the current season the Church is in, where the Lord is calling the Church to arise and shine (Isaiah 60:1), proclaim and effect the Gospel of the Kingdom globally in every sphere of influence (Matthew 24:14) and become the solution to an otherwise deteriorating world. Here, believers instruct and mentor society tangibly in God’s will and ways, through every relevant societal system such as government, economy, media, arts and entertainment, religion, family and education.</>],
+  ["Perilous Times", <>This is the next season which the entire world will experience, it is biblically identified as a time of deception, wickedness and coldness (Matthew 24:4-12) scarcity of food (Matthew 24:7) and a general deterioration of the world and its systems. The economic climate will plummet, there will be famines and pestilences and no one will have the solution, except the Church, who will have maximised its ascension during the Glory Season. It is God’s heart that the Church arises as apostolic missionaries in all spheres of influence and ‘man the gates’ of the sectors of relevance during the Glory Season so that when the Perilous Times begin, the Church (believers in their various spheres of influence) is the solution bearer and instructor of the world. This is when the Church will be exalted above every other order, system or wisdom and become a center of instruction (Micah 4:1-3 TPT).</>],
+  ["Tribulation and The Great Tribulation", <>This is where the Anti-Christ (and associated one world order) arises and begins to persecute the Church in an extent that has never been seen before (Matthew 24:21, Daniel 12:1, Revelation 7:8 &amp;14). Everyone (rich and poor alike) will be forced to receive a mark for purposes of trading (buying and selling), this mark is the name of a man: 666 (Revelation 13:16-18). It is during this season, likely at its inception, that Jesus raptures the Church (1 Thessalonians 4:16-17, 1 Corinthians 15:51-53 and Matthew 24:40-41).</>],
+  ["Rapture & Millennial Reign of Christ", <>After the rapture, Satan and his agents are bound in a bottomless pit for 1000 years (Revelation 20:1-3), in this period Jesus returns to earth with the saints to rule for 1000 years of the millennial reign. Eventually Satan and his agents are released back to earth and they attempt to wage warfare against Jesus and the saints, they are bitterly, utterly and finally defeated and cast into the lake of fire for eternity (Revelation 20).</>],
 ]
 
-export default async function AboutPage() {
-  const galleryImages = getGalleryImages()
-
-  return (
-    <div className="tdd about-page">
-      <Navigation />
-      <main>
-        <section className="about-hero">
-          <PageHeroVideo />
-          <div className="about-hero-orbit" aria-hidden="true" />
-          <div className="about-hero-inner">
-            <p className="about-kicker">
-              About DDNI <span /> Established for such a time as this
-            </p>
-            <h1>
-              A people prepared<br />
-              <em>to make a difference.</em>
-            </h1>
-            <p className="about-lead">
-              DDNI is a Kingdom-minded community for believers who want to grow in spiritual understanding, develop their gifts and bring wisdom, excellence and integrity into the places God has entrusted to them.
-            </p>
-            <a className="about-scroll" href="#story">
-              Discover our story <ArrowDown aria-hidden="true" />
-            </a>
-          </div>
-          <div className="about-hero-mark" aria-hidden="true">
-            DDNI<span>✦</span>
-          </div>
-        </section>
-
-        <section id="story" className="about-story section-px">
-          <div className="about-section-label">
-            <span>01</span>
-            <span className="label-line" />
-            <span>Our story</span>
-          </div>
-          <div className="about-story-grid">
-            <div>
-              <h2>
-                Distinguished by<br />
-                <em>purpose.</em>
-              </h2>
-              <div className="about-pillar-list">
-                <div>
-                  <Compass aria-hidden="true" />
-                  <span>Kingdom identity</span>
-                </div>
-                <div>
-                  <Landmark aria-hidden="true" />
-                  <span>Societal influence</span>
-                </div>
-                <div>
-                  <Handshake aria-hidden="true" />
-                  <span>Purposeful collaboration</span>
-                </div>
-              </div>
-            </div>
-            <div className="about-copy">
-              <p>
-                Our purpose is to prepare believers to become distinguished leaders and pioneers who bring biblical wisdom, excellence and practical solutions into the systems that shape society.
-              </p>
-              <p>
-                We believe that God&apos;s calling finds expression across every sphere of influence: government, the economy, media, arts and entertainment, religion, family and education. Believers have a responsibility to develop their gifts and steward their opportunities so that their lives and work reflect God&apos;s will and ways.
-              </p>
-              <p>
-                DDNI brings this purpose to life through two interconnected pillars: <strong>the Network</strong> and <strong>the Institute</strong>.
-              </p>
-              <Link className="text-link" href="/network">
-                Explore the Network <ArrowUpRight aria-hidden="true" />
-              </Link>
-              <div className="about-signature" aria-label="Apostle K, founder of DDNI">
-                <span className="about-signature-script">Apostle K</span>
-                <span className="about-signature-rule" />
-                <span className="about-signature-role">Founder &amp; visionary steward</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="about-direction">
-          <div className="about-direction-inner section-px">
-            <div className="about-section-label light">
-              <span>02</span>
-              <span className="label-line" />
-              <span>Our direction</span>
-            </div>
-            <div className="about-direction-grid">
-              <div className="direction-card">
-                <span className="direction-number">01</span>
-                <h2>
-                  Our<br />
-                  <em>vision</em>
-                </h2>
-                <p>
-                  To see believers distinguished as Kingdom pioneers who influence society with excellence, wisdom and integrity, and advance God&apos;s interests across nations and spheres of influence.
-                </p>
-              </div>
-              <div className="direction-card featured">
-                <span className="direction-number">02</span>
-                <h2>
-                  Our<br />
-                  <em>mission</em>
-                </h2>
-                <p>
-                  To train, equip, connect and empower believers through godly instruction, practical preparation and purposeful collaboration, enabling them to fulfil their calling and contribute to the transformation of society.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="about-values section-px">
-          <div className="about-section-label">
-            <span>03</span>
-            <span className="label-line" />
-            <span>What guides us</span>
-          </div>
-          <div className="about-values-heading">
-            <div>
-              <BookOpen aria-hidden="true" />
-              <h2>
-                Our values are<br />
-                <em>our compass.</em>
-              </h2>
-            </div>
-            <p>
-              These convictions shape how we learn, lead, collaborate and serve. They keep our pursuit of influence anchored in the character of Christ.
-            </p>
-          </div>
-          <div className="values-grid">
-            {values.map(([title, description], index) => (
-              <article className="value-item" key={title}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <h3>{title}</h3>
-                <p>{description}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="about-gallery section-px" aria-label="DDNI moments">
-          {galleryImages.map((image, index) => (
-            <div className="about-gallery-slide" key={image} style={{ position: "relative" }}>
-              <Image
-                src={image}
-                alt={`DDNI moment ${index + 1}`}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                style={{ objectFit: "cover" }}
-              />
-              <span>{String(index + 1).padStart(2, "0")}</span>
-            </div>
-          ))}
-        </section>
-
-        <section className="about-cta section-px" id="get-involved">
-          <div>
-            <p className="about-kicker">The work continues</p>
-            <h2>
-              There is a place<br />
-              <em>for your calling.</em>
-            </h2>
-          </div>
-          <Link className="about-cta-link" href="/contact">
-            Get involved <ArrowUpRight aria-hidden="true" />
-          </Link>
-        </section>
-      </main>
-      <Footer />
-    </div>
-  )
+export default function AboutPage() {
+  return <div className="tdd about-page"><Navigation /><main>
+    <BriefHero />
+    <article className="brief-content">
+      <section className="brief-section opening"><div className="brief-section-number">01</div><div><h2>The order of the <em>End Times</em></h2><p className="brief-deck">The order of the End Times consists of various seasons and events, notably:</p>{seasons.map(([title, text], i) => <section className="season" key={title}><span>0{i + 1}</span><div><h3>{title}</h3><p>{text}</p></div></section>)}</div></section>
+      <section className="brief-section"><div className="brief-section-number">02</div><div><h2>Paramount in God’s <em>agenda</em></h2><p>Paramount in God’s agenda in this Glory Season is that believers maximise this time by firstly subjecting themselves to training and programs of instruction that will equip and empower them to be pioneers in various spheres of influence and across every strata of relevance. This training will launch the believers as notable leaders who will tangibly influence world systems by enthroning the Kingdom of God and its principles. Influence is attached to wealth, so believers in this season must be prepared to not only receive wealth but to host it and weaponise it to advance God’s Kingdom. These trailblazing pioneers will function in righteousness, wisdom and in the light of the Word of God, guided by Holy Spirit every step of the way.</p></div></section>
+      <section className="brief-section daniel"><div className="brief-section-number">03</div><div><p className="eyebrow">The Bible testifies of such Kingdom pioneer, Daniel.</p><h2>The <em>distinguished Daniel</em></h2><p>Daniel served with excellence and relevance across five Babylonian and Persian kings. Pause and consider that. Five different kings would rise and fall yet Daniel remained relevant in each dispensation, there was no order of a king that did not require Daniel’s voice. Daniel’s voice became an eternal excellence (Isaiah 60:15), his influence infiltrated the foreign world system of Babylon, and placed him on a platform where he advanced God’s interests in Babylon. Even after Babylon was seized by the Persian Empire, Daniel was still summoned to serve King Darius and King Cyrus as a leading government official.</p><p>Daniel 6:3 tells us his secret, the Bible says Daniel distinguished himself because an excellent spirit was in him. Daniel was not just a good Christian, he intentionally sought to distinguish himself in his craft - we note this in Daniel 1 when he refused to partake in Bablyon’s delicacies. The Bible later narrates that Daniel was found to be ten times better than his contemporaries. In this season, the Lord is raising believers in the order of Daniel, the distinguished Daniel.</p></div></section>
+      <section className="brief-section pillars"><div className="brief-section-number">04</div><div><h2>The Distinguished Daniel Network &amp; Institute</h2><p>The Distinguished Daniel Network &amp; Institute (“DDNI”) is an apostolic hub that trains, equips and empowers believers in line with God’s End Time mandate. The hub comprises of two major pillars:</p><div className="pillar-grid"><div><span>01</span><h3>The Network:</h3><p>This is a central database where believers from across the world network and engage on various disciplines to identify and capitalize on potential synergies amongst each other. In other words, the wealth will be generated and circulated within the network to empower all participating believers to thrive using biblical principles.</p></div><div><span>02</span><h3>The Institute:</h3><p>This is a school of the Spirit, where ordinary believers are taught, equipped and transformed into global leaders and pioneers in the marketplace, government and creative corridors. The institute will avail various courses that can either be attended in-person or online, and host various camps, seminars and similar gatherings to tutor believers in understanding the dominion mandate.</p></div></div><p className="closing-line">Together, these pillars will tutor believers to become distinguished and novel, ready to mentor nations and advance God’s interests in society.</p></div></section>
+      <section className="brief-section invitation"><div className="brief-section-number">05</div><div><p>God ordained you in your mother’s womb (Jeremiah 1:5), He prepared good works that you should walk in (Ephesians 2:10), DDNI tutors you to identify the good works, be equipped to do the good works and be a pioneer in the arena of the good works until you become a notable leader that will tangibly transform society.</p><h2>DDNI welcomes you to the network, <em>prepare to take off!</em></h2><p className="signature">Yours in the Kingdom,<br /><strong>DDNI President &amp; Servant Leader: Khanyi Zungu</strong></p></div></section>
+    </article>
+  </main><Footer /></div>
 }

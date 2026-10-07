@@ -3,7 +3,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root { --background: #f4f0e7; --foreground: #172b3a; --brand-ink: #071520; --brand-gold: #d8b865; --brand-muted: #52606b; --brand-burgundy: #8c151d; --surface-warm: #fbf8f1; --surface-deep: #172b3a; --text-on-dark: #f8f5ec; --line-soft: rgba(23,43,58,.16); --focus-ring: #d8b865; }
+:root { --background: #f3efe6; --foreground: #172b3a; --brand-ink: #071520; --brand-gold: #d8b865; --brand-gold-deep: #9d7624; --brand-muted: #52606b; --brand-burgundy: #8c151d; --surface-warm: #fbf8f1; --surface-deep: #172b3a; --text-on-dark: #f8f5ec; --line-soft: rgba(23,43,58,.16); --focus-ring: #d8b865; }
 html { background: var(--background); }
 body { background: var(--background); color: var(--foreground); }
 @keyframes ddni-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
