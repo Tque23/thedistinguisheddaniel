@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { PageHeroVideo } from "@/components/page-hero-video"
 
 export function BriefHero() {
   const [fontReady, setFontReady] = useState(false)
@@ -19,9 +20,12 @@ export function BriefHero() {
 
   return (
     <header className={`brief-hero${fontReady ? " brief-hero--ready" : ""}`} aria-busy={!fontReady}>
-      <p className="brief-kicker">The Distinguished Daniel Network &amp; Institute</p>
-      <h1>Welcome<br /><em>Brief</em></h1>
-      <p className="brief-intro">We are in the End Times.</p>
+      <PageHeroVideo />
+      <div className="brief-hero-inner">
+        <p className="brief-kicker">The Distinguished Daniel Network &amp; Institute</p>
+        <h1>Welcome<br /><em>Brief</em></h1>
+        <p className="brief-intro">A people prepared to influence the world with excellence.</p>
+      </div>
       <span className="brief-index">01 / 05</span>
     </header>
   )

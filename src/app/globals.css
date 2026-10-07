@@ -248,7 +248,7 @@ footer {
   max-width: 300px;
 }
 
-.footer-section h4 {
+.footer-section h2 {
   color: var(--text-primary);
   margin-bottom: 1.25rem;
   font-size: 1.05rem;

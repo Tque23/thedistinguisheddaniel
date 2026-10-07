@@ -9,7 +9,7 @@ export const metadata = { title: "Contact | The Distinguished Daniel Network & I
 
 export default function ContactPage() {
   return (
-    <div className="tdd about-page">
+    <div className="tdd about-page contact-page">
       <Navigation />
       <main>
         <section className="about-hero" aria-labelledby="contact-title">

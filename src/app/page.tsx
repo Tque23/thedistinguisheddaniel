@@ -10,18 +10,20 @@ export default function Page() {
   return (
     <div className="tdd">
       <Navigation />
-      <Hero />
-      <div className="separator-set-1 separator-base">
-        <div className="separator-line line-top"></div>
-        <div className="separator-line line-bottom"></div>
-      </div>
-      <FacultySection />
-      <GallerySlider />
-      <div className="separator-set-2 separator-base">
-        <div className="separator-line line-top"></div>
-        <div className="separator-line line-bottom"></div>
-      </div>
-      <PhilosophySection />
+      <main id="main-content">
+        <Hero />
+        <div className="separator-set-1 separator-base">
+          <div className="separator-line line-top"></div>
+          <div className="separator-line line-bottom"></div>
+        </div>
+        <FacultySection />
+        <GallerySlider />
+        <div className="separator-set-2 separator-base">
+          <div className="separator-line line-top"></div>
+          <div className="separator-line line-bottom"></div>
+        </div>
+        <PhilosophySection />
+      </main>
       <Footer />
     </div>
   )

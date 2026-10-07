@@ -103,18 +103,19 @@ export function Hero() {
       {/* 1. Hero Video Header Container */}
       <div className="hero-top-section">
         {/* Background Video */}
-        <div className="hero-video" aria-hidden="true">
-          <video ref={videoRef} autoPlay muted loop playsInline onPlay={() => setIsVideoPlaying(true)} onPause={() => setIsVideoPlaying(false)}>
+        <div className="hero-video">
+          <video aria-hidden="true" ref={videoRef} autoPlay muted loop playsInline onPlay={() => setIsVideoPlaying(true)} onPause={() => setIsVideoPlaying(false)}>
             <source src="/hero-video.webm" type="video/webm" />
             <source src="/hero-video.mp4" type="video/mp4" />
           </video>
-          <button type="button" className="hero-video-control" onClick={toggleVideo} aria-label={isVideoPlaying ? "Pause hero video" : "Play hero video"}>
-            {isVideoPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
-            <span>{isVideoPlaying ? "Pause" : "Play"}</span>
-          </button>
           <div className="video-wash" />
           <div className="hero-grid-lines" />
         </div>
+
+        <button type="button" className="hero-video-control" onClick={toggleVideo} aria-label={isVideoPlaying ? "Pause hero video" : "Play hero video"}>
+          {isVideoPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+          <span>{isVideoPlaying ? "Pause" : "Play"}</span>
+        </button>
 
         {/* Main Hero Content */}
         <div className="agent-hero-content">

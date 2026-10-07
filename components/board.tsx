@@ -174,18 +174,24 @@ export function FacultySection() {
         </div>
 
         {/* 3 Section Pagination Indicators */}
-        <div className="flex justify-center items-center space-x-2 mt-4">
+        <div className="flex justify-center items-center mt-2">
           {Array.from({ length: TOTAL_DOTS }).map((_, index) => (
             <button
               key={index}
+              type="button"
               onClick={() => handleDotClick(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                activeIndex === index
-                  ? 'w-6 bg-[#1C2536]'
-                  : 'w-2 bg-gray-400 hover:bg-gray-600'
-              }`}
+              className="group flex min-h-11 min-w-11 items-center justify-center touch-manipulation"
               aria-label={`Go to section ${index + 1}`}
-            />
+              aria-current={activeIndex === index ? 'true' : undefined}
+            >
+              <span
+                className={`block h-2 rounded-full transition-all duration-300 ${
+                  activeIndex === index
+                    ? 'w-6 bg-[#1C2536]'
+                    : 'w-2 bg-gray-400 group-hover:bg-gray-600'
+                }`}
+              />
+            </button>
           ))}
         </div>
       </div>
