@@ -26,7 +26,6 @@ export function BriefHero() {
         <h1>Welcome<br /><em>Brief</em></h1>
         <p className="brief-intro">A people prepared to influence the world with excellence.</p>
       </div>
-      <span className="brief-index">01 / 05</span>
     </header>
   )
 }
