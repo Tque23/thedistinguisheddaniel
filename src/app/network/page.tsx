@@ -22,7 +22,7 @@ export default function NetworkPage() {
           <div className="network-hero-inner">
             <p className="about-kicker">The DDNI Network <span /> A community of Kingdom pioneers</p>
             <h1>Purposeful<br /><em>connections.</em></h1>
-            <p className="about-lead">The DDNI Network connects believers across disciplines, industries and nations to explore what becomes possible through purposeful relationships.</p>
+            <p className="about-lead">The DDNI Network is the relational expression of our mission: a trusted community where believers connect, contribute and collaborate with wisdom, excellence and integrity.</p>
             <a className="about-scroll" href="#why-connect">Explore the Network <ArrowDown aria-hidden="true" /></a>
           </div>
           <div className="network-hero-symbol" aria-hidden="true"><Network /><span>CONNECT<br />CONTRIBUTE<br />CREATE</span></div>

@@ -23,7 +23,7 @@ export default function InstitutePage() {
           <div className="institute-hero-inner">
             <p className="about-kicker">The DDNI Institute <span /> A school of the Spirit</p>
             <h1>A place of<br /><em>preparation.</em></h1>
-            <p className="about-lead">The DDNI Institute equips believers to understand God&apos;s ways and apply His wisdom in the responsibilities of everyday life and leadership.</p>
+            <p className="about-lead">The DDNI Institute is the learning expression of our mission: a place where believers are grounded in Scripture, prepared with practical wisdom and formed for faithful contribution.</p>
             <a className="about-scroll" href="#approach">Discover the Institute <ArrowDown aria-hidden="true" /></a>
           </div>
           <div className="institute-verse" aria-hidden="true"><span>Micah</span><strong>4:1–2</strong></div>

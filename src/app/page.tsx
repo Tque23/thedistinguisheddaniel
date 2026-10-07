@@ -3,7 +3,7 @@ import { Navigation } from "@/components/navigation"
 import { Hero } from "@/components/hero"
 import { Footer } from "@/components/footer"
 import { FacultySection } from "@/components/board"
-import { TimeMachineRolodex } from "@/components/time-machine-rolodex"
+import { GallerySlider } from "@/components/gallery-slider"
 import { PhilosophySection } from "@/components/philosophy-section";
 
 export default function Page() {
@@ -16,7 +16,7 @@ export default function Page() {
         <div className="separator-line line-bottom"></div>
       </div>
       <FacultySection />
-      <TimeMachineRolodex />
+      <GallerySlider />
       <div className="separator-set-2 separator-base">
         <div className="separator-line line-top"></div>
         <div className="separator-line line-bottom"></div>

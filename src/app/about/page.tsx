@@ -66,7 +66,7 @@ export default async function AboutPage() {
               <em>to make a difference.</em>
             </h1>
             <p className="about-lead">
-              The Distinguished Daniel Network &amp; Institute is an apostolic hub established to train, equip and empower believers in line with God&apos;s End Time mandate.
+              DDNI is a Kingdom-minded community for believers who want to grow in spiritual understanding, develop their gifts and bring wisdom, excellence and integrity into the places God has entrusted to them.
             </p>
             <a className="about-scroll" href="#story">
               Discover our story <ArrowDown aria-hidden="true" />
@@ -114,9 +114,14 @@ export default async function AboutPage() {
               <p>
                 DDNI brings this purpose to life through two interconnected pillars: <strong>the Network</strong> and <strong>the Institute</strong>.
               </p>
-              <Link className="text-link" href="/#network">
+              <Link className="text-link" href="/network">
                 Explore the Network <ArrowUpRight aria-hidden="true" />
               </Link>
+              <div className="about-signature" aria-label="Apostle K, founder of DDNI">
+                <span className="about-signature-script">Apostle K</span>
+                <span className="about-signature-rule" />
+                <span className="about-signature-role">Founder &amp; visionary steward</span>
+              </div>
             </div>
           </div>
         </section>

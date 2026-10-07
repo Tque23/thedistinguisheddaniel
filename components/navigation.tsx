@@ -116,7 +116,7 @@ export function Navigation() {
             </div>
 
             {/* Desktop CTA */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-4">
               <a
                 href="/auth"
                 className={`transition-all duration-500 ${
@@ -141,7 +141,7 @@ export function Navigation() {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              className={`md:hidden relative z-[80] p-2 cursor-pointer transition-colors duration-500 ${
+              className={`lg:hidden relative z-[80] p-2 cursor-pointer transition-colors duration-500 ${
                 isScrolled || isMobileMenuOpen ? "text-foreground" : "text-white"
               }`}
               aria-label="Toggle menu"
@@ -154,7 +154,7 @@ export function Navigation() {
 
       {/* 4. Full-Screen Mobile Menu Overlay (Moved to top level fragment at z-[50]) */}
       <div
-        className={`md:hidden fixed inset-0 bg-[#071520] z-[50] transition-all duration-500 ${
+        className={`lg:hidden fixed inset-0 bg-[#071520] z-[50] transition-all duration-500 ${
           isMobileMenuOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"

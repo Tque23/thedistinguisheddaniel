@@ -9,6 +9,7 @@ export async function GET(request: Request) {
   const authErrorDescription = url.searchParams.get("error_description")
   const requestedNext = url.searchParams.get("next") || "/dashboard"
   const next = requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/dashboard"
+  const isConfirmation = url.searchParams.get("confirmed") === "1"
   const cookieStore = await cookies()
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,5 +32,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(new URL(next, url.origin))
+  return NextResponse.redirect(new URL(isConfirmation ? "/auth?confirmed=1" : next, url.origin))
 }
