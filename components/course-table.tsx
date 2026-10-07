@@ -191,8 +191,8 @@ export function LectureLibraryShowcase() {
               onClick={() => setSelectedCourse(lecture.course ?? { id: lecture.id, title: lecture.title, tagline: "", badge: lecture.category, free: false, image: lecture.image, description: `Presented by ${lecture.speaker}. Sign up to receive the dates, pricing and registration details for this course.`, formats: [] })}
               aria-haspopup="dialog"
             >
-              {/* YouTube Thumbnail Frame (16:9 aspect ratio) */}
-              <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-slate-900 border border-slate-800/80 shadow-md">
+              {/* Portrait course poster frame (1080 x 1350 / 4:5) */}
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-slate-900 border border-slate-800/80 shadow-md">
                 <img
                   src={lecture.image}
                   alt={lecture.title}

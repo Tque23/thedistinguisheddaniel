@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import Link from "next/link"
+import { Pause, Play } from "lucide-react"
 import { LectureLibraryShowcase } from "@/components/course-table"
 
 const ROTATING_WORDS = ["distinguished", "established", "positioned", "proved"]
@@ -55,7 +57,10 @@ export function OfficialLaunch() {
             </div>
           ))
         ) : (
-          <h2 className="launch-eyebrow">We have launched!</h2>
+          <div className="launch-live">
+            <h2 className="launch-eyebrow">We have launched!</h2>
+            <Link className="btn-primary launch-signup" href="/auth?mode=signup">Sign up to join</Link>
+          </div>
         )}
       </div>
     </div>
@@ -65,7 +70,20 @@ export function OfficialLaunch() {
 export function Hero() {
   const [word, setWord] = useState(ROTATING_WORDS[0])
   const [blurred, setBlurred] = useState(false)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const indexRef = useRef(0)
+
+  function toggleVideo() {
+    if (!videoRef.current) return
+    if (videoRef.current.paused) {
+      void videoRef.current.play()
+      setIsVideoPlaying(true)
+    } else {
+      videoRef.current.pause()
+      setIsVideoPlaying(false)
+    }
+  }
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -86,10 +104,14 @@ export function Hero() {
       <div className="hero-top-section">
         {/* Background Video */}
         <div className="hero-video" aria-hidden="true">
-          <video autoPlay muted loop playsInline>
+          <video ref={videoRef} autoPlay muted loop playsInline onPlay={() => setIsVideoPlaying(true)} onPause={() => setIsVideoPlaying(false)}>
             <source src="/hero-video.webm" type="video/webm" />
             <source src="/hero-video.mp4" type="video/mp4" />
           </video>
+          <button type="button" className="hero-video-control" onClick={toggleVideo} aria-label={isVideoPlaying ? "Pause hero video" : "Play hero video"}>
+            {isVideoPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+            <span>{isVideoPlaying ? "Pause" : "Play"}</span>
+          </button>
           <div className="video-wash" />
           <div className="hero-grid-lines" />
         </div>

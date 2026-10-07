@@ -15,6 +15,7 @@ export interface Course {
   tagline: string
   badge: string
   free: boolean
+  /** Course artwork is presented in a 1080 x 1350 portrait frame. */
   image: string
   description: string
   formats: CourseFormat[]
