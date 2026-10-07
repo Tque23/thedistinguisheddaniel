@@ -76,11 +76,13 @@ export function CourseDialog({ course, onClose }: CourseDialogProps) {
                 {course.free
                   ? "This course is free. Sign up and email "
                   : "Send your proof of payment to "}
-                <a className="text-[#f3d27a] underline" href={`mailto:${REGISTRATION_EMAIL}?subject=${encodeURIComponent(`${course.title} registration`)}`}>{REGISTRATION_EMAIL}</a>
-                {course.free ? " to confirm your seat." : " and receive your registration confirmation."}
+                <a className="text-[#f3d27a] underline" href="mailto:info@distinguisheddaniel.com?subject=Course%20Registration">
+                  info@distinguisheddaniel.com / +27 83 250 6306
+                </a>
+                {course.free ? "." : " Reference your payment: Name and Surname + Course Code"}
               </p>
               <p className="mt-2">
-                <strong className="font-semibold text-white">Already signed up?</strong> Please share the email address you signed up with, along with your name and surname, as your reference.
+                <strong className="font-semibold text-white">Already signed up?</strong> Please share the email address you signed up with, along with your name and surname, as your reference. 
               </p>
             </aside>
 

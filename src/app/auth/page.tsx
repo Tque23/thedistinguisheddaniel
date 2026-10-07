@@ -125,7 +125,7 @@ function AuthForm() {
                 <p className="mt-3 leading-relaxed">
                   More payment options are coming soon. For now, please use EFT and email your proof of payment to{" "}
                   <a className="text-[#d2ad55] underline" href="mailto:info@distinguisheddaniel.com">
-                    info@distinguisheddaniel.com
+                    info@distinguisheddaniel.com / +27 83 250 6306
                   </a>
                   .
                 </p>
