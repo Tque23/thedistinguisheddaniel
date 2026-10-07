@@ -81,9 +81,6 @@ export function CourseDialog({ course, onClose }: CourseDialogProps) {
                 </a>
                 {course.free ? "." : " Reference your payment: Name and Surname + Course Code"}
               </p>
-              <p className="mt-2">
-                <strong className="font-semibold text-white">Already signed up?</strong> Please share the email address you signed up with, along with your name and surname, as your reference. 
-              </p>
             </aside>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
