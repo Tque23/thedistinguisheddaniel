@@ -83,9 +83,15 @@ function AuthForm() {
       : await supabase.auth.signInWithPassword({ email, password })
 
     if (result.error) {
-      setError(result.error.message.toLowerCase().includes("invalid") ? "Invalid email or password." : result.error.message)
+      const rawMessage = result.error.message.toLowerCase()
+      setError(rawMessage.includes("already registered") || rawMessage.includes("already exists") ? "An account already exists for this email. Log in or reset your password instead." : rawMessage.includes("invalid") ? "Invalid email or password." : result.error.message)
     } else if (isSignUp) {
-      setMessage("Check your email to confirm your account, then return here to log in.")
+      const identities = result.data.user?.identities
+      if (identities && identities.length === 0) {
+        setError("An account already exists for this email. Log in or reset your password instead.")
+      } else {
+        setMessage("Check your email to confirm your account, then return here to log in.")
+      }
     } else {
       router.push(email.trim().toLowerCase() === "admin@distinguisheddaniel.com" ? "/admin" : "/dashboard")
       router.refresh()
