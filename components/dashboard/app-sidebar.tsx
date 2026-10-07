@@ -64,8 +64,8 @@ export function AppSidebar({
                 </SidebarMenuItem>
               ))}
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Admin dashboard">
-                  <Link href="/admin"><ShieldCheck /><span>Admin dashboard</span></Link>
+                <SidebarMenuButton tooltip="Admin dashboard" onClick={() => { window.location.href = "/admin" }}>
+                  <ShieldCheck /><span>Admin dashboard</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

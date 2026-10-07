@@ -32,7 +32,7 @@ export function CourseDialog({ course, onClose }: CourseDialogProps) {
     >
       {course && (
         <div>
-          <div className="relative aspect-[16/6] w-full overflow-hidden">
+          <div className="relative aspect-[4/5] w-full overflow-hidden">
             <img src={course.image} alt="" className="h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a1c2a] via-[#0a1c2a]/40 to-transparent" />
             <button

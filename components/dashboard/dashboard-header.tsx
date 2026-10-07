@@ -1,5 +1,8 @@
 "use client"
 
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
@@ -44,6 +47,13 @@ const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
 
 export function DashboardHeader({ activeView, onNavigate }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void }) {
   const copy = viewTitles[activeView]
+  const router = useRouter()
+
+  async function handleSignOut() {
+    await createClient().auth.signOut()
+    router.replace("/")
+    router.refresh()
+  }
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border px-4 sm:px-6">
@@ -65,6 +75,10 @@ export function DashboardHeader({ activeView, onNavigate }: { activeView: Dashbo
           className="h-8 bg-muted/40 pl-8 text-sm"
         />
       </div>
+
+      <Link href="/" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground sm:inline-flex">
+        Home
+      </Link>
 
       <NotificationsMenu />
 
@@ -105,7 +119,7 @@ export function DashboardHeader({ activeView, onNavigate }: { activeView: Dashbo
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => onNavigate("profile")}>
+            <DropdownMenuItem onClick={() => onNavigate("profile")} onSelect={() => onNavigate("profile")}>
               <UserRound />
               My Profile
             </DropdownMenuItem>
@@ -116,7 +130,7 @@ export function DashboardHeader({ activeView, onNavigate }: { activeView: Dashbo
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem variant="destructive">
+            <DropdownMenuItem variant="destructive" onClick={handleSignOut} onSelect={handleSignOut}>
               <LogOut />
               Sign Out
             </DropdownMenuItem>

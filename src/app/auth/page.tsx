@@ -13,6 +13,7 @@ function AuthForm() {
   const isSignUp = mode === "signup"
   const isReset = mode === "reset"
   const isForgot = mode === "forgot"
+  const timedOut = searchParams.get("timeout") === "1"
   const [email, setEmail] = useState("")
 
   useEffect(() => {
@@ -107,6 +108,11 @@ function AuthForm() {
           <p className="mt-4 max-w-lg text-white/60">
             {isSignUp ? "Create your member account and begin your journey." : isForgot ? "Enter your email and we'll send you a secure reset link." : isReset ? "Enter a new password for your account." : "Sign in to continue your member journey."}
           </p>
+          {timedOut && !isSignUp && !isForgot && !isReset && (
+            <p role="status" className="mt-5 max-w-lg rounded-xl border border-[#d2ad55]/30 bg-[#d2ad55]/10 px-4 py-3 text-sm text-[#f3d27a]">
+              Your dashboard session expired after 30 minutes of inactivity. Please log in again.
+            </p>
+          )}
         </div>
 
         {/* 2-Column Main Grid Layout */}
