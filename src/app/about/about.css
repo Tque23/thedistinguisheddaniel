@@ -4,9 +4,11 @@
 .brief-hero--ready { visibility: visible; }
 .brief-hero::before { content: ""; position: absolute; inset: 0; opacity: .22; z-index: -1; background: radial-gradient(circle at 80% 28%, var(--brand-gold), transparent 25%), linear-gradient(135deg, transparent 60%, var(--brand-burgundy)); }
 .brief-hero::after { content: ""; position: absolute; inset: 2rem; border: 1px solid rgba(216,184,101,.35); pointer-events: none; }
-.brief-kicker, .eyebrow { text-transform: uppercase; letter-spacing: .19em; font-size: .68rem; color: var(--brand-gold); max-width: 45rem; }
-.brief-hero h1 { font-family: "Trajan Pro 3", Georgia, serif; font-weight: 400; font-size: clamp(4.2rem, 13vw, 12rem); letter-spacing: -.08em; line-height: .82; margin: 2.2rem 0 2rem; }
-.brief-hero h1 em, .brief-section h2 em { color: var(--brand-gold); font-style: normal; }
+.brief-kicker, .eyebrow { text-transform: uppercase; letter-spacing: .19em; font-size: .68rem; color: var(--brand-burgundy); max-width: 45rem; }
+.brief-hero .brief-kicker { color: var(--brand-gold); }
+.brief-hero h1 { font-family: "Trajan Pro 3", Georgia, serif; font-weight: 400; font-size: clamp(3.6rem, 13vw, 12rem); letter-spacing: -.08em; line-height: .82; margin: 2.2rem 0 2rem; }
+.brief-hero h1 em { color: var(--brand-gold); font-style: normal; }
+.brief-section h2 em { color: var(--brand-gold-deep); font-style: normal; }
 .brief-intro { font-family: Georgia, serif; font-size: clamp(1.35rem, 2.4vw, 2.2rem); color: rgba(248,245,236,.75); }
 .brief-index { position: absolute; right: clamp(2rem, 8vw, 9rem); bottom: 5rem; color: var(--brand-gold); font: .7rem "Trajan Pro 3", serif; letter-spacing: .18em; }
 .brief-content { max-width: 1180px; margin: auto; padding: 0 clamp(1.25rem, 6vw, 6rem); }
@@ -33,11 +35,46 @@
 .invitation h2 { max-width: 14ch; margin-top: 4rem; }
 .signature { margin-top: 5rem; color: var(--foreground) !important; font-family: Georgia, serif; }
 .signature strong { color: var(--brand-burgundy); font-weight: 400; }
-@media (max-width: 700px) { .brief-hero { min-height: 650px; padding-bottom: 4rem; }.brief-hero::after { inset: 1rem; }.brief-index { right: 2rem; bottom: 2rem; }.brief-section { grid-template-columns: 2.2rem minmax(0, 1fr); gap: 1.2rem; padding: 5rem 0; }.brief-section h2 { font-size: clamp(2.6rem, 13vw, 4.8rem); }.brief-section p { font-size: .98rem; line-height: 1.75; }.season { grid-template-columns: 2rem minmax(0, 1fr); gap: .8rem; }.pillar-grid { grid-template-columns: 1fr; gap: 2.5rem; }.daniel, .invitation { margin-left: -1.25rem; margin-right: -1.25rem; padding-left: 1.25rem; padding-right: 1.25rem; } }
+@media (max-width: 700px) {
+  .brief-hero { min-height: 600px; padding: 9rem 1.5rem 4.5rem; }
+  .brief-hero::after { inset: .75rem; }
+  .brief-index { right: 1.75rem; bottom: 1.75rem; }
+  .brief-kicker { line-height: 1.7; }
+  .brief-section { grid-template-columns: minmax(0, 1fr); gap: 1rem; padding: 4rem 0; }
+  .brief-section-number { padding-top: 0; }
+  .brief-section h2 { font-size: clamp(2.1rem, 10.5vw, 3.4rem); letter-spacing: -.045em; max-width: none; margin-bottom: 1.8rem; overflow-wrap: break-word; }
+  .brief-section p { font-size: .98rem; line-height: 1.75; }
+  .brief-deck { font-size: 1.15rem !important; margin-bottom: 2.5rem; }
+  .season { grid-template-columns: minmax(0, 1fr); gap: .5rem; padding: 2rem 0; }
+  .pillar-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .daniel, .invitation { padding-left: clamp(1.25rem, 6vw, 6rem); padding-right: clamp(1.25rem, 6vw, 6rem); }
+  .invitation { padding-top: 5rem; padding-bottom: 6rem; }
+  .invitation h2 { margin-top: 2.5rem; }
+  .signature { margin-top: 3rem; }
+}
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
 
 .section-px { padding-left: clamp(1.25rem, 6vw, 6rem); padding-right: clamp(1.25rem, 6vw, 6rem); }
 .about-page footer { margin-top: 0; }
+
+/* Shared editorial primitives used by the about and network pages. */
+.about-page .about-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; margin: 0; text-transform: uppercase; letter-spacing: .19em; font-size: .68rem; line-height: 1.7; color: var(--brand-burgundy); }
+.about-page .about-kicker > span { display: inline-block; flex: 0 0 2.5rem; height: 1px; background: currentColor; }
+.about-page .about-lead { max-width: 40rem; margin: 0 0 2.5rem; font-family: Georgia, serif; font-size: clamp(1.15rem, 2.2vw, 1.7rem); line-height: 1.6; color: var(--brand-muted); }
+.about-page .about-scroll { display: inline-flex; align-items: center; gap: .7rem; text-transform: uppercase; letter-spacing: .14em; font-size: .72rem; color: var(--foreground); text-decoration: none; }
+.about-page .about-scroll svg { width: 1rem; height: 1rem; color: var(--brand-burgundy); }
+.about-page .about-section-label { display: flex; align-items: center; gap: 1rem; max-width: 1280px; margin: 0 auto; text-transform: uppercase; letter-spacing: .16em; font-size: .72rem; color: var(--brand-burgundy); }
+.about-page .about-section-label .label-line { flex: 0 0 3rem; height: 1px; background: currentColor; opacity: .4; }
+.about-page .about-copy p { max-width: 34rem; margin: 0 0 1.4rem; color: var(--brand-muted); font-size: 1.05rem; line-height: 1.85; }
+.about-page .text-link { display: inline-flex; align-items: center; gap: .5rem; margin-top: .5rem; color: var(--brand-burgundy); text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: .2rem; }
+.about-page .text-link svg { width: 1rem; height: 1rem; }
+.about-page .direction-number { color: var(--brand-gold-deep); font: .8rem "Trajan Pro 3", serif; }
+.about-page .about-cta { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 2.5rem; padding-top: 7rem; padding-bottom: 7rem; }
+.about-page .about-cta h2 { margin: 1.5rem 0 0; color: #172b3a; font: 400 clamp(2.4rem, 6vw, 5.5rem)/1 "Trajan Pro 3", Georgia, serif; letter-spacing: -.05em; }
+.about-page .about-cta h2 em { color: var(--brand-burgundy); font-style: normal; }
+.about-page .about-cta-link { display: inline-flex; align-items: center; gap: .6rem; color: #172b3a; font-weight: 600; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: .3rem; }
+.about-page .about-cta-link svg { width: 1rem; height: 1rem; }
+@media (max-width: 700px) { .about-page .about-cta { padding-top: 5rem; padding-bottom: 5rem; } }
 
 /* Keep shared landing components from changing the welcome brief’s editorial palette. */
 .about-page .about-hero, .about-page .about-story, .about-page .about-direction, .about-page .about-values { display: none; }
