@@ -118,10 +118,10 @@ export function FacultySection() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div>
             <h2 className="font-serif text-4xl md:text-5xl font-normal text-[#1C2536] tracking-tight mb-3">
-              Meet our Board.
+              Meet our Committee.
             </h2>
             <p className="text-[#5A6578] text-base md:text-lg">
-              Our board is composed of some of the world&apos;s most respected minds.
+              Our committee comprises of distinguished marketplace professionals and leaders who have years of experience in advancing God's agenda in the twelve gates of society.
             </p>
           </div>
 
