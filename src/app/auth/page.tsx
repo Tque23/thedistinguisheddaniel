@@ -14,6 +14,7 @@ function AuthForm() {
   const isReset = mode === "reset"
   const isForgot = mode === "forgot"
   const timedOut = searchParams.get("timeout") === "1"
+  const confirmed = searchParams.get("confirmed") === "1"
   const [email, setEmail] = useState("")
 
   useEffect(() => {
@@ -39,6 +40,7 @@ function AuthForm() {
     // browser origin here can cause preview/local URLs to be embedded in emails.
     const productionOrigin = "https://distinguisheddaniel.com"
     const redirectTo = `${productionOrigin}/auth/callback`
+    const signupRedirectTo = `${productionOrigin}/auth/callback?confirmed=1`
 
     if (isReset) {
       const result = await supabase.auth.updateUser({ password })
@@ -77,7 +79,7 @@ function AuthForm() {
     }
 
     const result = isSignUp
-      ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo, data: { full_name: name } } })
+      ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: signupRedirectTo, data: { full_name: name } } })
       : await supabase.auth.signInWithPassword({ email, password })
 
     if (result.error) {
@@ -89,6 +91,24 @@ function AuthForm() {
       router.refresh()
     }
     setLoading(false)
+  }
+
+  if (confirmed) {
+    return (
+      <main className="relative grid min-h-screen place-items-center overflow-hidden bg-[#071520] px-6 py-12 text-white">
+        <div className="pointer-events-none absolute inset-0 opacity-30" aria-hidden="true" style={{ backgroundImage: "linear-gradient(rgba(216,184,101,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(216,184,101,.12) 1px, transparent 1px)", backgroundSize: "72px 72px" }} />
+        <div className="relative w-full max-w-2xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">Welcome to DDNI</p>
+          <div className="mx-auto my-8 grid size-16 place-items-center rounded-full border border-[#d8b865]/50 text-2xl text-[#d8b865]" aria-hidden="true">✓</div>
+          <h1 className="font-display text-4xl leading-tight sm:text-6xl">Thank you for<br /><span className="text-[#d8b865]">signing up.</span></h1>
+          <p className="mx-auto mt-6 max-w-lg text-base leading-8 text-white/65 sm:text-lg">Your account has been confirmed. We&apos;re glad to have you with us and look forward to sharing what&apos;s next.</p>
+          <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link href="/" className="rounded-full bg-[#d8b865] px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#071520] transition hover:bg-[#f3d27a]">Return home</Link>
+            <Link href="/auth" className="rounded-full border border-white/25 px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:border-[#d8b865] hover:text-[#d8b865]">Log in</Link>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
