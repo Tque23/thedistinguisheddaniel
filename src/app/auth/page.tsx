@@ -90,7 +90,7 @@ function AuthForm() {
       if (identities && identities.length === 0) {
         setError("An account already exists for this email. Log in or reset your password instead.")
       } else {
-        setMessage("Check your email to confirm your account, then return here to log in.")
+        setMessage("Check your email to confirm your account, then return here to log in. If you don’t see it, please check your spam or junk folder.")
       }
     } else {
       router.push(email.trim().toLowerCase() === "admin@distinguisheddaniel.com" ? "/admin" : "/dashboard")

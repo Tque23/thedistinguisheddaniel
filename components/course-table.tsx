@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { ArrowUpRight, Play } from "lucide-react"
+import { Play } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { COURSES, type Course } from "@/lib/courses"
 import { CourseDialog } from "@/components/course-dialog"
@@ -142,13 +142,6 @@ export function LectureLibraryShowcase() {
             Short Courses to Equip You.
           </h2>
 
-          <a
-            href="#explore"
-            className="group inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold tracking-[0.2em] text-slate-200 uppercase hover:text-white transition-colors self-start md:self-auto border-b border-slate-300/40 hover:border-white pb-0.5"
-          >
-            Explore Library
-            <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </a>
         </div>
 
         {/* Category Tabs Sub-navigation */}
