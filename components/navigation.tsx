@@ -71,7 +71,7 @@ export function Navigation() {
         <nav
           className={`mx-auto transition-all duration-500 ${
             isScrolled || isMobileMenuOpen
-              ? "bg-[#071520]/80 backdrop-blur-xl border border-foreground/10 rounded-2xl shadow-lg max-w-[1200px]"
+              ? "bg-[#071520]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg max-w-[1200px]"
               : "bg-transparent max-w-[1400px]"
           }`}
         >
@@ -99,18 +99,10 @@ export function Navigation() {
                 <a
                   key={link.name}
                   href={link.href}
-                  className={`text-sm transition-colors duration-300 relative group ${
-                    isScrolled
-                      ? "text-foreground/70 hover:text-foreground"
-                      : "text-white/70 hover:text-white"
-                  }`}
+                  className="text-sm transition-colors duration-300 relative group text-white/70 hover:text-white"
                 >
                   {link.name}
-                  <span
-                    className={`absolute -bottom-1 left-0 w-0 h-px transition-all duration-300 group-hover:w-full ${
-                      isScrolled ? "bg-foreground" : "bg-white"
-                    }`}
-                  />
+                  <span className="absolute -bottom-1 left-0 w-0 h-px bg-white transition-all duration-300 group-hover:w-full" />
                 </a>
               ))}
             </div>
@@ -119,10 +111,8 @@ export function Navigation() {
             <div className="hidden lg:flex items-center gap-4">
               <a
                 href="/auth"
-                className={`transition-all duration-500 ${
-                  isScrolled
-                    ? "text-xs text-foreground/70 hover:text-foreground"
-                    : "text-sm text-white/70 hover:text-white"
+                className={`transition-all duration-500 text-white/70 hover:text-white ${
+                  isScrolled ? "text-xs" : "text-sm"
                 }`}
               >
                 Login
@@ -141,9 +131,7 @@ export function Navigation() {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              className={`lg:hidden relative z-[80] p-2 cursor-pointer transition-colors duration-500 ${
-                isScrolled || isMobileMenuOpen ? "text-foreground" : "text-white"
-              }`}
+              className="lg:hidden relative z-[80] p-2 cursor-pointer transition-colors duration-500 text-white"
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -168,7 +156,7 @@ export function Navigation() {
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`text-5xl font-display text-foreground hover:text-muted-foreground transition-all duration-500 ${
+                className={`text-5xl font-display text-white hover:text-white/70 transition-all duration-500 ${
                   isMobileMenuOpen
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-4"
@@ -182,14 +170,14 @@ export function Navigation() {
 
           {/* Bottom CTAs */}
           <div
-            className={`flex gap-4 pt-8 border-t border-foreground/10 transition-all duration-500 ${
+            className={`flex gap-4 pt-8 border-t border-white/10 transition-all duration-500 ${
               isMobileMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
             style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
             <a
               href="/auth"
-              className="inline-flex h-14 flex-1 items-center justify-center rounded-full border border-border bg-background px-4 text-base text-foreground"
+              className="inline-flex h-14 flex-1 items-center justify-center rounded-full border border-white/20 bg-transparent px-4 text-base text-white hover:bg-white/10 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Login
