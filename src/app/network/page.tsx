@@ -1,9 +1,10 @@
 import "../landing.css"
 import "../about/about.css"
 import "./network.css"
-import { ArrowDown, ArrowUpRight, BriefcaseBusiness, Handshake, Lightbulb, Network, Users } from "lucide-react"
+import { ArrowDown, ArrowUpRight, BriefcaseBusiness, Handshake, Lightbulb, Users } from "lucide-react"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
+import { PageHeroVideo } from "@/components/page-hero-video"
 
 const enablements = [
   ["Purposeful relationships", "Connections between believers who share interests, values and a desire to contribute.", Users],
@@ -17,15 +18,14 @@ export default function NetworkPage() {
     <div className="tdd about-page network-page">
       <Navigation />
       <main>
-        <section className="network-hero">
-          <div className="network-hero-grid" aria-hidden="true" />
+        <section className="network-hero" aria-labelledby="network-title">
+          <PageHeroVideo />
           <div className="network-hero-inner">
-            <p className="about-kicker">The DDNI Network <span /> A community of Kingdom pioneers</p>
-            <h1>Purposeful<br /><em>connections.</em></h1>
-            <p className="about-lead">The DDNI Network is the relational expression of our mission: a trusted community where believers connect, contribute and collaborate with wisdom, excellence and integrity.</p>
+            <p className="about-kicker"><span /> The DDNI Network</p>
+            <h1 id="network-title">Purposeful<br /><em>connections.</em></h1>
+            <p className="about-lead">A trusted community where believers connect, contribute and collaborate with wisdom, excellence and integrity.</p>
             <a className="about-scroll" href="#why-connect">Explore the Network <ArrowDown aria-hidden="true" /></a>
           </div>
-          <div className="network-hero-symbol" aria-hidden="true"><Network /><span>CONNECT<br />CONTRIBUTE<br />CREATE</span></div>
         </section>
 
         <section id="why-connect" className="network-intro section-px">
