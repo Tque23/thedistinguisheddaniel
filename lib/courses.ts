@@ -57,7 +57,7 @@ export const COURSES: Course[] = [
   },
   {
     id: "gifts-of-holy-spirit",
-    title: "Gifts of Holy Spirit in Marketplace",
+    title: "Gifts of the Holy Spirit in the Marketplace",
     tagline: "A free in-person course on operating in the gifts.",
     badge: "Short Course, 2026 · Free",
     free: true,
