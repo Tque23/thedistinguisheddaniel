@@ -35,7 +35,7 @@ export const COURSES: Course[] = [
     free: false,
     image: "/courses/building-self.png",
     description:
-      "Course Code: 01. Building Self is a course that is designed to assist the believer self-develop. Many people's spiritual, mental, emotional and physical faculties are largely influenced by the environment they grew up in, have been exposed to or are currently participating in. In other words, their faculties have been built by outward circumstances. This course allows the believer to exercise God's wisdom and principles to demolish and re-build each faculty (spiritual, mental, emotional and physical) into a state that is ready to function in God's purpose for their life in order to live a healthy and progressive life.",
+      "Course Code: 01. Building Self is a course that is designed to assist the believer to self-develop. Many people's spiritual, mental, emotional and physical faculties are largely influenced by the environment they grew up in, have been exposed to or are currently participating in. In other words, their faculties have been built by outward circumstances. This course allows the believer to exercise God's wisdom and principles to demolish and re-build each faculty (spiritual, mental, emotional and physical) into a state that is ready to function in God's purpose for their life in order to live a healthy and progressive life.",
     formats: [
       { label: "In-Person", includes: IN_PERSON_INCLUDES, price: "R800", seating: "5, 6 and 7 November 2026", time: "19h00 – 21h00", location: VENUE },
       { label: "Online", includes: ONLINE_INCLUDES, price: "R400", seating: "8 and 9 November 2026", time: "19h00 – 21h00", location: TEAMS },
@@ -63,7 +63,7 @@ export const COURSES: Course[] = [
     free: true,
     image: "/courses/gifts-of-holy-spirit.png",
     description:
-      "Course Code: 03. Gifts of Holy Spirit in Marketplace is a course designed to teach believers God's wisdom for these gifts of Holy Spirit, understand their practical application and receive an impartation to flow into these gifts tangibly unto societal and systematic transformation and reformation.",
+      "Course Code: 03. In 1 Corinthians chapter 12, we are introduced to nine gifts of Holy Spirit. These gifts are grouped into three main gifts: Gifts of Revelation, Gifts of Power and Gifts of Utterance and Inspiration. These gifts operate in the marketplace and become a real and practical advantage for the believer in the so-called “real world” where men have assortments of altars. When received and applied consistently, the gifts of Holy Spirit transform a believer from being ordinary to being an extraordinary participant in the marketplace. This course is designed to teach believers God’s wisdom for these gifts of Holy Spirit, understand their practical application and receive an impartation to flow into these gifts tangibly unto societal and systematic transformation and reformation.",
     formats: [
       { label: "In-Person only", price: "Free", seating: "4, 11 and 12 November 2026", time: "19h00 – 21h00", location: VENUE },
     ],
