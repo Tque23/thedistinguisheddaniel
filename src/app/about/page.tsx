@@ -1,10 +1,11 @@
+import type { ReactNode } from "react"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { BriefHero } from "./brief-hero"
 import "../landing.css"
 import "./about.css"
 
-const seasons = [
+const seasons: Array<[string, ReactNode]> = [
   ["Glory Season", <>This is the current season the Church is in, where the Lord is calling the Church to arise and shine (Isaiah 60:1), proclaim and effect the Gospel of the Kingdom globally in every sphere of influence (Matthew 24:14) and become the solution to an otherwise deteriorating world. Here, believers instruct and mentor society tangibly in God’s will and ways, through every relevant societal system such as government, economy, media, arts and entertainment, religion, family and education.</>],
   ["Perilous Times", <>This is the next season which the entire world will experience, it is biblically identified as a time of deception, wickedness and coldness (Matthew 24:4-12) scarcity of food (Matthew 24:7) and a general deterioration of the world and its systems. The economic climate will plummet, there will be famines and pestilences and no one will have the solution, except the Church, who will have maximised its ascension during the Glory Season. It is God’s heart that the Church arises as apostolic missionaries in all spheres of influence and ‘man the gates’ of the sectors of relevance during the Glory Season so that when the Perilous Times begin, the Church (believers in their various spheres of influence) is the solution bearer and instructor of the world. This is when the Church will be exalted above every other order, system or wisdom and become a center of instruction (Micah 4:1-3 TPT).</>],
   ["Tribulation and The Great Tribulation", <>This is where the Anti-Christ (and associated one world order) arises and begins to persecute the Church in an extent that has never been seen before (Matthew 24:21, Daniel 12:1, Revelation 7:8 &amp;14). Everyone (rich and poor alike) will be forced to receive a mark for purposes of trading (buying and selling), this mark is the name of a man: 666 (Revelation 13:16-18). It is during this season, likely at its inception, that Jesus raptures the Church (1 Thessalonians 4:16-17, 1 Corinthians 15:51-53 and Matthew 24:40-41).</>],
