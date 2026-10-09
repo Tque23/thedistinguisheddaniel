@@ -72,7 +72,7 @@ export function Footer() {
             className="footer-logo"
             priority={false}
           />
-          <p>Elevating standards and building networks of excellence.</p>
+          <p>Distinguished for Purpose. Equipped for Influence.</p>
         </div>
 
         <div className="footer-section">
