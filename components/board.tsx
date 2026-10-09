@@ -28,9 +28,9 @@ const facultyData: FacultyMember[] = [
   },
   {
     id: 3,
-    name: "Nontando Ngaleka",
+    name: "Ntando Ngaleka",
     bio: "",
-    image: "/board/Nontando.JPG",
+    image: "/board/Ntando.JPG",
     profileUrl: "#",
   },
   {
