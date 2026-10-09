@@ -79,8 +79,8 @@ export function Footer() {
           <h2>Quick Links</h2>
           <ul>
             <li><Link href="/about">About Us</Link></li>
-            <li><Link href="#programs">Programs</Link></li>
-            <li><Link href="#events">Events</Link></li>
+            <li><Link href="/get-involved">Programs</Link></li>
+            <li><Link href="/events">Events</Link></li>
           </ul>
         </div>
 
@@ -94,7 +94,7 @@ export function Footer() {
 
         <div className="footer-section">
           <h2>Contact</h2>
-          <ul><li><Link href="/contact">Contact the team</Link></li></ul>
+          <ul><li><Link href="/contact">Contact The Team</Link></li></ul>
         </div>
       </div>
 
