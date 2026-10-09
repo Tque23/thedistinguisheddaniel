@@ -20,9 +20,11 @@ export async function PATCH(request: Request) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const body = await request.json()
   if (typeof body.id !== "string") return NextResponse.json({ error: "Invalid user" }, { status: 400 })
-  const updates: { email?: string; user_metadata?: Record<string, unknown>; ban_duration?: string } = {}
+  const updates: { email?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown>; ban_duration?: string } = {}
   if (typeof body.email === "string" && body.email.trim()) updates.email = body.email.trim().toLowerCase()
   if (body.user_metadata && typeof body.user_metadata === "object") updates.user_metadata = body.user_metadata
+  if (typeof body.dashboard_status === "string" && ["prepared", "updates", "active", "blocked"].includes(body.dashboard_status)) updates.user_metadata = { dashboard_status: body.dashboard_status }
+  if (typeof body.is_admin === "boolean") updates.app_metadata = { is_admin: body.is_admin }
   if (typeof body.ban_duration === "string") updates.ban_duration = body.ban_duration
   const { data, error } = await createAdminClient().auth.admin.updateUserById(body.id, updates)
   if (error) return NextResponse.json({ error: "Unable to update user" }, { status: 400 })

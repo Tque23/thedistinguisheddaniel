@@ -23,7 +23,7 @@ export function DashboardShell() {
   const router = useRouter()
   const [activeView, setActiveView] = useState<DashboardView>("overview")
   const [isTimedOut, setIsTimedOut] = useState(false)
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
+  const [accessState, setAccessState] = useState<"prepared" | "updates" | "active" | "blocked" | null>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const signOut = useCallback(async () => {
@@ -34,7 +34,10 @@ export function DashboardShell() {
 
   useEffect(() => {
     void createClient().auth.getUser().then(({ data }) => {
-      setIsAdmin(Boolean(data.user?.user_metadata?.is_admin && data.user.email === "admin@distinguisheddaniel.com"))
+      const user = data.user
+      if (!user) return setAccessState("prepared")
+      if (user.email === "admin@distinguisheddaniel.com" && user.app_metadata?.is_admin === true) return setAccessState("active")
+      setAccessState((user.user_metadata?.dashboard_status as "prepared" | "updates" | "active" | "blocked" | undefined) || "prepared")
     })
   }, [])
 
@@ -55,19 +58,11 @@ export function DashboardShell() {
     }
   }, [signOut])
 
-  if (isAdmin !== true) {
-    return (
-      <main className="fixed inset-0 z-[100] grid min-h-screen place-items-center overflow-hidden bg-[#071520] px-6 py-12 text-white">
-        <div className="pointer-events-none absolute inset-0 opacity-30" aria-hidden="true" style={{ backgroundImage: "linear-gradient(rgba(216,184,101,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(216,184,101,.12) 1px, transparent 1px)", backgroundSize: "72px 72px" }} />
-        <div className="relative w-full max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">DDNI member access</p>
-          <div className="mx-auto my-8 h-px w-16 bg-[#d8b865]/60" />
-          <h1 className="font-display text-4xl leading-tight sm:text-6xl">Your dashboard is<br /><span className="text-[#d8b865]">being prepared.</span></h1>
-          <p className="mx-auto mt-6 max-w-lg text-base leading-8 text-white/65 sm:text-lg">We are preparing your dashboard with care. Look out for an email when it&apos;s ready—we&apos;ll let you know as soon as your member access is available.</p>
-          <a href="/" className="mt-10 inline-flex rounded-full border border-[#d8b865]/60 px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f3d27a] transition hover:bg-[#d8b865] hover:text-[#071520]">Return to home</a>
-        </div>
-      </main>
-    )
+  if (accessState === null) return <main className="fixed inset-0 z-[100] grid place-items-center bg-[#071520] text-white">Checking access...</main>
+  if (accessState !== "active") {
+    const blocked = accessState === "blocked"
+    const updates = accessState === "updates"
+    return <main className="fixed inset-0 z-[100] grid min-h-screen place-items-center overflow-hidden bg-[#071520] px-6 py-12 text-white"><div className="relative w-full max-w-2xl text-center"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">DDNI member access</p><div className="mx-auto my-8 h-px w-16 bg-[#d8b865]/60" /><h1 className="font-display text-4xl leading-tight sm:text-6xl">{blocked ? "Dashboard access is restricted." : updates ? "Updates to the dashboard are being made." : "Your dashboard is being prepared."}</h1><p className="mx-auto mt-6 max-w-lg text-base leading-8 text-white/65 sm:text-lg">{blocked ? "You have been blocked from using the dashboard. Reach out to admin at Info@distinguisheddaniel.com." : updates ? "We are making updates to the dashboard. Please check back soon." : "We are preparing your dashboard with care. Look out for an email when it is ready."}</p><a href="/" className="mt-10 inline-flex rounded-full border border-[#d8b865]/60 px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f3d27a]">Return to home</a></div></main>
   }
 
   return (

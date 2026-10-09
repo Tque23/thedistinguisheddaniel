@@ -16,7 +16,6 @@ import {
   BookOpen,
   Briefcase,
   GraduationCap,
-  Users2,
 } from "lucide-react"
 import type { DashboardView } from "@/components/dashboard/dashboard-shell"
 
@@ -61,11 +60,6 @@ export function OverviewView({
           icon={Award}
           label="Certifications Earned"
           value={stats.certificationsEarned}
-        />
-        <StatCard
-          icon={Users2}
-          label="Connections Made"
-          value={stats.connectionsMade}
         />
         <StatCard
           icon={Briefcase}
@@ -131,15 +125,7 @@ export function OverviewView({
                 </span>
               </div>
             ))}
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => onNavigate("network")}
-            >
-              View The Network
-              <ArrowRight data-icon="inline-end" />
-            </Button>
+            <p className="text-xs text-muted-foreground">Opportunities are curated and published by the DDNI administration team.</p>
           </CardContent>
         </Card>
       </div>

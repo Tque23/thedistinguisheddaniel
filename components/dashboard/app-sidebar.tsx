@@ -13,13 +13,12 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { currentMember } from "@/lib/dashboard-data"
-import { GraduationCap, LayoutGrid, Settings, UserRound, Users2, ShieldCheck } from "lucide-react"
+import { GraduationCap, LayoutGrid, Settings, UserRound, ShieldCheck } from "lucide-react"
 import type { DashboardView } from "@/components/dashboard/dashboard-shell"
 
 const navItems: { id: DashboardView; label: string; icon: typeof LayoutGrid }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
   { id: "institute", label: "The Institute", icon: GraduationCap },
-  { id: "network", label: "The Network", icon: Users2 },
   { id: "profile", label: "My Profile", icon: UserRound },
   { id: "settings", label: "Settings", icon: Settings },
 ]
