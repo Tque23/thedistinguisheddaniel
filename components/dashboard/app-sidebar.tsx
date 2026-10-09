@@ -12,14 +12,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { currentMember } from "@/lib/dashboard-data"
-import { GraduationCap, LayoutGrid, Settings, UserRound, Users2, ShieldCheck } from "lucide-react"
+import { GraduationCap, LayoutGrid, Settings, UserRound, ShieldCheck } from "lucide-react"
 import type { DashboardView } from "@/components/dashboard/dashboard-shell"
 
 const navItems: { id: DashboardView; label: string; icon: typeof LayoutGrid }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
   { id: "institute", label: "The Institute", icon: GraduationCap },
-  { id: "network", label: "The Network", icon: Users2 },
   { id: "profile", label: "My Profile", icon: UserRound },
   { id: "settings", label: "Settings", icon: Settings },
 ]
@@ -27,9 +25,11 @@ const navItems: { id: DashboardView; label: string; icon: typeof LayoutGrid }[] 
 export function AppSidebar({
   activeView,
   onNavigate,
+  member,
 }: {
   activeView: DashboardView
   onNavigate: (view: DashboardView) => void
+  member: { name: string; title: string; initials: string; avatarColor: string; isAdmin: boolean }
 }) {
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border">
@@ -63,11 +63,13 @@ export function AppSidebar({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Admin dashboard" onClick={() => { window.location.href = "/admin" }}>
-                  <ShieldCheck /><span>Admin dashboard</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {member.isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton tooltip="Admin dashboard" onClick={() => window.location.assign("/admin")}>
+                    <ShieldCheck /><span>Admin dashboard</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -76,16 +78,16 @@ export function AppSidebar({
         <div className="flex items-center gap-2 rounded-lg px-2 py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
           <div
             className="flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
-            style={{ backgroundColor: currentMember.avatarColor, color: "#1a1200" }}
+            style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}
           >
-            {currentMember.initials}
+            {member.initials}
           </div>
           <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
             <span className="truncate text-sm font-medium text-sidebar-foreground">
-              {currentMember.name}
+              {member.name}
             </span>
             <span className="truncate text-xs text-sidebar-foreground/60">
-              {currentMember.tier} Member
+              {member.isAdmin ? "Administrator" : "DDNI Member"}
             </span>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
@@ -18,7 +19,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { NotificationsMenu } from "@/components/dashboard/notifications-menu"
-import { currentMember } from "@/lib/dashboard-data"
 import { LogOut, Search, Settings, UserRound } from "lucide-react"
 import type { DashboardView } from "@/components/dashboard/dashboard-shell"
 
@@ -45,9 +45,10 @@ const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
   },
 }
 
-export function DashboardHeader({ activeView, onNavigate }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void }) {
+export function DashboardHeader({ activeView, onNavigate, member }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void; member: { name: string; title: string; initials: string; avatarColor: string; isAdmin: boolean } }) {
   const copy = viewTitles[activeView]
   const router = useRouter()
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
 
   async function handleSignOut() {
     await createClient().auth.signOut()
@@ -61,7 +62,7 @@ export function DashboardHeader({ activeView, onNavigate }: { activeView: Dashbo
       <Separator orientation="vertical" className="h-5" />
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-sm font-semibold text-foreground sm:text-base">
-          {copy.title}, {currentMember.name.split(" ")[0]}
+          {copy.title}, {member.name.split(" ")[0]}
         </h1>
         <p className="hidden truncate text-xs text-muted-foreground sm:block">
           {copy.subtitle}
@@ -82,25 +83,27 @@ export function DashboardHeader({ activeView, onNavigate }: { activeView: Dashbo
 
       <NotificationsMenu />
 
-      <DropdownMenu>
+      <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
         <DropdownMenuTrigger
           render={
             <Button
+              type="button"
               variant="ghost"
               size="sm"
-              className="h-8 gap-2 pl-1.5 pr-2.5"
+              className="h-9 gap-2 pl-1.5 pr-2.5"
+              aria-label={`Open profile menu for ${member.name}`}
             >
               <div
                 className="flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
                 style={{
-                  backgroundColor: currentMember.avatarColor,
+                  backgroundColor: member.avatarColor,
                   color: "#1a1200",
                 }}
               >
-                {currentMember.initials}
+                {member.initials}
               </div>
               <span className="hidden text-sm font-medium sm:inline">
-                {currentMember.name.split(" ")[0]}
+                {member.name.split(" ")[0]}
               </span>
             </Button>
           }
@@ -108,29 +111,29 @@ export function DashboardHeader({ activeView, onNavigate }: { activeView: Dashbo
         <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuLabel className="flex flex-col gap-0.5 px-1.5 py-1.5">
             <span className="text-sm font-medium text-foreground">
-              {currentMember.name}
+              {member.name}
             </span>
             <span className="text-xs text-muted-foreground">
-              {currentMember.title}
+              {member.title}
             </span>
             <Badge variant="outline" className="mt-1 w-fit text-[10px]">
-              {currentMember.tier} Member
+              {member.isAdmin ? "Administrator" : "DDNI Member"}
             </Badge>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => onNavigate("profile")} onSelect={() => onNavigate("profile")}>
+            <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("profile") }}>
               <UserRound />
               My Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onNavigate("settings")}>
+            <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("settings") }}>
               <Settings />
               Account Settings
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem variant="destructive" onClick={handleSignOut} onSelect={handleSignOut}>
+            <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
               <LogOut />
               Sign Out
             </DropdownMenuItem>
