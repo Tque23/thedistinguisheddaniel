@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import {
   currentMember,
   learningPath,
-  opportunities,
   stats,
+  type Opportunity,
 } from "@/lib/dashboard-data"
 import {
   ArrowRight,
@@ -21,8 +21,10 @@ import type { DashboardView } from "@/components/dashboard/dashboard-shell"
 
 export function OverviewView({
   onNavigate,
+  opportunities,
 }: {
   onNavigate: (view: DashboardView) => void
+  opportunities: Opportunity[]
 }) {
   const inProgress = learningPath.filter((m) => m.progress < 100)
 
@@ -115,17 +117,13 @@ export function OverviewView({
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            {opportunities.slice(0, 3).map((op) => (
+            {opportunities.length > 0 ? opportunities.slice(0, 3).map((op) => (
               <div key={op.id} className="flex flex-col gap-1 border-b border-border pb-3 last:border-0 last:pb-0">
-                <span className="text-sm font-medium text-foreground leading-snug">
-                  {op.title}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {op.postedBy} · {op.postedAt}
-                </span>
+                <span className="text-sm font-medium text-foreground leading-snug">{op.title}</span>
+                <span className="text-xs text-muted-foreground">{op.postedBy} · {op.postedAt}</span>
               </div>
-            ))}
-            <p className="text-xs text-muted-foreground">Opportunities are curated and published by the DDNI administration team.</p>
+            )) : <p className="text-sm text-muted-foreground">No opportunities have been published yet.</p>}
+            <p className="text-xs text-muted-foreground">Published and managed by the DDNI administration team.</p>
           </CardContent>
         </Card>
       </div>

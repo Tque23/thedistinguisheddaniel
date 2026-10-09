@@ -14,6 +14,7 @@ import { NetworkView } from "@/components/dashboard/views/network-view"
 import { ProfileView } from "@/components/dashboard/views/profile-view"
 import { SettingsView } from "@/components/dashboard/views/settings-view"
 import { ProfileEditor } from "@/components/dashboard/profile-editor"
+import type { Opportunity } from "@/lib/dashboard-data"
 
 export type DashboardView = "overview" | "institute" | "network" | "profile" | "settings"
 
@@ -25,6 +26,7 @@ export function DashboardShell() {
   const [isTimedOut, setIsTimedOut] = useState(false)
   const [accessState, setAccessState] = useState<"prepared" | "updates" | "active" | "blocked" | null>(null)
   const [member, setMember] = useState({ name: "Member", title: "DDNI Member", initials: "M", avatarColor: "#dcb567", isAdmin: false })
+  const [adminOpportunities, setAdminOpportunities] = useState<Opportunity[]>([])
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const signOut = useCallback(async () => {
@@ -34,7 +36,7 @@ export function DashboardShell() {
   }, [router])
 
   useEffect(() => {
-    void createClient().auth.getUser().then(({ data }) => {
+    void createClient().auth.getUser().then(async ({ data }) => {
       const user = data.user
       if (!user) return setAccessState("prepared")
       const name = String(user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "Member")
@@ -45,6 +47,17 @@ export function DashboardShell() {
         avatarColor: "#dcb567",
         isAdmin: user.app_metadata?.is_admin === true,
       })
+      const { data: publishedItems } = await createClient().from("announcements").select("id, title, body, created_at").eq("published", true).order("created_at", { ascending: false }).limit(12)
+      setAdminOpportunities((publishedItems || []).map((item) => ({
+        id: item.id,
+        title: item.title,
+        postedBy: "DDNI Administration",
+        postedByTitle: "Administration team",
+        category: "Partnership",
+        location: "DDNI Network",
+        postedAt: new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(Math.round((new Date(item.created_at).getTime() - Date.now()) / 86400000), "day"),
+        description: item.body,
+      })))
       if (user.app_metadata?.is_admin === true) return setAccessState("active")
       setAccessState((user.user_metadata?.dashboard_status as "prepared" | "updates" | "active" | "blocked" | undefined) || "prepared")
     })
@@ -102,10 +115,10 @@ export function DashboardShell() {
                 className="p-4 sm:p-6 lg:p-8"
               >
                 {activeView === "overview" && (
-                  <OverviewView onNavigate={setActiveView} />
+                  <OverviewView onNavigate={setActiveView} opportunities={adminOpportunities} />
                 )}
                 {activeView === "institute" && <InstituteView />}
-                {activeView === "network" && <NetworkView />}
+                {activeView === "network" && <NetworkView opportunities={adminOpportunities} />}
                 {activeView === "profile" && <><ProfileEditor /><ProfileView /></>}
                 {activeView === "settings" && <SettingsView />}
               </motion.div>

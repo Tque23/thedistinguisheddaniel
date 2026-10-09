@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Pencil, Plus, Trash2, X, Users, ShieldCheck, Settings2 } from "lucide-react"
 
 const sections = {
-  announcements: { title: "Announcements", singular: "announcement", fields: ["title", "body"] },
+  announcements: { title: "Announcements & opportunities", singular: "announcement or opportunity", fields: ["title", "body"] },
   courses: { title: "Courses", singular: "course", fields: ["title", "instructor", "event_date", "thumbnail_url", "description", "category", "duration"] },
   resources: { title: "Resources", singular: "resource", fields: ["title", "description", "url", "resource_type"] },
   blog_posts: { title: "Blog posts", singular: "blog post", fields: ["title", "instructor", "event_date", "thumbnail_url", "media_url", "body"] },

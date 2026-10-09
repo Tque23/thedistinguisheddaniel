@@ -15,7 +15,6 @@ import {
 import {
   businessProfile,
   memberDirectory,
-  opportunities,
   type MemberTier,
   type Opportunity,
 } from "@/lib/dashboard-data"
@@ -45,7 +44,7 @@ const tierStyles: Record<MemberTier, string> = {
   Ambassador: "border-border text-muted-foreground",
 }
 
-export function NetworkView() {
+export function NetworkView({ opportunities }: { opportunities: Opportunity[] }) {
   const [memberQuery, setMemberQuery] = useState("")
 
   const filteredMembers = useMemo(
@@ -67,6 +66,7 @@ export function NetworkView() {
         <div className="flex flex-col gap-4 lg:col-span-2">
           <h2 className="text-base font-semibold text-foreground">Opportunity Board</h2>
           <div className="flex flex-col gap-3">
+            {opportunities.length === 0 && <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">No opportunities have been published yet.</p>}
             {opportunities.map((op) => {
               const Icon = categoryIcon[op.category]
               return (
