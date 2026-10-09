@@ -14,6 +14,7 @@ import { NetworkView } from "@/components/dashboard/views/network-view"
 import { ProfileView } from "@/components/dashboard/views/profile-view"
 import { SettingsView } from "@/components/dashboard/views/settings-view"
 import { ProfileEditor } from "@/components/dashboard/profile-editor"
+import type { Opportunity } from "@/lib/dashboard-data"
 
 export type DashboardView = "overview" | "institute" | "network" | "profile" | "settings"
 
@@ -23,7 +24,9 @@ export function DashboardShell() {
   const router = useRouter()
   const [activeView, setActiveView] = useState<DashboardView>("overview")
   const [isTimedOut, setIsTimedOut] = useState(false)
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
+  const [accessState, setAccessState] = useState<"prepared" | "updates" | "active" | "blocked" | null>(null)
+  const [member, setMember] = useState({ name: "Member", title: "DDNI Member", initials: "M", avatarColor: "#dcb567", isAdmin: false })
+  const [adminOpportunities, setAdminOpportunities] = useState<Opportunity[]>([])
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const signOut = useCallback(async () => {
@@ -33,8 +36,30 @@ export function DashboardShell() {
   }, [router])
 
   useEffect(() => {
-    void createClient().auth.getUser().then(({ data }) => {
-      setIsAdmin(Boolean(data.user?.user_metadata?.is_admin && data.user.email === "admin@distinguisheddaniel.com"))
+    void createClient().auth.getUser().then(async ({ data }) => {
+      const user = data.user
+      if (!user) return setAccessState("prepared")
+      const name = String(user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "Member")
+      setMember({
+        name,
+        title: String(user.user_metadata?.title || user.user_metadata?.role || "DDNI Member"),
+        initials: name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase(),
+        avatarColor: "#dcb567",
+        isAdmin: user.app_metadata?.is_admin === true,
+      })
+      const { data: publishedItems } = await createClient().from("announcements").select("id, title, body, created_at").eq("published", true).order("created_at", { ascending: false }).limit(12)
+      setAdminOpportunities((publishedItems || []).map((item) => ({
+        id: item.id,
+        title: item.title,
+        postedBy: "DDNI Administration",
+        postedByTitle: "Administration team",
+        category: "Partnership",
+        location: "DDNI Network",
+        postedAt: new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(Math.round((new Date(item.created_at).getTime() - Date.now()) / 86400000), "day"),
+        description: item.body,
+      })))
+      if (user.app_metadata?.is_admin === true) return setAccessState("active")
+      setAccessState((user.user_metadata?.dashboard_status as "prepared" | "updates" | "active" | "blocked" | undefined) || "prepared")
     })
   }, [])
 
@@ -55,19 +80,11 @@ export function DashboardShell() {
     }
   }, [signOut])
 
-  if (isAdmin !== true) {
-    return (
-      <main className="fixed inset-0 z-[100] grid min-h-screen place-items-center overflow-hidden bg-[#071520] px-6 py-12 text-white">
-        <div className="pointer-events-none absolute inset-0 opacity-30" aria-hidden="true" style={{ backgroundImage: "linear-gradient(rgba(216,184,101,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(216,184,101,.12) 1px, transparent 1px)", backgroundSize: "72px 72px" }} />
-        <div className="relative w-full max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">DDNI member access</p>
-          <div className="mx-auto my-8 h-px w-16 bg-[#d8b865]/60" />
-          <h1 className="font-display text-4xl leading-tight sm:text-6xl">Your dashboard is<br /><span className="text-[#d8b865]">being prepared.</span></h1>
-          <p className="mx-auto mt-6 max-w-lg text-base leading-8 text-white/65 sm:text-lg">We are preparing your dashboard with care. Look out for an email when it&apos;s ready—we&apos;ll let you know as soon as your member access is available.</p>
-          <a href="/" className="mt-10 inline-flex rounded-full border border-[#d8b865]/60 px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f3d27a] transition hover:bg-[#d8b865] hover:text-[#071520]">Return to home</a>
-        </div>
-      </main>
-    )
+  if (accessState === null) return <main className="fixed inset-0 z-[100] grid place-items-center bg-[#071520] text-white">Checking access...</main>
+  if (accessState !== "active") {
+    const blocked = accessState === "blocked"
+    const updates = accessState === "updates"
+    return <main className="fixed inset-0 z-[100] grid min-h-screen place-items-center overflow-hidden bg-[#071520] px-6 py-12 text-white"><div className="relative w-full max-w-2xl text-center"><p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">DDNI member access</p><div className="mx-auto my-8 h-px w-16 bg-[#d8b865]/60" /><h1 className="font-display text-4xl leading-tight sm:text-6xl">{blocked ? "Dashboard access is restricted." : updates ? "Updates to the dashboard are being made." : "Your dashboard is being prepared."}</h1><p className="mx-auto mt-6 max-w-lg text-base leading-8 text-white/65 sm:text-lg">{blocked ? "You have been blocked from using the dashboard. Reach out to admin at Info@distinguisheddaniel.com." : updates ? "We are making updates to the dashboard. Please check back soon." : "We are preparing your dashboard with care. Look out for an email when it is ready."}</p><a href="/" className="mt-10 inline-flex rounded-full border border-[#d8b865]/60 px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f3d27a]">Return to home</a></div></main>
   }
 
   return (
@@ -84,9 +101,9 @@ export function DashboardShell() {
         </div>
       )}
       <SidebarProvider className="min-h-0 flex-1">
-        <AppSidebar activeView={activeView} onNavigate={setActiveView} />
+        <AppSidebar activeView={activeView} onNavigate={setActiveView} member={member} />
         <SidebarInset>
-          <DashboardHeader activeView={activeView} onNavigate={setActiveView} />
+          <DashboardHeader activeView={activeView} onNavigate={setActiveView} member={member} />
           <div className="relative flex-1 overflow-y-auto">
             <AnimatePresence mode="wait">
               <motion.div
@@ -98,10 +115,10 @@ export function DashboardShell() {
                 className="p-4 sm:p-6 lg:p-8"
               >
                 {activeView === "overview" && (
-                  <OverviewView onNavigate={setActiveView} />
+                  <OverviewView onNavigate={setActiveView} opportunities={adminOpportunities} />
                 )}
                 {activeView === "institute" && <InstituteView />}
-                {activeView === "network" && <NetworkView />}
+                {activeView === "network" && <NetworkView opportunities={adminOpportunities} />}
                 {activeView === "profile" && <><ProfileEditor /><ProfileView /></>}
                 {activeView === "settings" && <SettingsView />}
               </motion.div>
