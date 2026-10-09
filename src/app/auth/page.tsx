@@ -32,6 +32,12 @@ function AuthForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    const loadingStartedAt = Date.now()
+    const finishLoading = async () => {
+      const remaining = Math.max(0, 1200 - (Date.now() - loadingStartedAt))
+      if (remaining > 0) await new Promise((resolve) => window.setTimeout(resolve, remaining))
+      setLoading(false)
+    }
     setLoading(true)
     setError("")
     setMessage("")
@@ -50,7 +56,7 @@ function AuthForm() {
         setMessage("Your password has been updated. You can now log in.")
         setPassword("")
       }
-      setLoading(false)
+      await finishLoading()
       return
     }
 
@@ -58,7 +64,7 @@ function AuthForm() {
       const bootstrap = await fetch("/api/admin/bootstrap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) })
       if (!bootstrap.ok) {
         setError("Unable to prepare admin access.")
-        setLoading(false)
+        await finishLoading()
         return
       }
     }
@@ -74,7 +80,7 @@ function AuthForm() {
       } else {
         setMessage("If an account exists for that email, you'll receive a password reset link shortly.")
       }
-      setLoading(false)
+      await finishLoading()
       return
     }
 
@@ -96,7 +102,7 @@ function AuthForm() {
       router.push(email.trim().toLowerCase() === "admin@distinguisheddaniel.com" ? "/admin" : "/dashboard")
       router.refresh()
     }
-    setLoading(false)
+    await finishLoading()
   }
 
   if (confirmed) {

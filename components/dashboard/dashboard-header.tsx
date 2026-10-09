@@ -122,18 +122,18 @@ export function DashboardHeader({ activeView, onNavigate, member }: { activeView
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("profile") }} onSelect={() => { setProfileMenuOpen(false); onNavigate("profile") }}>
+            <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("profile") }}>
               <UserRound />
               My Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("settings") }} onSelect={() => { setProfileMenuOpen(false); onNavigate("settings") }}>
+            <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("settings") }}>
               <Settings />
               Account Settings
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem variant="destructive" onClick={handleSignOut} onSelect={handleSignOut}>
+            <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
               <LogOut />
               Sign Out
             </DropdownMenuItem>

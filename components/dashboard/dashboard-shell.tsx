@@ -80,7 +80,7 @@ export function DashboardShell() {
     }
   }, [signOut])
 
-  if (accessState === null) return <main className="fixed inset-0 z-[100] grid place-items-center bg-[#071520] text-white">Checking access...</main>
+  if (accessState === null) return <main className="fixed inset-0 z-[100] grid place-items-center bg-[#071520] text-white" role="status" aria-live="polite"><div className="flex flex-col items-center gap-4"><div className="size-10 animate-spin rounded-full border-2 border-white/20 border-t-[#d8b865]" /><span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">Loading dashboard</span></div></main>
   if (accessState !== "active") {
     const blocked = accessState === "blocked"
     const updates = accessState === "updates"
