@@ -24,6 +24,7 @@ export function DashboardShell() {
   const [activeView, setActiveView] = useState<DashboardView>("overview")
   const [isTimedOut, setIsTimedOut] = useState(false)
   const [accessState, setAccessState] = useState<"prepared" | "updates" | "active" | "blocked" | null>(null)
+  const [member, setMember] = useState({ name: "Member", title: "DDNI Member", initials: "M", avatarColor: "#dcb567", isAdmin: false })
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const signOut = useCallback(async () => {
@@ -36,7 +37,15 @@ export function DashboardShell() {
     void createClient().auth.getUser().then(({ data }) => {
       const user = data.user
       if (!user) return setAccessState("prepared")
-      if (user.email === "admin@distinguisheddaniel.com" && user.app_metadata?.is_admin === true) return setAccessState("active")
+      const name = String(user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "Member")
+      setMember({
+        name,
+        title: String(user.user_metadata?.title || user.user_metadata?.role || "DDNI Member"),
+        initials: name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase(),
+        avatarColor: "#dcb567",
+        isAdmin: user.app_metadata?.is_admin === true,
+      })
+      if (user.app_metadata?.is_admin === true) return setAccessState("active")
       setAccessState((user.user_metadata?.dashboard_status as "prepared" | "updates" | "active" | "blocked" | undefined) || "prepared")
     })
   }, [])
@@ -79,9 +88,9 @@ export function DashboardShell() {
         </div>
       )}
       <SidebarProvider className="min-h-0 flex-1">
-        <AppSidebar activeView={activeView} onNavigate={setActiveView} />
+        <AppSidebar activeView={activeView} onNavigate={setActiveView} member={member} />
         <SidebarInset>
-          <DashboardHeader activeView={activeView} onNavigate={setActiveView} />
+          <DashboardHeader activeView={activeView} onNavigate={setActiveView} member={member} />
           <div className="relative flex-1 overflow-y-auto">
             <AnimatePresence mode="wait">
               <motion.div

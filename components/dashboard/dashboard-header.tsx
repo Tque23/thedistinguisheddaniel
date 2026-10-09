@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { NotificationsMenu } from "@/components/dashboard/notifications-menu"
-import { currentMember } from "@/lib/dashboard-data"
 import { LogOut, Search, Settings, UserRound } from "lucide-react"
 import type { DashboardView } from "@/components/dashboard/dashboard-shell"
 
@@ -45,7 +44,7 @@ const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
   },
 }
 
-export function DashboardHeader({ activeView, onNavigate }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void }) {
+export function DashboardHeader({ activeView, onNavigate, member }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void; member: { name: string; title: string; initials: string; avatarColor: string; isAdmin: boolean } }) {
   const copy = viewTitles[activeView]
   const router = useRouter()
 
@@ -61,7 +60,7 @@ export function DashboardHeader({ activeView, onNavigate }: { activeView: Dashbo
       <Separator orientation="vertical" className="h-5" />
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-sm font-semibold text-foreground sm:text-base">
-          {copy.title}, {currentMember.name.split(" ")[0]}
+          {copy.title}, {member.name.split(" ")[0]}
         </h1>
         <p className="hidden truncate text-xs text-muted-foreground sm:block">
           {copy.subtitle}
@@ -93,14 +92,14 @@ export function DashboardHeader({ activeView, onNavigate }: { activeView: Dashbo
               <div
                 className="flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
                 style={{
-                  backgroundColor: currentMember.avatarColor,
+                  backgroundColor: member.avatarColor,
                   color: "#1a1200",
                 }}
               >
-                {currentMember.initials}
+                {member.initials}
               </div>
               <span className="hidden text-sm font-medium sm:inline">
-                {currentMember.name.split(" ")[0]}
+                {member.name.split(" ")[0]}
               </span>
             </Button>
           }
@@ -108,13 +107,13 @@ export function DashboardHeader({ activeView, onNavigate }: { activeView: Dashbo
         <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuLabel className="flex flex-col gap-0.5 px-1.5 py-1.5">
             <span className="text-sm font-medium text-foreground">
-              {currentMember.name}
+              {member.name}
             </span>
             <span className="text-xs text-muted-foreground">
-              {currentMember.title}
+              {member.title}
             </span>
             <Badge variant="outline" className="mt-1 w-fit text-[10px]">
-              {currentMember.tier} Member
+              {member.isAdmin ? "Administrator" : "DDNI Member"}
             </Badge>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
