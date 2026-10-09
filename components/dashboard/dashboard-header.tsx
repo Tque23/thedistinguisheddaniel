@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
@@ -47,6 +48,7 @@ const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
 export function DashboardHeader({ activeView, onNavigate, member }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void; member: { name: string; title: string; initials: string; avatarColor: string; isAdmin: boolean } }) {
   const copy = viewTitles[activeView]
   const router = useRouter()
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
 
   async function handleSignOut() {
     await createClient().auth.signOut()
@@ -81,13 +83,15 @@ export function DashboardHeader({ activeView, onNavigate, member }: { activeView
 
       <NotificationsMenu />
 
-      <DropdownMenu>
+      <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
         <DropdownMenuTrigger
           render={
             <Button
+              type="button"
               variant="ghost"
               size="sm"
-              className="h-8 gap-2 pl-1.5 pr-2.5"
+              className="h-9 gap-2 pl-1.5 pr-2.5"
+              aria-label={`Open profile menu for ${member.name}`}
             >
               <div
                 className="flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
@@ -118,11 +122,11 @@ export function DashboardHeader({ activeView, onNavigate, member }: { activeView
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => onNavigate("profile")} onSelect={() => onNavigate("profile")}>
+            <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("profile") }} onSelect={() => { setProfileMenuOpen(false); onNavigate("profile") }}>
               <UserRound />
               My Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onNavigate("settings")}>
+            <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("settings") }} onSelect={() => { setProfileMenuOpen(false); onNavigate("settings") }}>
               <Settings />
               Account Settings
             </DropdownMenuItem>

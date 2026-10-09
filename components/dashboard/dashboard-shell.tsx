@@ -18,7 +18,7 @@ import type { Opportunity } from "@/lib/dashboard-data"
 
 export type DashboardView = "overview" | "institute" | "network" | "profile" | "settings"
 
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000
+const SESSION_TIMEOUT_MS = 5 * 60 * 1000
 
 export function DashboardShell() {
   const router = useRouter()
@@ -95,7 +95,7 @@ export function DashboardShell() {
           <div className="w-full max-w-md rounded-2xl border border-[#dcb567]/30 bg-[#0c1e2c] p-8 text-center shadow-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#dcb567]">Session ended</p>
             <h2 className="mt-3 font-display text-2xl text-white">For your security, you&apos;ve been signed out.</h2>
-            <p className="mt-3 text-sm leading-6 text-white/65">Your dashboard session expired after 30 minutes of inactivity.</p>
+            <p className="mt-3 text-sm leading-6 text-white/65">Your dashboard session expired after 5 minutes of inactivity.</p>
             <a href="/" className="mt-6 inline-flex rounded-full bg-[#dcb567] px-5 py-3 text-sm font-semibold text-[#1a1200] transition hover:opacity-90">Return to home</a>
           </div>
         </div>

@@ -118,7 +118,9 @@ function AuthForm() {
   }
 
   return (
-    <main className="min-h-screen bg-[#071520] px-6 py-12 text-white">
+    <>
+      {loading && <div className="fixed inset-0 z-[210] grid place-items-center bg-[#071520]/95 text-white backdrop-blur-sm" role="status" aria-live="polite"><div className="flex flex-col items-center gap-4"><div className="size-10 animate-spin rounded-full border-2 border-white/20 border-t-[#d8b865]" /><span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">{isSignUp ? "Creating account" : "Signing in"}</span></div></div>}
+      <main className="min-h-screen bg-[#071520] px-6 py-12 text-white">
       <div className="mx-auto max-w-5xl">
         {/* Top Header Section */}
         <div className="mb-12 text-center flex flex-col items-center">
@@ -136,7 +138,7 @@ function AuthForm() {
           </p>
           {timedOut && !isSignUp && !isForgot && !isReset && (
             <p role="status" className="mt-5 max-w-lg rounded-xl border border-[#d2ad55]/30 bg-[#d2ad55]/10 px-4 py-3 text-sm text-[#f3d27a]">
-              Your dashboard session expired after 30 minutes of inactivity. Please log in again.
+              Your dashboard session expired after 5 minutes of inactivity. Please log in again.
             </p>
           )}
         </div>
@@ -253,7 +255,8 @@ function AuthForm() {
           </div>
         </div>
       </div>
-    </main>
+      </main>
+    </>
   )
 }
 
