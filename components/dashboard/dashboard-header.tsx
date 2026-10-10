@@ -16,7 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
 import { NotificationsMenu } from "@/components/dashboard/notifications-menu"
 import { LogOut, Search, Settings, UserRound } from "lucide-react"
 import type { DashboardView } from "@/components/dashboard/dashboard-shell"
@@ -82,29 +81,23 @@ export function DashboardHeader({ activeView, onNavigate, member }: { activeView
 
       <DropdownMenu>
         <DropdownMenuTrigger
-          render={
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-9 gap-2 pl-1.5 pr-2.5"
-              aria-label={`Open profile menu for ${member.name}`}
-            >
-              <div
-                className="flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
-                style={{
-                  backgroundColor: member.avatarColor,
-                  color: "#1a1200",
-                }}
-              >
-                {member.initials}
-              </div>
-              <span className="hidden text-sm font-medium sm:inline">
-                {member.name.split(" ")[0]}
-              </span>
-            </Button>
-          }
-        />
+          type="button"
+          className="h-9 gap-2 rounded-lg px-1.5 pr-2.5 text-sm font-medium transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          aria-label={`Open profile menu for ${member.name}`}
+        >
+          <div
+            className="flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
+            style={{
+              backgroundColor: member.avatarColor,
+              color: "#1a1200",
+            }}
+          >
+            {member.initials}
+          </div>
+          <span className="hidden sm:inline">
+            {member.name.split(" ")[0]}
+          </span>
+        </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuLabel className="flex flex-col gap-0.5 px-1.5 py-1.5">
             <span className="text-sm font-medium text-foreground">
