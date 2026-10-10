@@ -47,7 +47,7 @@ export function DashboardShell() {
         avatarColor: "#dcb567",
         isAdmin: user.app_metadata?.is_admin === true,
       })
-      const { data: publishedItems } = await createClient().from("announcements").select("id, title, body, created_at").eq("published", true).order("created_at", { ascending: false }).limit(12)
+      const { data: publishedItems } = await createClient().from("announcements").select("id, title, body, created_at").eq("published", true).not("title", "in", `("__dashboard_announcement__","__landing_announcement__")`).order("created_at", { ascending: false }).limit(12)
       setAdminOpportunities((publishedItems || []).map((item) => ({
         id: item.id,
         title: item.title,

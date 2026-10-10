@@ -1,10 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 import { X } from "lucide-react"
 
 export function AnnouncementBar() {
   const [dismissed, setDismissed] = useState(false)
+  const [announcement, setAnnouncement] = useState("The Spring Cohort applications close Friday. Secure your seat now.")
+
+  useEffect(() => {
+    void createClient().from("announcements").select("body").eq("title", "__dashboard_announcement__").eq("published", true).maybeSingle().then(({ data }) => {
+      if (data?.body) setAnnouncement(data.body)
+    })
+  }, [])
 
   if (dismissed) return null
 
@@ -12,7 +20,7 @@ export function AnnouncementBar() {
     <div className="relative z-10 flex w-full min-w-0 items-center justify-center bg-burgundy px-8 py-2 text-center text-white">
       <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-3 gap-y-1">
         <p className="min-w-0 text-xs font-medium sm:text-sm">
-          The Spring Cohort applications close Friday. Secure your seat now.
+          {announcement}
         </p>
         <a
           href="#"
