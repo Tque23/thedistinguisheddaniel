@@ -29,6 +29,13 @@ export async function PATCH(request: Request) {
   if (typeof body.dashboard_status === "string" && ["prepared", "updates", "active", "blocked"].includes(body.dashboard_status)) updates.user_metadata = { ...current.data.user.user_metadata, dashboard_status: body.dashboard_status }
   if (typeof body.is_admin === "boolean") updates.app_metadata = { ...current.data.user.app_metadata, is_admin: body.is_admin }
   if (typeof body.ban_duration === "string") updates.ban_duration = body.ban_duration
+  if (body.resend_verification === true) {
+    if (current.data.user.email_confirmed_at) return NextResponse.json({ error: "User is already verified" }, { status: 400 })
+    if (!current.data.user.email) return NextResponse.json({ error: "User has no email address" }, { status: 400 })
+    const { error } = await adminClient.auth.admin.inviteUserByEmail(current.data.user.email)
+    if (error) return NextResponse.json({ error: "Unable to send verification email" }, { status: 400 })
+    return NextResponse.json({ ok: true })
+  }
   if (body.reset_password === true) {
     const temporaryPassword = typeof body.temporary_password === "string" && body.temporary_password.length >= 8 ? body.temporary_password : `${crypto.randomUUID().slice(0, 8)}Aa!9`
     const { error } = await createAdminClient().auth.admin.updateUserById(body.id, { password: temporaryPassword })

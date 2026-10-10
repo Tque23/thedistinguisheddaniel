@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -17,6 +18,13 @@ const navLinks = [
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [announcement, setAnnouncement] = useState("We have launched. Don't miss your spot.")
+
+  useEffect(() => {
+    void createClient().from("announcements").select("body").eq("title", "__landing_announcement__").eq("published", true).maybeSingle().then(({ data }) => {
+      if (data?.body) setAnnouncement(data.body)
+    })
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,7 +52,7 @@ export function Navigation() {
       <div className="fixed top-0 left-0 right-0 z-[60] bg-[#970024] text-white">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center">
           <p className="text-xs font-medium sm:text-sm">
-            We have launched. Don&apos;t miss your spot.
+            {announcement}
           </p>
           <a
             href="/auth?mode=signup"
