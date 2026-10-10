@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
@@ -48,8 +47,6 @@ const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
 export function DashboardHeader({ activeView, onNavigate, member }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void; member: { name: string; title: string; initials: string; avatarColor: string; isAdmin: boolean } }) {
   const copy = viewTitles[activeView]
   const router = useRouter()
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
-
   async function handleSignOut() {
     await createClient().auth.signOut()
     router.replace("/")
@@ -83,7 +80,7 @@ export function DashboardHeader({ activeView, onNavigate, member }: { activeView
 
       <NotificationsMenu />
 
-      <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
+      <DropdownMenu>
         <DropdownMenuTrigger
           render={
             <Button
@@ -122,11 +119,11 @@ export function DashboardHeader({ activeView, onNavigate, member }: { activeView
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("profile") }}>
+            <DropdownMenuItem onClick={() => onNavigate("profile")}>
               <UserRound />
               My Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("settings") }}>
+            <DropdownMenuItem onClick={() => onNavigate("settings")}>
               <Settings />
               Account Settings
             </DropdownMenuItem>
