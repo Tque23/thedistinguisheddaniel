@@ -19,7 +19,23 @@ export function ProfileEditor() {
       if (!user) return
       setUserId(user.id)
       const { data } = await supabase.from("member_profiles").select("headline,company,role,bio,location,website,linkedin_url,skills").eq("id", user.id).maybeSingle()
-      if (data) setForm({ ...data, skills: (data.skills || []).join(", ") })
+      if (data) {
+        const skills = Array.isArray(data.skills)
+          ? data.skills
+          : typeof data.skills === "string"
+            ? data.skills.split(",").map((skill) => skill.trim()).filter(Boolean)
+            : []
+        setForm({
+          headline: data.headline || "",
+          company: data.company || "",
+          role: data.role || "",
+          bio: data.bio || "",
+          location: data.location || "",
+          website: data.website || "",
+          linkedin_url: data.linkedin_url || "",
+          skills: skills.join(", "),
+        })
+      }
     }
     void load()
   }, [supabase])
