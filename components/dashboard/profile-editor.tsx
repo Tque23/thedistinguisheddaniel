@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useState } from "react"
+import { FormEvent, useEffect, useMemo, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,7 @@ export function ProfileEditor() {
   const [userId, setUserId] = useState<string | null>(null)
   const [form, setForm] = useState({ headline: "", company: "", role: "", bio: "", location: "", website: "", linkedin_url: "", skills: "" })
   const [status, setStatus] = useState("")
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     async function load() {
