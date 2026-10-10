@@ -1,6 +1,7 @@
 "use client"
 
-import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +32,14 @@ export function AppSidebar({
   onNavigate: (view: DashboardView) => void
   member: { name: string; title: string; initials: string; avatarColor: string; isAdmin: boolean }
 }) {
+  const router = useRouter()
+
+  async function openAdminDashboard() {
+    const client = createClient()
+    await client.auth.refreshSession()
+    router.push("/admin")
+  }
+
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border">
       <SidebarHeader>
@@ -65,7 +74,7 @@ export function AppSidebar({
               ))}
               {member.isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Admin dashboard" onClick={() => window.location.assign("/admin")}>
+                  <SidebarMenuButton tooltip="Admin dashboard" onClick={() => void openAdminDashboard()}>
                     <ShieldCheck /><span>Admin dashboard</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
