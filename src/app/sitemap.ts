@@ -24,5 +24,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 }
 
 export const revalidate = 3600
-
 export const dynamic = "force-static"
+
+// Only canonical public routes belong in this sitemap. Authenticated/admin routes are excluded.
