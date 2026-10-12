@@ -4,11 +4,21 @@ import './globals.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { SiteLoader } from "@/components/site-loader"
 
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://distinguisheddaniel.com').replace(/\/$/, '')
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'The Distinguished Daniel Network & Institute',
   description:
     'An apostolic hub training, equipping and empowering believers to become distinguished Kingdom pioneers.',
   generator: 'v0.app',
+  alternates: {
+    canonical: './',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
       {
