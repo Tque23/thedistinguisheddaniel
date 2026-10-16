@@ -109,17 +109,19 @@ export function DashboardHeader({ activeView, onNavigate, member }: { activeView
           }
         />
         <DropdownMenuContent align="end" className="w-64">
-          <DropdownMenuLabel className="flex flex-col gap-0.5 px-1.5 py-1.5">
-            <span className="text-sm font-medium text-foreground">
-              {member.name}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {member.title}
-            </span>
-            <Badge variant="outline" className="mt-1 w-fit text-[10px]">
-              {member.isAdmin ? "Administrator" : "DDNI Member"}
-            </Badge>
-          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className="flex flex-col gap-0.5 px-1.5 py-1.5">
+              <span className="text-sm font-medium text-foreground">
+                {member.name}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {member.title}
+              </span>
+              <Badge variant="outline" className="mt-1 w-fit text-[10px]">
+                {member.isAdmin ? "Administrator" : "DDNI Member"}
+              </Badge>
+            </DropdownMenuLabel>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={() => { setProfileMenuOpen(false); onNavigate("profile") }}>
