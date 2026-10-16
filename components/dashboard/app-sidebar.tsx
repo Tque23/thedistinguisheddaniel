@@ -14,7 +14,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { GraduationCap, LayoutGrid, Settings, UserRound, ShieldCheck } from "lucide-react"
-import type { DashboardView } from "@/components/dashboard/dashboard-shell"
+import type { DashboardMember, DashboardView } from "@/components/dashboard/dashboard-shell"
+import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
 
 const navItems: { id: DashboardView; label: string; icon: typeof LayoutGrid }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
@@ -30,7 +31,7 @@ export function AppSidebar({
 }: {
   activeView: DashboardView
   onNavigate: (view: DashboardView) => void
-  member: { name: string; title: string; initials: string; avatarColor: string; isAdmin: boolean }
+  member: DashboardMember
 }) {
   const router = useRouter()
 
@@ -89,7 +90,7 @@ export function AppSidebar({
             className="flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
             style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}
           >
-            {member.initials}
+            <MemberAvatarContent member={member} />
           </div>
           <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
             <span className="truncate text-sm font-medium text-sidebar-foreground">

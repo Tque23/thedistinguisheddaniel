@@ -20,7 +20,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { NotificationsMenu } from "@/components/dashboard/notifications-menu"
 import { LogOut, Search, Settings, UserRound } from "lucide-react"
-import type { DashboardView } from "@/components/dashboard/dashboard-shell"
+import type { DashboardMember, DashboardView } from "@/components/dashboard/dashboard-shell"
+import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
 
 const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
   overview: {
@@ -45,7 +46,7 @@ const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
   },
 }
 
-export function DashboardHeader({ activeView, onNavigate, member }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void; member: { name: string; title: string; initials: string; avatarColor: string; isAdmin: boolean } }) {
+export function DashboardHeader({ activeView, onNavigate, member }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void; member: DashboardMember }) {
   const copy = viewTitles[activeView]
   const router = useRouter()
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
@@ -100,7 +101,7 @@ export function DashboardHeader({ activeView, onNavigate, member }: { activeView
                   color: "#1a1200",
                 }}
               >
-                {member.initials}
+                <MemberAvatarContent member={member} />
               </div>
               <span className="hidden text-sm font-medium sm:inline">
                 {member.name.split(" ")[0]}
