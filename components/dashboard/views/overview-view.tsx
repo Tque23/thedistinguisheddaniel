@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import {
-  currentMember,
   learningPath,
   stats,
   type Opportunity,
@@ -17,14 +16,16 @@ import {
   Briefcase,
   GraduationCap,
 } from "lucide-react"
-import type { DashboardView } from "@/components/dashboard/dashboard-shell"
+import type { DashboardMember, DashboardView } from "@/components/dashboard/dashboard-shell"
 
 export function OverviewView({
   onNavigate,
   opportunities,
+  member,
 }: {
   onNavigate: (view: DashboardView) => void
   opportunities: Opportunity[]
+  member: DashboardMember
 }) {
   const inProgress = learningPath.filter((m) => m.progress < 100)
 
@@ -34,10 +35,10 @@ export function OverviewView({
       <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-[#0c1e2c] via-[#0c1e2c] to-[#132c40] p-6 sm:p-8">
         <div className="relative z-10 flex flex-col gap-3">
           <Badge variant="outline" className="w-fit border-[#dcb567]/40 text-[#f3d27a]">
-            {currentMember.tier} Member since {currentMember.memberSince}
+            {member.tier} Member{member.memberSince ? ` since ${member.memberSince}` : ""}
           </Badge>
           <h2 className="font-display text-2xl text-foreground sm:text-3xl">
-            Welcome back, {currentMember.name.split(" ")[0]}
+            Welcome back, {member.name.split(" ")[0]}
           </h2>
           <p className="max-w-xl text-sm text-muted-foreground">
             You have {inProgress.length} active learning{" "}

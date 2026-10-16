@@ -1,14 +1,5 @@
 export type MemberTier = "Ambassador" | "Fellow" | "Patron"
 
-export const currentMember = {
-  name: "Daniel Whitfield",
-  initials: "DW",
-  tier: "Fellow" as MemberTier,
-  title: "Founder, Whitfield Capital Partners",
-  memberSince: "March 2024",
-  avatarColor: "#dcb567",
-}
-
 export const stats = {
   coursesInProgress: 2,
   coursesCompleted: 6,

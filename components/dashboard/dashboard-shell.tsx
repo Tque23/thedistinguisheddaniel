@@ -20,13 +20,31 @@ export type DashboardView = "overview" | "institute" | "network" | "profile" | "
 
 const SESSION_TIMEOUT_MS = 5 * 60 * 1000
 
-export function DashboardShell({ member: initialMember }: { member: { name: string; title: string; initials: string; avatarColor: string; isAdmin: boolean } }) {
+export type DashboardMember = {
+  name: string
+  email: string
+  avatarUrl: string
+  title: string
+  tier: string
+  location: string
+  memberSince: string
+  initials: string
+  avatarColor: string
+  isAdmin: boolean
+}
+
+export function DashboardShell({ member: initialMember }: { member: DashboardMember }) {
   const router = useRouter()
   const [activeView, setActiveView] = useState<DashboardView>("overview")
   const [isTimedOut, setIsTimedOut] = useState(false)
   const [accessState, setAccessState] = useState<"prepared" | "updates" | "active" | "blocked" | null>(null)
-  const [member] = useState({
+  const [member] = useState<DashboardMember>({
     name: initialMember.name || "Member",
+    email: initialMember.email || "",
+    avatarUrl: initialMember.avatarUrl || "",
+    tier: initialMember.tier || "DDNI",
+    location: initialMember.location || "",
+    memberSince: initialMember.memberSince || "",
     title: initialMember.title || "DDNI Member",
     initials: initialMember.initials || "M",
     avatarColor: initialMember.avatarColor || "#dcb567",
@@ -113,12 +131,12 @@ export function DashboardShell({ member: initialMember }: { member: { name: stri
                 className="p-4 sm:p-6 lg:p-8"
               >
                 {activeView === "overview" && (
-                  <OverviewView onNavigate={setActiveView} opportunities={adminOpportunities} />
+                  <OverviewView onNavigate={setActiveView} opportunities={adminOpportunities} member={member} />
                 )}
                 {activeView === "institute" && <InstituteView />}
                 {activeView === "network" && <NetworkView opportunities={adminOpportunities} />}
-                {activeView === "profile" && <><ProfileEditor /><ProfileView /></>}
-                {activeView === "settings" && <SettingsView />}
+                {activeView === "profile" && <><ProfileEditor /><ProfileView member={member} /></>}
+                {activeView === "settings" && <SettingsView member={member} />}
               </motion.div>
             </AnimatePresence>
           </div>

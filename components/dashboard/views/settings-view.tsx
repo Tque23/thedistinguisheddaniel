@@ -7,12 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Bell, Check, LockKeyhole, Mail, Shield, Smartphone } from "lucide-react"
+import type { DashboardMember } from "@/components/dashboard/dashboard-shell"
 
 function SettingRow({ icon: Icon, title, description, children }: { icon: typeof Bell; title: string; description: string; children: ReactNode }) {
   return <div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 items-start gap-3"><div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#970024]/20 text-[#ef7182]"><Icon className="size-4" /></div><div><p className="text-sm font-medium text-foreground">{title}</p><p className="mt-1 max-w-lg text-xs leading-relaxed text-muted-foreground">{description}</p></div></div><div className="shrink-0">{children}</div></div>
 }
 
-export function SettingsView() {
+export function SettingsView({ member }: { member: DashboardMember }) {
   const [emailUpdates, setEmailUpdates] = useState(true)
   const [networkAlerts, setNetworkAlerts] = useState(true)
   const [saved, setSaved] = useState(false)
@@ -20,7 +21,7 @@ export function SettingsView() {
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
   const [emailEditing, setEmailEditing] = useState(false)
-  const [contactEmail, setContactEmail] = useState("daniel@whitfieldcapital.com")
+  const [contactEmail, setContactEmail] = useState(member.email)
   const [sessionMessage, setSessionMessage] = useState("")
 
   function savePreferences() { setSaved(true); window.setTimeout(() => setSaved(false), 2400) }
