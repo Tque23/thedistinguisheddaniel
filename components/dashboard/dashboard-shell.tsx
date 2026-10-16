@@ -20,12 +20,18 @@ export type DashboardView = "overview" | "institute" | "network" | "profile" | "
 
 const SESSION_TIMEOUT_MS = 5 * 60 * 1000
 
-export function DashboardShell() {
+export function DashboardShell({ member: initialMember }: { member: { name: string; title: string; initials: string; avatarColor: string; isAdmin: boolean } }) {
   const router = useRouter()
   const [activeView, setActiveView] = useState<DashboardView>("overview")
   const [isTimedOut, setIsTimedOut] = useState(false)
   const [accessState, setAccessState] = useState<"prepared" | "updates" | "active" | "blocked" | null>(null)
-  const [member, setMember] = useState({ name: "Member", title: "DDNI Member", initials: "M", avatarColor: "#dcb567", isAdmin: false })
+  const [member] = useState({
+    name: initialMember.name || "Member",
+    title: initialMember.title || "DDNI Member",
+    initials: initialMember.initials || "M",
+    avatarColor: initialMember.avatarColor || "#dcb567",
+    isAdmin: initialMember.isAdmin || false,
+  })
   const [adminOpportunities, setAdminOpportunities] = useState<Opportunity[]>([])
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -39,14 +45,6 @@ export function DashboardShell() {
     void createClient().auth.getUser().then(async ({ data }) => {
       const user = data.user
       if (!user) return setAccessState("prepared")
-      const name = String(user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "Member")
-      setMember({
-        name,
-        title: String(user.user_metadata?.title || user.user_metadata?.role || "DDNI Member"),
-        initials: name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase(),
-        avatarColor: "#dcb567",
-        isAdmin: user.app_metadata?.is_admin === true,
-      })
       const { data: publishedItems } = await createClient().from("announcements").select("id, title, body, created_at").eq("published", true).not("title", "in", `("__dashboard_announcement__","__landing_announcement__")`).order("created_at", { ascending: false }).limit(12)
       setAdminOpportunities((publishedItems || []).map((item) => ({
         id: item.id,
