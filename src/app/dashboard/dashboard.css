@@ -1,9 +1,12 @@
 /* The Distinguished Daniel — Member Dashboard theme
    Reuses the brand palette from landing.css (.tdd) and maps it onto the
    shadcn/ui semantic tokens so every dashboard component inherits the
-   brand's navy/gold/burgundy identity automatically. */
+   brand's navy/gold/burgundy identity automatically.
+   `.tdd-dashboard-theme` is set on <body> while the dashboard is mounted so
+   portalled menus, sheets and the mobile sidebar share the same tokens. */
 
-.tdd-dashboard {
+.tdd-dashboard,
+.tdd-dashboard-theme {
   color-scheme: dark;
 
   --background: #071520;
@@ -46,42 +49,61 @@
   --sidebar-border: #1c2e3d;
   --sidebar-ring: #f3d27a;
 
+  font-family: "Inter", "Source Sans Pro", system-ui, sans-serif;
+}
+
+.tdd-dashboard {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: "Inter", "Source Sans Pro", system-ui, sans-serif;
   min-height: 100vh;
 }
 
-.tdd-dashboard .font-display {
-  font-family: "Trajan Pro 3", serif;
+:is(.tdd-dashboard, .tdd-dashboard-theme) .font-display {
+  font-family: "Trajan Pro 3", Georgia, serif;
+  letter-spacing: -0.01em;
 }
 
-.tdd-dashboard .text-gold {
+:is(.tdd-dashboard, .tdd-dashboard-theme) .text-gold {
   background: linear-gradient(90deg, #c89b3c, #f3d27a);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.tdd-dashboard .btn-gold {
+:is(.tdd-dashboard, .tdd-dashboard-theme) .btn-gold {
   background: linear-gradient(90deg, #c89b3c, #f3d27a) !important;
   color: #1a1200 !important;
   border-color: transparent !important;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.2s ease;
 }
 
-.tdd-dashboard .btn-gold:hover {
+:is(.tdd-dashboard, .tdd-dashboard-theme) .btn-gold:hover {
   opacity: 0.88;
 }
 
-.tdd-dashboard .bg-burgundy {
+:is(.tdd-dashboard, .tdd-dashboard-theme) .bg-burgundy {
   background-color: var(--burgundy);
 }
 
-.tdd-dashboard .text-burgundy {
+:is(.tdd-dashboard, .tdd-dashboard-theme) .text-burgundy {
   color: var(--burgundy);
 }
 
-.tdd-dashboard .border-burgundy {
+:is(.tdd-dashboard, .tdd-dashboard-theme) .border-burgundy {
   border-color: var(--burgundy);
+}
+
+.tdd-dashboard .dashboard-card-hover {
+  transition: border-color 0.25s ease, transform 0.25s ease, background-color 0.25s ease;
+}
+
+.tdd-dashboard .dashboard-card-hover:hover {
+  border-color: rgba(220, 181, 103, 0.45);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tdd-dashboard .dashboard-card-hover:hover {
+    transform: none;
+  }
 }
