@@ -11,9 +11,12 @@ async function requireAdmin() {
 
 export async function GET() {
   if (!await requireAdmin()) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-  const { data, error } = await createAdminClient().auth.admin.listUsers({ perPage: 1000 })
+  const adminClient = createAdminClient()
+  const { data, error } = await adminClient.auth.admin.listUsers({ perPage: 1000 })
   if (error) return NextResponse.json({ error: "Unable to load users" }, { status: 500 })
-  return NextResponse.json({ users: data.users.map((user) => ({ id: user.id, email: user.email, created_at: user.created_at, last_sign_in_at: user.last_sign_in_at, email_confirmed_at: user.email_confirmed_at, user_metadata: user.user_metadata, app_metadata: user.app_metadata })) })
+  const { data: profiles } = await adminClient.from("member_profiles").select("*")
+  const profileById = new Map(((profiles || []) as { id: string }[]).map((profile) => [profile.id, profile]))
+  return NextResponse.json({ users: data.users.map((user) => ({ id: user.id, email: user.email, created_at: user.created_at, last_sign_in_at: user.last_sign_in_at, email_confirmed_at: user.email_confirmed_at, user_metadata: user.user_metadata, app_metadata: user.app_metadata, profile: profileById.get(user.id) || null })) })
 }
 
 export async function PATCH(request: Request) {
@@ -29,6 +32,10 @@ export async function PATCH(request: Request) {
   if (typeof body.dashboard_status === "string" && ["prepared", "updates", "active", "blocked"].includes(body.dashboard_status)) updates.user_metadata = { ...current.data.user.user_metadata, dashboard_status: body.dashboard_status }
   if (typeof body.is_admin === "boolean") updates.app_metadata = { ...current.data.user.app_metadata, is_admin: body.is_admin }
   if (typeof body.ban_duration === "string") updates.ban_duration = body.ban_duration
+  if (typeof body.profile_status === "string" && ["pending_review", "approved", "rejected"].includes(body.profile_status)) {
+    const note = typeof body.profile_review_note === "string" ? body.profile_review_note.trim().slice(0, 500) : ""
+    updates.user_metadata = { ...(updates.user_metadata || current.data.user.user_metadata), professional_profile_status: body.profile_status, profile_review_note: note, profile_reviewed_at: new Date().toISOString() }
+  }
   if (body.resend_verification === true) {
     if (current.data.user.email_confirmed_at) return NextResponse.json({ error: "User is already verified" }, { status: 400 })
     if (!current.data.user.email) return NextResponse.json({ error: "User has no email address" }, { status: 400 })

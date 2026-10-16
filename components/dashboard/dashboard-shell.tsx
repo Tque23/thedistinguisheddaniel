@@ -53,6 +53,8 @@ export type DashboardMember = {
   pendingEmail: string
   profileStatus: string
   lastProfileSavedAt: string
+  profileReviewedAt: string
+  profileReviewNote: string
   passwordChangedAt: string
   emailChangeRequestedAt: string
   preferences: { emailUpdates: boolean; networkAlerts: boolean }
