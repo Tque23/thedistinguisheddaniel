@@ -172,7 +172,7 @@ function AuthForm() {
                   <div className="flex justify-between items-start gap-4">
                     <dt>Bank</dt>
                     <dd className="text-right flex flex-col">
-                      <span>Bank: Standard Bank</span>
+                      <span>Bank: STANDARD BANK</span>
                       <span>Account Type: CURRENT</span>
                       <span>Account Number: 10 14 497 087 0</span>
                       <span>Branch: CENTURION MALL</span>
