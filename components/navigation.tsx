@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -19,12 +18,6 @@ export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [announcement, setAnnouncement] = useState("We have launched. Don't miss your spot.")
-
-  useEffect(() => {
-    void createClient().from("announcements").select("body").eq("title", "__landing_announcement__").eq("published", true).maybeSingle().then(({ data }) => {
-      if (data?.body) setAnnouncement(data.body)
-    })
-  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
