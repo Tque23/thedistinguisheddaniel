@@ -86,6 +86,21 @@ export function Hero() {
   }
 
   useEffect(() => {
+    const video = videoRef.current
+    if (video) {
+      const loadVideo = () => {
+        video.querySelectorAll<HTMLSourceElement>("source[data-src]").forEach((source) => {
+          source.src = source.dataset.src || ""
+        })
+        video.load()
+        void video.play().catch(() => setIsVideoPlaying(false))
+      }
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(loadVideo, { timeout: 1500 })
+      } else {
+        setTimeout(loadVideo, 1000)
+      }
+    }
     const interval = setInterval(() => {
       setBlurred(true)
       const timeout = setTimeout(() => {
@@ -104,9 +119,9 @@ export function Hero() {
       <div className="hero-top-section">
         {/* Background Video */}
         <div className="hero-video">
-          <video aria-hidden="true" ref={videoRef} autoPlay muted loop playsInline onPlay={() => setIsVideoPlaying(true)} onPause={() => setIsVideoPlaying(false)}>
-            <source src="/hero-video.webm" type="video/webm" />
-            <source src="/hero-video.mp4" type="video/mp4" />
+          <video aria-hidden="true" ref={videoRef} autoPlay muted loop playsInline preload="none" poster="/Poster.jpg" onPlay={() => setIsVideoPlaying(true)} onPause={() => setIsVideoPlaying(false)}>
+            <source data-src="/hero-video.webm" type="video/webm" />
+            <source data-src="/hero-video.mp4" type="video/mp4" />
           </video>
           <div className="video-wash" />
           <div className="hero-grid-lines" />

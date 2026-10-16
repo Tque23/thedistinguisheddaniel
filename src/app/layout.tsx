@@ -2,7 +2,6 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { SiteLoader } from "@/components/site-loader"
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://distinguisheddaniel.com').replace(/\/$/, '')
 
@@ -54,7 +53,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <SiteLoader />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
         <SpeedInsights/>
