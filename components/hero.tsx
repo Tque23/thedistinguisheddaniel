@@ -119,7 +119,7 @@ export function Hero() {
       <div className="hero-top-section">
         {/* Background Video */}
         <div className="hero-video">
-          <video aria-hidden="true" ref={videoRef} autoPlay muted loop playsInline preload="none" poster="/Poster.jpg" onPlay={() => setIsVideoPlaying(true)} onPause={() => setIsVideoPlaying(false)}>
+          <video aria-hidden="true" ref={videoRef} autoPlay muted loop playsInline preload="none" onPlay={() => setIsVideoPlaying(true)} onPause={() => setIsVideoPlaying(false)}>
             <source data-src="/hero-video.webm" type="video/webm" />
             <source data-src="/hero-video.mp4" type="video/mp4" />
           </video>
