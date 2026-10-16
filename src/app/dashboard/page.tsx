@@ -44,6 +44,8 @@ export default async function DashboardPage() {
     pendingEmail: user.new_email ?? "",
     profileStatus: text(metadata.professional_profile_status),
     lastProfileSavedAt: text(metadata.last_profile_saved_at),
+    profileReviewedAt: text(metadata.profile_reviewed_at),
+    profileReviewNote: text(metadata.profile_review_note),
     passwordChangedAt: text(metadata.password_changed_at),
     emailChangeRequestedAt: text(metadata.email_change_requested_at),
     preferences: {

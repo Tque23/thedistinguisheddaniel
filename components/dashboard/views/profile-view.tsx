@@ -156,6 +156,7 @@ export function ProfileView({ member, data, onMemberChange, onProfileChange }: D
       />
       {status && <StatusMessage tone={status.tone}>{status.text}</StatusMessage>}
       {data.errors.profile && <StatusMessage tone="error">{data.errors.profile}</StatusMessage>}
+      {member.profileStatus === "rejected" && <StatusMessage tone="error">{`The DDNI team requested changes${member.profileReviewNote ? `: ${member.profileReviewNote}` : "."} Update your profile and save to resubmit.`}</StatusMessage>}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(260px,0.8fr)]">
         <div className="flex flex-col gap-6">
