@@ -46,7 +46,7 @@ const facultyData: FacultyMember[] = [
     image: "/board/member-bg.JPG",
     profileUrl: "#",
     position: "Committee Member",
-  },
+  }, 
   {
     id: 5,
     name: "Dineo Mamorobela",
