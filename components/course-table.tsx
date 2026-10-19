@@ -1,7 +1,10 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Play } from "lucide-react"
+import { useScrollSlider } from "@/components/use-scroll-slider"
+import { SliderControls } from "@/components/slider-controls"
 import { createClient } from "@/lib/supabase/client"
 import { COURSES, type Course } from "@/lib/courses"
 import { CourseDialog } from "@/components/course-dialog"
@@ -28,7 +31,6 @@ const FEATURED_COURSES: Lecture[] = COURSES.map((course) => ({
 }))
 
 const CATEGORIES = ["All", "Paid", "Free"]
-const TOTAL_DOTS = 3;
 
 export function LectureLibraryShowcase() {
   const [activeTab, setActiveTab] = useState("All")
@@ -52,10 +54,6 @@ export function LectureLibraryShowcase() {
     return () => { active = false }
   }, [])
   
-  // Swiper State
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
   const allLectures = [...FEATURED_COURSES, ...managedLectures]
 
   const displayedLectures =
@@ -63,71 +61,11 @@ export function LectureLibraryShowcase() {
       ? allLectures
       : allLectures.filter((item) => item.category === activeTab || item.tags.includes(activeTab))
 
-  // Layout Logic Constraints
-  const count = displayedLectures.length;
-  const isSwiperOnMobile = true;
-  const isSwiperOnDesktop = true;
+  const slider = useScrollSlider(displayedLectures.length, activeTab)
 
-  // Track swiper scroll position to update dots
-  const handleScroll = () => {
-    if (!sliderRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
-    const maxScroll = scrollWidth - clientWidth;
-
-    if (maxScroll <= 0) {
-      setActiveIndex(0);
-      return;
-    }
-
-    const clampedScrollLeft = Math.max(0, Math.min(scrollLeft, maxScroll));
-    const progress = clampedScrollLeft / maxScroll;
-    const targetIndex = Math.round(progress * (TOTAL_DOTS - 1));
-
-    if (targetIndex !== activeIndex) {
-      setActiveIndex(targetIndex);
-    }
-  };
-
-  // Click handler for dot navigation
-  const handleDotClick = (index: number) => {
-    setActiveIndex(index);
-    if (!sliderRef.current) return;
-
-    const children = sliderRef.current.children;
-    if (!children.length) return;
-
-    const targetCardIndex = Math.round((index / (TOTAL_DOTS - 1)) * (displayedLectures.length - 1));
-    const targetCard = children[targetCardIndex] as HTMLElement;
-    const firstChild = children[0] as HTMLElement;
-
-    if (targetCard && firstChild) {
-      const targetLeft = targetCard.offsetLeft - firstChild.offsetLeft;
-      sliderRef.current.scrollTo({
-        left: targetLeft,
-        behavior: 'smooth',
-      });
-    }
-  };
-
-  // Determine dynamic container and child classes to allow purely CSS-driven responsive switching
-  let containerClasses = "gap-x-4 gap-y-6 pt-2 ";
-  let childClasses = "group cursor-pointer flex flex-col space-y-2 ";
-  let dotsVisibilityClass = "hidden";
-
-  if (isSwiperOnMobile && isSwiperOnDesktop) {
-     // Always Swiper Layout (Mobile & PC)
-     containerClasses += "flex overflow-x-auto snap-x snap-mandatory scroll-smooth pb-6 scroll-px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']";
-     childClasses += "flex-none w-[80vw] sm:w-[320px] lg:w-[300px] snap-start";
-     dotsVisibilityClass = "flex";
-  } else if (isSwiperOnMobile && !isSwiperOnDesktop) {
-     // Hybrid Layout: Swiper on Mobile, Grid on PC
-     containerClasses += "flex overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 scroll-px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] lg:grid lg:grid-cols-4 lg:overflow-visible lg:snap-none lg:pb-0";
-     childClasses += "flex-none w-[80vw] sm:w-[320px] snap-start lg:w-auto lg:snap-align-none";
-     dotsVisibilityClass = "flex lg:hidden";
-  } else {
-     // Always Grid Layout (Mobile & PC)
-     containerClasses += "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4";
-  }
+  const containerClasses =
+    "flex gap-x-4 pt-2 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-6 scroll-px-0 overscroll-x-contain [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] focus-visible:outline-none"
+  const childClasses = "group cursor-pointer flex flex-col space-y-2 flex-none w-[80vw] sm:w-[320px] lg:w-[300px] snap-start"
 
   return (
     <section 
@@ -172,8 +110,12 @@ export function LectureLibraryShowcase() {
 
         {/* Dynamic Grid / Swiper Container */}
         <div 
-          ref={sliderRef}
-          onScroll={handleScroll}
+          ref={slider.ref}
+          onKeyDown={slider.onKeyDown}
+          tabIndex={0}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Short courses"
           className={containerClasses}
         >
           {displayedLectures.map((lecture) => (
@@ -186,11 +128,12 @@ export function LectureLibraryShowcase() {
             >
               {/* Portrait course poster frame (1080 x 1350 / 4:5) */}
               <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-slate-900 border border-slate-800/80 shadow-md">
-                <img
+                <Image
                   src={lecture.image}
                   alt={lecture.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
+                  fill
+                  sizes="(max-width: 640px) 70vw, (max-width: 1024px) 33vw, 240px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
 
                 {/* Play Button Hover Effect */}
@@ -214,25 +157,17 @@ export function LectureLibraryShowcase() {
           ))}
         </div>
 
-        {/* Pagination Dots (Only visible when Swiper is active for the respective viewport) */}
-        <div className={`justify-center items-center mt-2 ${dotsVisibilityClass}`}>
-          {Array.from({ length: TOTAL_DOTS }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => handleDotClick(index)}
-              className="p-3 focus:outline-none touch-manipulation group"
-              aria-label={`Go to section ${index + 1}`}
-            >
-              <span
-                className={`block h-1.5 rounded-full transition-all duration-300 ${
-                  activeIndex === index
-                    ? 'w-6 bg-slate-100'
-                    : 'w-2 bg-slate-700 group-hover:bg-slate-500'
-                }`}
-              />
-            </button>
-          ))}
-        </div>
+        <SliderControls
+          tone="dark"
+          label="courses"
+          pages={slider.pages}
+          activePage={slider.activePage}
+          canPrev={slider.canPrev}
+          canNext={slider.canNext}
+          onPrev={slider.prev}
+          onNext={slider.next}
+          onPage={slider.scrollToPage}
+        />
 
       </div>
       <CourseDialog course={selectedCourse} onClose={() => setSelectedCourse(null)} />

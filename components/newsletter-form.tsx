@@ -15,7 +15,7 @@ export function NewsletterForm() {
 
         <div className="flex flex-col gap-3">
           <h2
-            style={{ fontFamily: '"Trajan Pro 3", serif' }}
+            style={{ fontFamily: 'var(--font-trajan), serif' }}
             className="text-3xl font-normal tracking-tight text-white text-balance md:text-5xl"
           >
             Sign up to the newsletter

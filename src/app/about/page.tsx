@@ -1,6 +1,9 @@
+import fs from "fs"
+import path from "path"
 import type { ReactNode } from "react"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
+import { GallerySlider } from "@/components/gallery-slider"
 import { BriefHero } from "./brief-hero"
 import "../landing.css"
 import "./about.css"
@@ -13,14 +16,102 @@ const seasons: Array<[string, ReactNode]> = [
 ]
 
 export default function AboutPage() {
-  return <div className="tdd about-page"><Navigation /><main>
-    <BriefHero />
-    <article className="brief-content">
-      <section className="brief-section opening"><div className="brief-section-number">01</div><div><h2>The order of the <em>End Times</em></h2><p className="brief-deck">The order of the End Times consists of various seasons and events, notably:</p>{seasons.map(([title, text], i) => <section className="season" key={title}><span>0{i + 1}</span><div><h3>{title}</h3><p>{text}</p></div></section>)}</div></section>
-      <section className="brief-section"><div className="brief-section-number">02</div><div><h2>Paramount in God’s <em>agenda</em></h2><p>Paramount in God’s agenda in this Glory Season is that believers maximise this time by firstly subjecting themselves to training and programs of instruction that will equip and empower them to be pioneers in various spheres of influence and across every strata of relevance. This training will launch the believers as notable leaders who will tangibly influence world systems by enthroning the Kingdom of God and its principles. Influence is attached to wealth, so believers in this season must be prepared to not only receive wealth but to host it and weaponise it to advance God’s Kingdom. These trailblazing pioneers will function in righteousness, wisdom and in the light of the Word of God, guided by Holy Spirit every step of the way.</p></div></section>
-      <section className="brief-section daniel"><div className="brief-section-number">03</div><div><p className="eyebrow">The Bible testifies of such Kingdom pioneer, Daniel.</p><h2>The <em>distinguished Daniel</em></h2><p>Daniel served with excellence and relevance across five Babylonian and Persian kings. Pause and consider that. Five different kings would rise and fall yet Daniel remained relevant in each dispensation, there was no order of a king that did not require Daniel’s voice. Daniel’s voice became an eternal excellence (Isaiah 60:15), his influence infiltrated the foreign world system of Babylon, and placed him on a platform where he advanced God’s interests in Babylon. Even after Babylon was seized by the Persian Empire, Daniel was still summoned to serve King Darius and King Cyrus as a leading government official.</p><p>Daniel 6:3 tells us his secret, the Bible says Daniel distinguished himself because an excellent spirit was in him. Daniel was not just a good Christian, he intentionally sought to distinguish himself in his craft - we note this in Daniel 1 when he refused to partake in Bablyon’s delicacies. The Bible later narrates that Daniel was found to be ten times better than his contemporaries. In this season, the Lord is raising believers in the order of Daniel, the distinguished Daniel.</p></div></section>
-      <section className="brief-section pillars"><div className="brief-section-number">04</div><div><h2>The Distinguished Daniel Network &amp; Institute</h2><p>The Distinguished Daniel Network &amp; Institute (“DDNI”) is an apostolic hub that trains, equips and empowers believers in line with God’s End Time mandate. The hub comprises of two major pillars:</p><div className="pillar-grid"><div><span>01</span><h3>The Network:</h3><p>This is a central database where believers from across the world network and engage on various disciplines to identify and capitalize on potential synergies amongst each other. In other words, the wealth will be generated and circulated within the network to empower all participating believers to thrive using biblical principles.</p></div><div><span>02</span><h3>The Institute:</h3><p>This is a school of the Spirit, where ordinary believers are taught, equipped and transformed into global leaders and pioneers in the marketplace, government and creative corridors. The institute will avail various courses that can either be attended in-person or online, and host various camps, seminars and similar gatherings to tutor believers in understanding the dominion mandate.</p></div></div><p className="closing-line">Together, these pillars will tutor believers to become distinguished and novel, ready to mentor nations and advance God’s interests in society.</p></div></section>
-      <section className="brief-section invitation"><div className="brief-section-number">05</div><div><p>God ordained you in your mother’s womb (Jeremiah 1:5), He prepared good works that you should walk in (Ephesians 2:10), DDNI tutors you to identify the good works, be equipped to do the good works and be a pioneer in the arena of the good works until you become a notable leader that will tangibly transform society.</p><h2>DDNI welcomes you to the network, <em>prepare to take off!</em></h2><p className="signature">Yours in the Kingdom,<br /><strong>DDNI President &amp; Servant Leader: Khanyi Zungu</strong></p></div></section>
-    </article>
-  </main><Footer /></div>
+  // Read all images dynamically from public/gallery
+  const galleryDirectory = path.join(process.cwd(), "public/gallery")
+  let aboutGalleryImages: string[] = []
+
+  try {
+    const filenames = fs.readdirSync(galleryDirectory)
+    aboutGalleryImages = filenames
+      .filter((file) => /\.(jpg|jpeg|png|webp|avif)$/i.test(file))
+      .map((filename) => `/gallery/${filename}`)
+  } catch (error) {
+    console.error("Error reading gallery directory:", error)
+  }
+
+  return (
+    <div className="tdd about-page">
+      <Navigation />
+      <main>
+        <BriefHero />
+        <div className="separator-set-1 separator-base">
+          <div className="separator-line line-top"></div>
+          <div className="separator-line line-bottom"></div>
+        </div>
+        <article className="brief-content">
+          <section className="brief-section opening">
+            <div className="brief-section-number">01</div>
+            <div>
+              <h2>The order of the <em>End Times</em></h2>
+              <p className="brief-deck">The order of the End Times consists of various seasons and events, notably:</p>
+              {seasons.map(([title, text], i) => (
+                <section className="season" key={title}>
+                  <span>0{i + 1}</span>
+                  <div>
+                    <h3>{title}</h3>
+                    <p>{text}</p>
+                  </div>
+                </section>
+              ))}
+            </div>
+          </section>
+          <section className="brief-section">
+            <div className="brief-section-number">02</div>
+            <div>
+              <h2>Paramount in God’s <em>agenda</em></h2>
+              <p>Paramount in God’s agenda in this Glory Season is that believers maximise this time by firstly subjecting themselves to training and programs of instruction that will equip and empower them to be pioneers in various spheres of influence and across every strata of relevance. This training will launch the believers as notable leaders who will tangibly influence world systems by enthroning the Kingdom of God and its principles. Influence is attached to wealth, so believers in this season must be prepared to not only receive wealth but to host it and weaponise it to advance God’s Kingdom. These trailblazing pioneers will function in righteousness, wisdom and in the light of the Word of God, guided by Holy Spirit every step of the way.</p>
+            </div>
+          </section>
+          <section className="brief-section daniel">
+            <div className="brief-section-number">03</div>
+            <div>
+              <p className="eyebrow">The Bible testifies of such Kingdom pioneer, Daniel.</p>
+              <h2>The <em>distinguished Daniel</em></h2>
+              <p>Daniel served with excellence and relevance across five Babylonian and Persian kings. Pause and consider that. Five different kings would rise and fall yet Daniel remained relevant in each dispensation, there was no order of a king that did not require Daniel’s voice. Daniel’s voice became an eternal excellence (Isaiah 60:15), his influence infiltrated the foreign world system of Babylon, and placed him on a platform where he advanced God’s interests in Babylon. Even after Babylon was seized by the Persian Empire, Daniel was still summoned to serve King Darius and King Cyrus as a leading government official.</p>
+              <p>Daniel 6:3 tells us his secret, the Bible says Daniel distinguished himself because an excellent spirit was in him. Daniel was not just a good Christian, he intentionally sought to distinguish himself in his craft - we note this in Daniel 1 when he refused to partake in Bablyon’s delicacies. The Bible later narrates that Daniel was found to be ten times better than his contemporaries. In this season, the Lord is raising believers in the order of Daniel, the distinguished Daniel.</p>
+            </div>
+          </section>
+          <section className="brief-section pillars">
+            <div className="brief-section-number">04</div>
+            <div>
+              <h2>The Distinguished Daniel Network &amp; Institute</h2>
+              <p>The Distinguished Daniel Network &amp; Institute (“DDNI”) is an apostolic hub that trains, equips and empowers believers in line with God’s End Time mandate. The hub comprises of two major pillars:</p>
+              <div className="pillar-grid">
+                <div>
+                  <span>01</span>
+                  <h3>The Network:</h3>
+                  <p>This is a central database where believers from across the world network and engage on various disciplines to identify and capitalize on potential synergies amongst each other. In other words, the wealth will be generated and circulated within the network to empower all participating believers to thrive using biblical principles.</p>
+                </div>
+                <div>
+                  <span>02</span>
+                  <h3>The Institute:</h3>
+                  <p>This is a school of the Spirit, where ordinary believers are taught, equipped and transformed into global leaders and pioneers in the marketplace, government and creative corridors. The institute will avail various courses that can either be attended in-person or online, and host various camps, seminars and similar gatherings to tutor believers in understanding the dominion mandate.</p>
+                </div>
+              </div>
+              <p className="closing-line">Together, these pillars will tutor believers to become distinguished and novel, ready to mentor nations and advance God’s interests in society.</p>
+            </div>
+          </section>
+          <section className="brief-section invitation">
+            <div className="brief-section-number">05</div>
+            <div>
+              <p>God ordained you in your mother’s womb (Jeremiah 1:5), He prepared good works that you should walk in (Ephesians 2:10), DDNI tutors you to identify the good works, be equipped to do the good works and be a pioneer in the arena of the good works until you become a notable leader that will tangibly transform society.</p>
+              <h2>DDNI welcomes you to the network, <em>prepare to take off!</em></h2>
+              <p className="signature">
+                Yours in the Kingdom,<br />
+                <strong>DDNI President &amp; Servant Leader: Khanyi Zungu</strong>
+              </p>
+            </div>
+          </section>
+        </article>
+        <GallerySlider
+          id="about-gallery"
+          kicker="Inside the Institute"
+          title="Pioneers in"
+          emphasis="the making."
+          images={aboutGalleryImages}
+        />
+      </main>
+      <Footer />
+    </div>
+  )
 }

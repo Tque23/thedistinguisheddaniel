@@ -6,20 +6,20 @@
 .brief-hero::after { content: ""; position: absolute; inset: 2rem; border: 1px solid rgba(216,184,101,.35); pointer-events: none; }
 .brief-kicker, .eyebrow { text-transform: uppercase; letter-spacing: .19em; font-size: .68rem; color: var(--brand-burgundy); max-width: 45rem; }
 .brief-hero .brief-kicker { color: var(--brand-gold); }
-.brief-hero h1 { font-family: "Trajan Pro 3", Georgia, serif; font-weight: 400; font-size: clamp(3.6rem, 13vw, 12rem); letter-spacing: -.08em; line-height: .82; margin: 2.2rem 0 2rem; }
+.brief-hero h1 { font-family: var(--font-trajan), Georgia, serif; font-weight: 400; font-size: clamp(3.6rem, 13vw, 12rem); letter-spacing: -.08em; line-height: .82; margin: 2.2rem 0 2rem; }
 .brief-hero h1 em { color: var(--brand-gold); font-style: normal; }
 .brief-section h2 em { color: var(--brand-gold-deep); font-style: normal; }
 .brief-intro { font-family: Georgia, serif; font-size: clamp(1.35rem, 2.4vw, 2.2rem); color: rgba(248,245,236,.75); }
-.brief-index { position: absolute; right: clamp(2rem, 8vw, 9rem); bottom: 5rem; color: var(--brand-gold); font: .7rem "Trajan Pro 3", serif; letter-spacing: .18em; }
+.brief-index { position: absolute; right: clamp(2rem, 8vw, 9rem); bottom: 5rem; color: var(--brand-gold); font: .7rem var(--font-trajan), serif; letter-spacing: .18em; }
 .brief-content { max-width: 1180px; margin: auto; padding: 0 clamp(1.25rem, 6vw, 6rem); }
 .brief-section { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: clamp(2rem, 6vw, 7rem); padding: 8rem 0; border-bottom: 1px solid var(--line-soft); }
-.brief-section-number { color: var(--brand-burgundy); font: .85rem "Trajan Pro 3", serif; padding-top: .7rem; }
-.brief-section h2 { color: var(--foreground); font: 400 clamp(2.8rem, 6vw, 6.2rem)/.98 "Trajan Pro 3", Georgia, serif; letter-spacing: -.07em; margin: 0 0 2.8rem; max-width: 10ch; }
+.brief-section-number { color: var(--brand-burgundy); font: .85rem var(--font-trajan), serif; padding-top: .7rem; }
+.brief-section h2 { color: var(--foreground); font: 400 clamp(2.8rem, 6vw, 6.2rem)/.98 var(--font-trajan), Georgia, serif; letter-spacing: -.07em; margin: 0 0 2.8rem; max-width: 10ch; }
 .brief-section p { color: var(--brand-muted); font-size: 1.06rem; line-height: 1.85; max-width: 760px; }
 .brief-deck { font-family: Georgia, serif; font-size: 1.3rem !important; color: var(--foreground) !important; margin-bottom: 4rem; }
 .season { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: 1.2rem; border-top: 1px solid var(--line-soft); padding: 2.4rem 0; }
-.season > span, .pillar-grid > div > span { color: var(--brand-gold-deep); font: .8rem "Trajan Pro 3", serif; }
-.season h3, .pillar-grid h3 { color: var(--foreground); font: 400 clamp(1.3rem, 2vw, 1.7rem) "Trajan Pro 3", Georgia, serif; margin: 0 0 .9rem; }
+.season > span, .pillar-grid > div > span { color: var(--brand-gold-deep); font: .8rem var(--font-trajan), serif; }
+.season h3, .pillar-grid h3 { color: var(--foreground); font: 400 clamp(1.3rem, 2vw, 1.7rem) var(--font-trajan), Georgia, serif; margin: 0 0 .9rem; }
 .season p { margin: 0; }
 .daniel, .invitation { background: var(--surface-warm); margin-left: calc(clamp(1.25rem, 6vw, 6rem) * -1); margin-right: calc(clamp(1.25rem, 6vw, 6rem) * -1); padding-left: clamp(1.25rem, 6vw, 6rem); padding-right: clamp(1.25rem, 6vw, 6rem); }
 .daniel .eyebrow { margin-bottom: 1rem; }
@@ -94,9 +94,9 @@
 .about-page .about-copy p { max-width: 34rem; margin: 0 0 1.4rem; color: var(--brand-muted); font-size: 1.05rem; line-height: 1.85; }
 .about-page .text-link { display: inline-flex; align-items: center; gap: .5rem; margin-top: .5rem; color: var(--brand-burgundy); text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: .2rem; }
 .about-page .text-link svg { width: 1rem; height: 1rem; }
-.about-page .direction-number { color: var(--brand-gold-deep); font: .8rem "Trajan Pro 3", serif; }
+.about-page .direction-number { color: var(--brand-gold-deep); font: .8rem var(--font-trajan), serif; }
 .about-page .about-cta { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 2.5rem; padding-top: 7rem; padding-bottom: 7rem; }
-.about-page .about-cta h2 { margin: 1.5rem 0 0; color: #172b3a; font: 400 clamp(2.4rem, 6vw, 5.5rem)/1 "Trajan Pro 3", Georgia, serif; letter-spacing: -.05em; }
+.about-page .about-cta h2 { margin: 1.5rem 0 0; color: #172b3a; font: 400 clamp(2.4rem, 6vw, 5.5rem)/1 var(--font-trajan), Georgia, serif; letter-spacing: -.05em; }
 .about-page .about-cta h2 em { color: var(--brand-burgundy); font-style: normal; }
 .about-page .about-cta-link { display: inline-flex; align-items: center; gap: .6rem; color: #172b3a; font-weight: 600; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: .3rem; }
 .about-page .about-cta-link svg { width: 1rem; height: 1rem; }
@@ -133,12 +133,12 @@
 .contact-page .page-hero-video-control svg { width: 1rem; height: 1rem; color: var(--brand-gold); }
 .contact-page .about-hero-inner { position: relative; z-index: 1; width: min(1180px, 100%); margin: 0 auto; padding: 0 clamp(1.25rem, 6vw, 6rem) clamp(4rem, 10vw, 8rem); }
 .contact-page .about-hero .about-kicker { color: var(--brand-gold); }
-.contact-page .about-hero h1 { max-width: 9ch; margin: 1.5rem 0 1.8rem; color: #f8f5ec; font: 400 clamp(3.8rem, 10vw, 9rem)/.88 "Trajan Pro 3", Georgia, serif; letter-spacing: -.07em; }
+.contact-page .about-hero h1 { max-width: 9ch; margin: 1.5rem 0 1.8rem; color: #f8f5ec; font: 400 clamp(3.8rem, 10vw, 9rem)/.88 var(--font-trajan), Georgia, serif; letter-spacing: -.07em; }
 .contact-page .about-hero h1 em { color: var(--brand-gold); font-style: normal; }
 .contact-page .about-hero .about-lead { color: rgba(248, 245, 236, .78); }
 .contact-page .about-story { background: var(--surface-warm); padding-top: clamp(5rem, 10vw, 9rem); padding-bottom: clamp(5rem, 10vw, 9rem); }
 .contact-page .about-story-grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(3rem, 9vw, 9rem); align-items: start; }
-.contact-page .about-story h2 { margin: 1.5rem 0 0; color: var(--foreground); font: 400 clamp(2.8rem, 6vw, 6rem)/.98 "Trajan Pro 3", Georgia, serif; letter-spacing: -.07em; max-width: 10ch; }
+.contact-page .about-story h2 { margin: 1.5rem 0 0; color: var(--foreground); font: 400 clamp(2.8rem, 6vw, 6rem)/.98 var(--font-trajan), Georgia, serif; letter-spacing: -.07em; max-width: 10ch; }
 .contact-page .about-story h2 em { color: var(--brand-burgundy); font-style: normal; }
 .contact-page .about-copy { padding-top: .5rem; }
 .contact-page .about-copy > p { font-family: Georgia, serif; font-size: clamp(1.2rem, 2vw, 1.55rem); line-height: 1.6; color: var(--foreground); }

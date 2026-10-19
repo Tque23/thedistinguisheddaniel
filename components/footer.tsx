@@ -70,7 +70,6 @@ export function Footer() {
             width={168}
             height={42}
             className="footer-logo"
-            priority={false}
           />
           <p>Distinguished for Purpose. Equipped for Influence.</p>
         </div>

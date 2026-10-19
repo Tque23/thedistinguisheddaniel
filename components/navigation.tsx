@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 
@@ -84,9 +85,12 @@ export function Navigation() {
             {/* Logo */}
             <a href="/" className="flex items-center gap-2 group z-10">
               <span className="flex items-center transition-all duration-500">
-                <img
+                <Image
                   src="/logos/TDD Network Logo Line Full.svg"
                   alt="TDD Network"
+                  width={99}
+                  height={32}
+                  priority
                   className={`w-auto object-contain transition-all duration-500 ${
                     isScrolled ? "h-7" : "h-8"
                   }`}

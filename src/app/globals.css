@@ -323,7 +323,7 @@ footer {
     right: 50%;
     margin-left: -50vw;
     margin-right: -50vw;
-    background-color: #E8ECEF;
+    background-color: var(--background);
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
   }

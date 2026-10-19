@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import Image from 'next/image';
+import { useScrollSlider } from '@/components/use-scroll-slider';
+import { SliderControls } from '@/components/slider-controls';
 
 interface FacultyMember {
   id: number;
   name: string;
   bio: string;
-  image: string;
+  image: string | null;
   profileUrl: string;
+  position: string;
 }
 
 const facultyData: FacultyMember[] = [
@@ -18,6 +21,7 @@ const facultyData: FacultyMember[] = [
     bio: "",
     image: "/board/Apostle.JPG",
     profileUrl: "#",
+    position: "Founder & President",
   },
   {
     id: 2,
@@ -25,6 +29,7 @@ const facultyData: FacultyMember[] = [
     bio: "",
     image: "/board/Thobeka.JPG",
     profileUrl: "#",
+    position: "Committee Member",
   },
   {
     id: 3,
@@ -32,20 +37,23 @@ const facultyData: FacultyMember[] = [
     bio: "",
     image: "/board/Ntando.JPG",
     profileUrl: "#",
+    position: "Committee Member",
   },
   {
     id: 4,
     name: "Busisiwe Majola",
     bio: "",
-    image: "/placeholder.jpg",
+    image: null,
     profileUrl: "#",
+    position: "Committee Member",
   },
   {
     id: 5,
     name: "Dineo Mamorobela",
     bio: "",
-    image: "placeholder.jpg",
+    image: null,
     profileUrl: "#",
+    position: "Committee Member",
   },
   {
     id: 6,
@@ -53,6 +61,7 @@ const facultyData: FacultyMember[] = [
     bio: "",
     image: "/board/Kwanele.JPG",
     profileUrl: "#",
+    position: "Committee Member",
   },
   {
     id: 7,
@@ -60,6 +69,7 @@ const facultyData: FacultyMember[] = [
     bio: "",
     image: "/board/Wise.JPG",
     profileUrl: "#",
+    position: "Committee Member",
   },
     {
     id: 8,
@@ -67,147 +77,114 @@ const facultyData: FacultyMember[] = [
     bio: "",
     image: "/board/Bulela.JPG",
     profileUrl: "#",
+    position: "Committee Member",
   },
 ];
 
-const TOTAL_DOTS = 5;
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("");
+}
 
 export function FacultySection() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const sliderRef = useRef<HTMLDivElement>(null);
-
-  // Sync scroll percentage (0 to 1) to the 3 navigation dots
-  const handleScroll = () => {
-    if (!sliderRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
-    const maxScroll = scrollWidth - clientWidth;
-
-    if (maxScroll <= 0) {
-      setActiveIndex(0);
-      return;
-    }
-
-    // Determine current position ratio along the track (0.0 to 1.0)
-    const scrollProgress = Math.min(Math.max(scrollLeft / maxScroll, 0), 1);
-    const targetIndex = Math.round(scrollProgress * (TOTAL_DOTS - 1));
-
-    if (targetIndex !== activeIndex) {
-      setActiveIndex(targetIndex);
-    }
-  };
-
-  // Smoothly scroll to Start (0%), Middle (50%), or End (100%)
-  const handleDotClick = (index: number) => {
-    setActiveIndex(index);
-    if (!sliderRef.current) return;
-
-    const { scrollWidth, clientWidth } = sliderRef.current;
-    const maxScroll = scrollWidth - clientWidth;
-    const targetScroll = (index / (TOTAL_DOTS - 1)) * maxScroll;
-
-    sliderRef.current.scrollTo({
-      left: targetScroll,
-      behavior: 'smooth',
-    });
-  };
+  const slider = useScrollSlider(facultyData.length);
 
   return (
-    <section className="bg-[#E8ECEF] min-h-screen py-16 section-px font-sans text-[#1A202C]">
-      <div className="max-w-7xl mx-auto">
-        {/* Top Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-          <div>
-            <h2 className="font-serif text-4xl md:text-5xl font-normal text-[#1C2536] tracking-tight mb-3">
-              Meet our Committee.
+    <section
+      aria-labelledby="committee-title"
+      className="relative overflow-hidden bg-[var(--background)] py-20 md:py-28 section-px font-sans text-[#172b3a]"
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-[#c89b3c]/10 blur-3xl"
+      />
+
+      <div className="relative mx-auto max-w-7xl">
+        {/* Crest sits above the heading on mobile, beside it from md up */}
+        <header className="mb-12 flex flex-col items-start gap-8 md:mb-16 md:flex-row md:items-end md:justify-between md:gap-12">
+          <div className="max-w-2xl">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-[#c89b3c]/50 bg-white/60 shadow-sm md:hidden">
+              <Image src="/TDDCrest.svg" alt="TDD Crest" width={36} height={36} className="h-9 w-9 object-contain" />
+            </div>
+            <p className="mb-4 flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#7a6541]">
+              <span className="h-px w-8 bg-[#c89b3c]" aria-hidden="true" />
+              The Pioneers
+            </p>
+            <h2
+              id="committee-title"
+              className="font-serif text-4xl font-normal leading-[1.05] tracking-tight text-[#172b3a] md:text-6xl"
+            >
+              Meet our <em className="not-italic text-[#c89b3c]">Committee.</em>
             </h2>
-            <p className="text-[#5A6578] text-base md:text-lg">
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-[#4a5a68] md:text-lg">
               Our committee comprises of distinguished marketplace professionals and leaders who have years of experience in advancing God's agenda in the twelve gates of society.
             </p>
           </div>
 
-          {/* University Crest Logos Placeholder */}
-          <div className="flex items-center space-x-4 opacity-40 grayscale">
-            <CrestIcon />
+          <div className="hidden h-24 w-24 shrink-0 items-center justify-center rounded-full border border-[#c89b3c]/50 bg-white/60 shadow-sm md:flex">
+            <Image src="/TDDCrest.svg" alt="TDD Crest" width={56} height={56} className="h-14 w-14 object-contain" />
           </div>
-        </div>
+        </header>
 
-        {/* Category Tab */}
-        <div className="mb-8 border-b border-gray-300 pb-2 inline-block">
-          <span className="text-xs uppercase tracking-widest text-[#2A3447] font-semibold">
-            THE PIONEERS
-          </span>
-        </div>
-
-        {/* Cards Slider Container */}
         <div
-          ref={sliderRef}
-          onScroll={handleScroll}
-          className="flex overflow-x-auto gap-4 snap-x snap-mandatory scroll-smooth pb-6 -mx-[var(--section-px)] px-[var(--section-px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+          ref={slider.ref}
+          onKeyDown={slider.onKeyDown}
+          tabIndex={0}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Committee members"
+          className="-mx-[var(--section-px)] flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain scroll-smooth px-[var(--section-px)] pb-8 pt-2 scroll-px-[var(--section-px)] [-ms-overflow-style:'none'] [scrollbar-width:'none'] [&::-webkit-scrollbar]:hidden focus-visible:outline-none"
         >
-          {facultyData.map((member) => (
-            <div
+          {facultyData.map((member, index) => (
+            <article
               key={member.id}
-              className="group relative h-[480px] w-[85vw] sm:w-[320px] md:w-[280px] lg:w-[240px] flex-none snap-start rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-end"
+              aria-roledescription="slide"
+              aria-label={`${index + 1} of ${facultyData.length}: ${member.name}`}
+              className="group relative h-[460px] w-[78vw] flex-none snap-start overflow-hidden rounded-3xl bg-[#172b3a] shadow-[0_10px_30px_-12px_rgba(23,43,58,0.35)] ring-1 ring-[#172b3a]/10 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_24px_48px_-16px_rgba(23,43,58,0.5)] sm:w-[300px] lg:w-[260px]"
             >
-              {/* Background Image */}
-              <Image
-                src={member.image}
-                alt={member.name}
-                fill
-                className="object-cover object-center brightness-[1.08] saturate-[1.08] group-hover:scale-105 transition-transform duration-500"
-              />
+              {member.image ? (
+                <Image
+                  src={member.image}
+                  alt={member.name}
+                  fill
+                  sizes="(max-width: 640px) 78vw, 300px"
+                  className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#223b4e] to-[#0f1f2b]" aria-hidden="true">
+                  <span className="font-serif text-6xl tracking-wider text-[#c89b3c]/80">{initials(member.name)}</span>
+                </div>
+              )}
 
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1727]/55 via-[#0B1727]/10 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0b1727]/90 via-[#0b1727]/10 to-transparent" aria-hidden="true" />
 
-              {/* Card Content */}
-              <div className="relative p-5 text-white z-10 flex flex-col justify-end">
-                <h3 className="font-serif text-2xl font-normal leading-tight mb-2">
-                  {member.name}
-                </h3>
-                <p className="text-xs text-gray-300 font-light line-clamp-3 mb-4 leading-relaxed">
-                  {member.bio}
-                </p>
+              <span className="absolute left-5 top-5 font-serif text-sm tracking-[0.2em] text-white/80">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+
+              <div className="absolute inset-x-3 bottom-3 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-md transition-colors duration-500 group-hover:bg-white/20">
+                <span className="mb-2 block h-0.5 w-8 bg-[#c89b3c] transition-all duration-500 group-hover:w-14" aria-hidden="true" />
+                <h3 className="font-serif text-xl font-normal leading-tight text-white">{member.name}</h3>
+                <p className="mt-1 text-[0.65rem] uppercase tracking-[0.2em] text-white/70">{member.position}</p>
               </div>
-            </div>
+            </article>
           ))}
         </div>
 
-        {/* 3 Section Pagination Indicators */}
-        <div className="flex justify-center items-center mt-2">
-          {Array.from({ length: TOTAL_DOTS }).map((_, index) => (
-            <button
-              key={index}
-              type="button"
-              onClick={() => handleDotClick(index)}
-              className="group flex min-h-11 min-w-11 items-center justify-center touch-manipulation"
-              aria-label={`Go to section ${index + 1}`}
-              aria-current={activeIndex === index ? 'true' : undefined}
-            >
-              <span
-                className={`block h-2 rounded-full transition-all duration-300 ${
-                  activeIndex === index
-                    ? 'w-6 bg-[#1C2536]'
-                    : 'w-2 bg-gray-400 group-hover:bg-gray-600'
-                }`}
-              />
-            </button>
-          ))}
-        </div>
+        <SliderControls
+          label="committee members"
+          pages={slider.pages}
+          activePage={slider.activePage}
+          canPrev={slider.canPrev}
+          canNext={slider.canNext}
+          onPrev={slider.prev}
+          onNext={slider.next}
+          onPage={slider.scrollToPage}
+        />
       </div>
     </section>
-  );
-}
-
-{/* Simple Crest SVG Placeholder */}
-function CrestIcon() {
-  return (
-    <Image
-      src="/TDDCrest.svg"
-      alt="TDD Crest"
-      width={40}
-      height={40}
-      className="w-10 h-10 object-contain"
-    />
   );
 }

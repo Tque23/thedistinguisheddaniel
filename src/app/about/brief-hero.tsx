@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { PageHeroVideo } from "@/components/page-hero-video"
+import { trajan } from "../fonts"
 
 export function BriefHero() {
   const [fontReady, setFontReady] = useState(false)
@@ -9,7 +10,7 @@ export function BriefHero() {
   useEffect(() => {
     let active = true
 
-    void document.fonts.load('400 12px "Trajan Pro 3"').then(() => {
+    void document.fonts.load(`400 12px ${trajan.style.fontFamily}`).then(() => {
       if (active) setFontReady(true)
     })
 

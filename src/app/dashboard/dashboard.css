@@ -59,7 +59,7 @@
 }
 
 :is(.tdd-dashboard, .tdd-dashboard-theme) .font-display {
-  font-family: "Trajan Pro 3", Georgia, serif;
+  font-family: var(--font-trajan), Georgia, serif;
   letter-spacing: -0.01em;
 }
 

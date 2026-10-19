@@ -1,94 +1,33 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react"
 import { LectureLibraryShowcase } from "@/components/course-table"
 
 const ROTATING_WORDS = ["distinguished", "established", "positioned", "proved"]
-const HERO_SLIDES = [
-  { src: "/gallery/DSC_5054.jpg", label: "Apostolic leadership in motion" },
-  { src: "/gallery/DSC_5065.jpg", label: "Equipped for influence" },
-  { src: "/gallery/DSC_5522.jpg", label: "Distinguished for purpose" },
-  { src: "/gallery/DSC_5536.jpg", label: "Built for lasting impact" },
-]
-const LAUNCH_DATE = new Date("October 3, 2026 10:00:00").getTime()
 
-type TimeLeft = { days: number; hours: number; minutes: number; seconds: number }
-
-function getTimeLeft(): TimeLeft | null {
-  const distance = LAUNCH_DATE - Date.now()
-  if (distance < 0) return null
-  return {
-    days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-    minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-    seconds: Math.floor((distance % (1000 * 60)) / 1000),
-  }
+interface HeroProps {
+  heroSlides?: { src: string }[]
 }
 
-const pad = (value: number) => value.toString().padStart(2, "0")
-
-export function OfficialLaunch() {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null)
-
-  useEffect(() => {
-    setTimeLeft(getTimeLeft())
-    const interval = setInterval(() => setTimeLeft(getTimeLeft()), 1000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const boxes: { label: string; value: number }[] = timeLeft
-    ? [
-        { label: "Days", value: timeLeft.days },
-        { label: "Hours", value: timeLeft.hours },
-        { label: "Minutes", value: timeLeft.minutes },
-        { label: "Seconds", value: timeLeft.seconds },
-      ]
-    : []
-
-  return (
-    <div className="launch-section" id="launch" aria-labelledby="launch-title">
-      <h2 className="launch-eyebrow" id="launch-title">
-        Official Launch
-      </h2>
-      <p className="launch-date">Saturday, 3 October 2026</p>
-
-      <div id="countdown">
-        {timeLeft ? (
-          boxes.map((box) => (
-            <div className="time-box" key={box.label}>
-              <span className="time-value">{pad(box.value)}</span>
-              <span className="time-label">{box.label}</span>
-            </div>
-          ))
-        ) : (
-          <div className="launch-live">
-            <h2 className="launch-eyebrow">We have launched!</h2>
-            <Link className="btn-primary launch-signup" href="/auth?mode=signup">
-              Sign up to join
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-export function Hero() {
+export function Hero({ heroSlides = [] }: HeroProps) {
   const [word, setWord] = useState(ROTATING_WORDS[0])
   const [blurred, setBlurred] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
   const [isSliderPlaying, setIsSliderPlaying] = useState(true)
   const indexRef = useRef(0)
 
+  const slidesCount = heroSlides.length
+
   useEffect(() => {
-    if (!isSliderPlaying) return
+    if (!isSliderPlaying || slidesCount === 0) return
     const interval = setInterval(() => {
-      setActiveSlide((current) => (current + 1) % HERO_SLIDES.length)
+      setActiveSlide((current) => (current + 1) % slidesCount)
     }, 6500)
     return () => clearInterval(interval)
-  }, [isSliderPlaying])
+  }, [isSliderPlaying, slidesCount])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -103,17 +42,23 @@ export function Hero() {
     return () => clearInterval(interval)
   }, [])
 
+  if (slidesCount === 0) return null
+
   return (
     <section className="hero" aria-labelledby="hero-title" id="top">
       <div className="hero-top-section">
         {/* Background Gallery Images */}
         <div className="hero-video" aria-live="polite">
-          {HERO_SLIDES.map((slide, index) => (
-            <img
+          {heroSlides.map((slide, index) => (
+            <Image
               key={slide.src}
               className={`hero-slide-image ${index === activeSlide ? "is-active" : ""}`}
               src={slide.src}
               alt=""
+              fill
+              sizes="100vw"
+              quality={75}
+              priority={index === 0}
               aria-hidden={index !== activeSlide}
             />
           ))}
@@ -121,12 +66,12 @@ export function Hero() {
           <div className="hero-grid-lines" />
         </div>
 
-        {/* Floating Controls (Subtle & Animated) */}
+        {/* Floating Controls */}
         <div className="hero-slider-controls" aria-label="Hero image slider controls">
           <button
             type="button"
             className="hero-slider-arrow"
-            onClick={() => setActiveSlide((activeSlide - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+            onClick={() => setActiveSlide((activeSlide - 1 + slidesCount) % slidesCount)}
             aria-label="Previous slide"
           >
             <ChevronLeft aria-hidden="true" />
@@ -142,7 +87,7 @@ export function Hero() {
           <button
             type="button"
             className="hero-slider-arrow"
-            onClick={() => setActiveSlide((activeSlide + 1) % HERO_SLIDES.length)}
+            onClick={() => setActiveSlide((activeSlide + 1) % slidesCount)}
             aria-label="Next slide"
           >
             <ChevronRight aria-hidden="true" />
@@ -174,7 +119,7 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Bottom Container: Always exactly 2 lines */}
+        {/* Bottom Container */}
         <div className="hero-bottom">
           <div className="agent-stats ml-auto text-right" aria-label="Our purpose">
             <p className="hero-purpose">
@@ -189,7 +134,7 @@ export function Hero() {
           <div
             className="hero-swoosh-bar"
             style={{
-              width: `${100 / HERO_SLIDES.length}%`,
+              width: `${100 / slidesCount}%`,
               transform: `translateX(${activeSlide * 100}%)`,
             }}
           />
