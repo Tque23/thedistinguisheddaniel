@@ -316,21 +316,10 @@
   gap: clamp(1.5rem, 4vw, 4rem);
   flex-wrap: wrap;
   align-items: flex-end;
-  max-width: min(28rem, 100%);
+  padding-bottom: 0.5rem;
   margin-left: auto;
-  padding: 1.5rem clamp(2rem, 4vw, 3rem) clamp(2rem, 4vw, 3rem) 2rem;
   justify-content: flex-end;
   text-align: right;
-  background: linear-gradient(to top, rgba(0,0,0,.8), rgba(0,0,0,.4) 58%, transparent);
-  border-radius: 0.75rem;
-  }
-
-.agent-stats .hero-purpose {
-  margin: 0;
-  line-height: 1.35;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  text-wrap: balance;
   }
 
 .agent-stats div {
@@ -478,13 +467,10 @@
     display: none;
   }
   .agent-stats {
-  width: 100%;
-  max-width: 100%;
   gap: 2rem;
   margin-left: 0;
-  padding: 1.25rem 1.5rem 2rem;
-  justify-content: flex-end;
-  text-align: right;
+  justify-content: center;
+  text-align: center;
   }
   .launch-section {
     padding: 1.75rem 1.25rem 2rem;
