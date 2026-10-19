@@ -2,10 +2,16 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { Pause, Play } from "lucide-react"
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react"
 import { LectureLibraryShowcase } from "@/components/course-table"
 
 const ROTATING_WORDS = ["distinguished", "established", "positioned", "proved"]
+const HERO_SLIDES = [
+  { src: "/gallery/DSC_5054.jpg", label: "Apostolic leadership in motion" },
+  { src: "/gallery/DSC_5065.jpg", label: "Equipped for influence" },
+  { src: "/gallery/DSC_5522.jpg", label: "Distinguished for purpose" },
+  { src: "/gallery/DSC_5536.jpg", label: "Built for lasting impact" },
+]
 const LAUNCH_DATE = new Date("October 3, 2026 10:00:00").getTime()
 
 type TimeLeft = { days: number; hours: number; minutes: number; seconds: number }
@@ -70,37 +76,19 @@ export function OfficialLaunch() {
 export function Hero() {
   const [word, setWord] = useState(ROTATING_WORDS[0])
   const [blurred, setBlurred] = useState(false)
-  const [isVideoPlaying, setIsVideoPlaying] = useState(true)
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const [activeSlide, setActiveSlide] = useState(0)
+  const [isSliderPlaying, setIsSliderPlaying] = useState(true)
   const indexRef = useRef(0)
 
-  function toggleVideo() {
-    if (!videoRef.current) return
-    if (videoRef.current.paused) {
-      void videoRef.current.play()
-      setIsVideoPlaying(true)
-    } else {
-      videoRef.current.pause()
-      setIsVideoPlaying(false)
-    }
-  }
+  useEffect(() => {
+    if (!isSliderPlaying) return
+    const interval = setInterval(() => {
+      setActiveSlide((current) => (current + 1) % HERO_SLIDES.length)
+    }, 6500)
+    return () => clearInterval(interval)
+  }, [isSliderPlaying])
 
   useEffect(() => {
-    const video = videoRef.current
-    if (video) {
-      const loadVideo = () => {
-        video.querySelectorAll<HTMLSourceElement>("source[data-src]").forEach((source) => {
-          source.src = source.dataset.src || ""
-        })
-        video.load()
-        void video.play().catch(() => setIsVideoPlaying(false))
-      }
-      if ("requestIdleCallback" in window) {
-        window.requestIdleCallback(loadVideo, { timeout: 1500 })
-      } else {
-        setTimeout(loadVideo, 1000)
-      }
-    }
     const interval = setInterval(() => {
       setBlurred(true)
       const timeout = setTimeout(() => {
@@ -115,22 +103,20 @@ export function Hero() {
 
   return (
     <section className="hero" aria-labelledby="hero-title" id="top">
-      {/* 1. Hero Video Header Container */}
       <div className="hero-top-section">
-        {/* Background Video */}
-        <div className="hero-video">
-          <video aria-hidden="true" ref={videoRef} autoPlay muted loop playsInline preload="none" onPlay={() => setIsVideoPlaying(true)} onPause={() => setIsVideoPlaying(false)}>
-            <source data-src="/hero-video.webm" type="video/webm" />
-            <source data-src="/hero-video.mp4" type="video/mp4" />
-          </video>
+        <div className="hero-video" aria-live="polite">
+          {HERO_SLIDES.map((slide, index) => (
+            <img key={slide.src} className={`hero-slide-image ${index === activeSlide ? "is-active" : ""}`} src={slide.src} alt="" aria-hidden={index !== activeSlide} />
+          ))}
           <div className="video-wash" />
           <div className="hero-grid-lines" />
         </div>
 
-        <button type="button" className="hero-video-control" onClick={toggleVideo} aria-label={isVideoPlaying ? "Pause hero video" : "Play hero video"}>
-          {isVideoPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
-          <span>{isVideoPlaying ? "Pause" : "Play"}</span>
-        </button>
+        <div className="hero-slider-controls" aria-label="Hero image slider controls">
+          <button type="button" className="hero-slider-arrow" onClick={() => setActiveSlide((activeSlide - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)} aria-label="Previous slide"><ChevronLeft aria-hidden="true" /></button>
+          <button type="button" className="hero-slider-play" onClick={() => setIsSliderPlaying((playing) => !playing)} aria-label={isSliderPlaying ? "Pause image slider" : "Play image slider"}>{isSliderPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}</button>
+          <button type="button" className="hero-slider-arrow" onClick={() => setActiveSlide((activeSlide + 1) % HERO_SLIDES.length)} aria-label="Next slide"><ChevronRight aria-hidden="true" /></button>
+        </div>
 
         {/* Main Hero Content */}
         <div className="agent-hero-content">
@@ -162,6 +148,13 @@ export function Hero() {
           <div className="agent-stats ml-auto text-right" aria-label="Our purpose">
             <p className="hero-purpose">Distinguished for Purpose.<br />Equipped for Influence.</p>
           </div>
+        </div>
+        <div className="hero-slide-rail" role="tablist" aria-label="Choose a hero slide">
+          {HERO_SLIDES.map((slide, index) => (
+            <button key={slide.src} type="button" role="tab" aria-selected={index === activeSlide} className={index === activeSlide ? "is-active" : ""} onClick={() => setActiveSlide(index)}>
+              <span>{String(index + 1).padStart(2, "0")}</span><strong>{slide.label}</strong>
+            </button>
+          ))}
         </div>
       </div>
       <div className="hero-showcase-container">
