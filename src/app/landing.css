@@ -250,7 +250,13 @@
 @media (max-width: 640px) {
   .home-gallery-heading { align-items: start; flex-direction: column; }
   .home-gallery-frame { aspect-ratio: 4 / 3; }
-  .agent-hero-copy h1 { max-width: 10ch; font-size: clamp(2.1rem, 10vw, 3.4rem); line-height: 1; overflow-wrap: anywhere; }
+  .agent-hero-copy { width: 100%; }
+  .agent-hero-copy h1 { max-width: 11ch; font-size: clamp(2rem, 9.5vw, 3.4rem); line-height: 1.02; overflow-wrap: normal; }
+  .agent-hero-copy .agent-eyebrow { font-size: .68rem; }
+  .hero-bottom { align-items: flex-end; padding-bottom: 1.25rem; }
+  .agent-stats { width: 100%; margin-left: auto; justify-content: flex-end; text-align: right; }
+  .hero-purpose { max-width: 14rem; font-size: clamp(.82rem, 3.8vw, 1.05rem); }
+
 }
 
 @media (min-width: 640px) {
@@ -260,8 +266,20 @@
 }
 
 .agent-hero-copy {
+  width: min(100%, 58rem);
   max-width: 900px;
-}
+  }
+
+.agent-hero-copy h1 {
+  max-width: 13ch;
+  text-wrap: balance;
+  }
+
+.agent-hero-copy .agent-eyebrow {
+  margin-top: clamp(1rem, 2vw, 1.75rem);
+  letter-spacing: .12em;
+  }
+
 
 .agent-eyebrow {
   display: flex;
@@ -302,11 +320,12 @@
   z-index: 3;
   width: 100%;
   max-width: 1400px;
-  margin: 0 auto;
+  margin: auto auto 0;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 2rem;
+  gap: clamp(1rem, 4vw, 2rem);
+  padding-bottom: clamp(1.5rem, 4vh, 3rem);
 }
 
 .agent-stats {
@@ -328,11 +347,13 @@
   gap: 0.35rem;
 }
 
-.hero-purpose { 
-  max-width: 18rem; 
-  color: rgba(248,245,236,.85); 
-  font: 400 clamp(1.1rem, 2vw, 1.55rem)/1.2 "Trajan Pro 3", Georgia, serif; 
-  letter-spacing: -.02em; 
+.hero-purpose {
+  width: min(100%, 18rem);
+  margin: 0;
+  color: rgba(248,245,236,.9);
+  font: 400 clamp(.95rem, 1.7vw, 1.55rem)/1.28 "Trajan Pro 3", Georgia, serif;
+  letter-spacing: -.01em;
+  text-wrap: balance;
 }
 
 .agent-stats strong {
@@ -467,10 +488,14 @@
     display: none;
   }
   .agent-stats {
-  gap: 2rem;
-  margin-left: 0;
-  justify-content: center;
-  text-align: center;
+  gap: 1rem;
+  margin-left: auto;
+  justify-content: flex-end;
+  text-align: right;
+  }
+
+  .hero-purpose {
+  max-width: 13rem;
   }
   .launch-section {
     padding: 1.75rem 1.25rem 2rem;
