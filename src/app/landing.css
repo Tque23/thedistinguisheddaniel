@@ -39,6 +39,12 @@
   box-sizing: border-box;
 }
 
+/* Keep every landing section aligned to the same responsive content edge. */
+.tdd .section-px {
+  padding-left: var(--section-px);
+  padding-right: var(--section-px);
+}
+
 /* ---------------- HOME GALLERY ---------------- */
 .home-gallery { background: #f4f0e7; color: #172b3a; padding-top: clamp(4rem, 8vw, 8rem); padding-bottom: clamp(4rem, 8vw, 8rem); }
 .home-gallery-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin: 0 auto 2rem; max-width: 1280px; }
@@ -49,7 +55,10 @@
 .home-gallery-controls button { display: grid; place-items: center; size: 2.5rem; width: 2.5rem; height: 2.5rem; border: 1px solid rgba(23,43,58,.25); border-radius: 999px; color: #172b3a; transition: background .2s ease, color .2s ease; }
 .home-gallery-controls button:hover, .home-gallery-controls button:focus-visible { background: #172b3a; color: #f4f0e7; outline: none; }
 .home-gallery-controls svg { width: 1rem; }
-.home-gallery-frame { position: relative; aspect-ratio: 16 / 8; min-height: 280px; overflow: hidden; background: #172b3a; }
+.home-gallery-frame { position: relative; width: 100%; aspect-ratio: 16 / 8; min-height: 280px; overflow: hidden; isolation: isolate; background: #172b3a; }
+.home-gallery-image { display: block; object-fit: cover; }
+.home-gallery-overlay { z-index: 1; }
+.home-gallery-thumbs { position: relative; z-index: 2; }
 .home-gallery-image { object-fit: cover; transition: opacity .3s ease, transform .5s ease; }
 .home-gallery-frame:hover .home-gallery-image { transform: scale(1.02); }
 .home-gallery-overlay { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(7,21,32,.25), transparent 55%, rgba(7,21,32,.15)); }
@@ -155,10 +164,14 @@
 }
 
 /* ---------------- CONTROLS: SUBTLE & ANIMATED ---------------- */
+.font-trajan {
+  font-family: "Trajan Pro 3", Georgia, serif;
+}
+
 .hero-slider-controls {
   position: absolute;
-  top: clamp(2rem, 5vh, 3.5rem);
-  right: var(--section-px);
+  bottom: calc(3.5rem + clamp(1rem, 3vh, 2rem));
+  left: var(--section-px);
   z-index: 10;
   display: flex;
   align-items: center;
@@ -177,7 +190,7 @@
   background: rgba(5, 15, 24, 0.25);
   backdrop-filter: blur(8px);
   cursor: pointer;
-  opacity: 0.25;
+  opacity: 0.35;
   transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
 }
 
@@ -390,7 +403,86 @@
 }
 
 @media (max-width: 640px) {
+  /* Reserve the full announcement bar + navigation stack while the motion panel is pinned. */
+  .tdd #products > div > .sticky {
+  top: 8.5rem;
+  height: calc(100vh - 8.5rem);
+  overflow: visible;
+  }
+
+  .tdd #products > div > .sticky > div {
+  gap: 2.25rem;
+  transform: translateY(1.25rem);
+  }
+
+  .tdd #products > div > .sticky h2 {
+  min-height: 7rem !important;
+  padding-inline: 0.25rem;
+  font-size: clamp(1.55rem, 7.2vw, 2.35rem) !important;
+  line-height: 1.15;
+  overflow-wrap: break-word;
+  }
+
+  .tdd #products > div > .sticky p {
+  max-width: 21rem;
+  margin-inline: auto;
+  font-size: clamp(1rem, 4.7vw, 1.2rem);
+  line-height: 1.65;
+  }
+
+
+  .home-gallery {
+  padding-top: 3.5rem;
+  padding-bottom: 3.5rem;
+  }
+
+  .home-gallery-frame {
+  aspect-ratio: auto;
+  height: clamp(14rem, 62vw, 19rem);
+  min-height: 0;
+  }
+
+  .home-gallery-heading {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 1.25rem;
+  }
+
+  .home-gallery-heading > div:first-child {
+  width: 100%;
+  }
+
+  .home-gallery-heading h2 {
+  font-size: clamp(2rem, 10vw, 3rem);
+  line-height: 1.05;
+  }
+
+  .home-gallery-heading h2 {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  }
+
+  .home-gallery-controls {
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: .2rem;
+  }
+
+  .agent-hero-content {
+  transform: translateY(1rem);
+  }
+
   .hero-purpose {
-    font-size: clamp(0.75rem, 3.6vw, 1rem);
+  font-size: clamp(0.75rem, 3.6vw, 1rem);
+  }
+  
+  .hero-slider-controls {
+    gap: 0.25rem;
+  }
+
+  .hero-slider-arrow,
+  .hero-slider-play {
+    width: 2rem;
+    height: 2rem;
   }
 }

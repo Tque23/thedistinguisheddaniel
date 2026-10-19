@@ -95,7 +95,7 @@ export function Navigation() {
             </a>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-6 xl:gap-9">
+            <div className="hidden xl:flex items-center gap-9">
               {navLinks.map((link) => (
                 <a
                   key={link.name}
@@ -109,7 +109,7 @@ export function Navigation() {
             </div>
 
             {/* Desktop CTA */}
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="hidden xl:flex items-center gap-4">
               <a
                 href="/auth"
                 className={`transition-all duration-500 text-white/70 hover:text-white ${
@@ -132,8 +132,10 @@ export function Navigation() {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              className="lg:hidden relative z-[80] p-2 cursor-pointer transition-colors duration-500 text-white"
+              className="xl:hidden relative z-[80] p-2 cursor-pointer transition-colors duration-500 text-white"
               aria-label="Toggle menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -143,21 +145,23 @@ export function Navigation() {
 
       {/* 4. Full-Screen Mobile Menu Overlay (Moved to top level fragment at z-[50]) */}
       <div
-        className={`lg:hidden fixed inset-0 bg-[#071520] z-[50] transition-all duration-500 ${
+        id="mobile-menu"
+        aria-hidden={!isMobileMenuOpen}
+        className={`xl:hidden fixed inset-0 bg-[#071520] z-[50] overflow-y-auto overscroll-contain transition-opacity duration-500 ${
           isMobileMenuOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+            ? "opacity-100 pointer-events-auto visible"
+            : "opacity-0 pointer-events-none invisible"
         }`}
       >
-        <div className="flex flex-col h-full px-8 pt-32 pb-8">
+        <div className="flex min-h-full flex-col px-8 pt-36 sm:pt-32">
           {/* Navigation Links */}
-          <div className="flex-1 flex flex-col justify-center gap-8">
+          <div className="flex flex-1 flex-col justify-center gap-4 py-6 sm:gap-5">
             {navLinks.map((link, i) => (
               <a
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`text-5xl font-display text-white hover:text-white/70 transition-all duration-500 ${
+                className={`font-trajan text-[clamp(1.5rem,min(6.5vw,4.6vh),2.75rem)] leading-tight text-white hover:text-[#f3d27a] transition-all duration-500 ${
                   isMobileMenuOpen
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-4"
@@ -171,21 +175,21 @@ export function Navigation() {
 
           {/* Bottom CTAs */}
           <div
-            className={`flex gap-4 pt-8 border-t border-white/10 transition-all duration-500 ${
+            className={`sticky bottom-0 -mx-8 flex gap-4 border-t border-white/10 bg-[#071520] px-8 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] transition-all duration-500 ${
               isMobileMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
             style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
             <a
               href="/auth"
-              className="inline-flex h-14 flex-1 items-center justify-center rounded-full border border-white/20 bg-transparent px-4 text-base text-white hover:bg-white/10 transition-colors"
+              className="inline-flex h-12 flex-1 items-center justify-center rounded-full border border-white/20 bg-transparent px-4 text-base text-white hover:bg-white/10 transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Login
             </a>
             <a
               href="/auth?mode=signup"
-              className="btn-primary inline-flex h-14 flex-1 items-center justify-center rounded-full px-4 text-base"
+              className="btn-primary inline-flex h-12 flex-1 items-center justify-center rounded-full px-4 text-base font-semibold"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Sign Up

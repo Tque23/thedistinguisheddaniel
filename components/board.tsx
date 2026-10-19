@@ -154,11 +154,11 @@ export function FacultySection() {
                 src={member.image}
                 alt={member.name}
                 fill
-                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                className="object-cover object-center brightness-[1.08] saturate-[1.08] group-hover:scale-105 transition-transform duration-500"
               />
 
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1727]/90 via-[#0B1727]/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1727]/55 via-[#0B1727]/10 to-transparent" />
 
               {/* Card Content */}
               <div className="relative p-5 text-white z-10 flex flex-col justify-end">
