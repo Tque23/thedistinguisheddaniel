@@ -8,9 +8,7 @@ import { SliderControls } from '@/components/slider-controls';
 interface FacultyMember {
   id: number;
   name: string;
-  bio: string;
   image: string | null;
-  profileUrl: string;
   position: string;
 }
 
@@ -18,65 +16,49 @@ const facultyData: FacultyMember[] = [
   {
     id: 1,
     name: "Apostle K. Zungu",
-    bio: "",
-    image: "/board/Apostle.JPG",
-    profileUrl: "#",
+    image: "/board/Apostle.jpg",
     position: "Founder & President",
   },
   {
     id: 2,
     name: "Thobeka Mbhele",
-    bio: "",
     image: "/board/Thobeka.JPG",
-    profileUrl: "#",
     position: "Committee Member",
   },
   {
     id: 3,
     name: "Ntando Ngaleka",
-    bio: "",
     image: "/board/Ntando.JPG",
-    profileUrl: "#",
     position: "Committee Member",
   },
   {
     id: 4,
     name: "Busisiwe Majola",
-    bio: "",
     image: "/board/Member.JPG",
-    profileUrl: "#",
     position: "Committee Member",
-  }, 
+  },
   {
     id: 5,
     name: "Dineo Mamorobela",
-    bio: "",
     image: "/board/Member.JPG",
-    profileUrl: "#",
     position: "Committee Member",
   },
   {
     id: 6,
     name: "Kwanele Ntuli",
-    bio: "",
-    image: "/board/Kwanele.JPG",
-    profileUrl: "#",
+    image: "/board/Kwanele.jpg",
     position: "Committee Member",
   },
   {
     id: 7,
     name: "Wiseman Mavundla",
-    bio: "",
     image: "/board/Wise.JPG",
-    profileUrl: "#",
     position: "Committee Member",
   },
-    {
+  {
     id: 8,
     name: "Bulela Njemla",
-    bio: "",
     image: "/board/Bulela.JPG",
-    profileUrl: "#",
     position: "Committee Member",
   },
 ];

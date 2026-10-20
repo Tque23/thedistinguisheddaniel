@@ -420,10 +420,6 @@ export function getPublicCanonicalUrls() {
   return getPublicSitemapUrls()
 }
 
-export function getSitemapCanonicalUrls() {
-  return getPublicSitemapUrls()
-}
-
 export function getCanonicalMetadataForPublicRoutePath(path: string) {
   return getCanonicalMetadata(path)
 }
@@ -556,18 +552,10 @@ export function getCanonicalPublicRoutePath(path: string) {
   return getCanonicalPath(path)
 }
 
-export function getSitemapPublicCanonicalEntries() {
-  return createSitemap()
-}
-
 export function getCanonicalMetadataForPublicRoutePage(path: string) {
   return getCanonicalMetadata(path)
 }
 
 export function getCanonicalPublicPagePath(path: string) {
   return getCanonicalPath(path)
-}
-
-export function getSitemapPublicCanonicalUrls() {
-  return getPublicSitemapUrls()
 }

@@ -59,12 +59,6 @@ type CourseOption = { id: string; title: string; is_free: boolean }
 function slugify(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80)
 }
-type CourseSummary = { id: string; title: string; is_free: boolean }
-type Enrollment = { id: string; user_id: string; course_id: string; status: string; source: string; created_at?: string }
-
-function slugify(value: string) {
-  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80)
-}
 const accessOptions = ["prepared", "updates", "active", "blocked"] as const
 const accessLabels: Record<string, string> = { prepared: "Dashboard is being prepared", updates: "Updates to the dashboard are being made", active: "Active", blocked: "Blocked" }
 const reviewLabels: Record<string, string> = { pending_review: "Profile pending review", approved: "Profile approved", rejected: "Profile changes requested" }
@@ -81,7 +75,7 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [status, setStatus] = useState("")
   const [users, setUsers] = useState<User[]>([])
-  const [courseCatalog, setCourseCatalog] = useState<CourseSummary[]>([])
+  const [courseCatalog, setCourseCatalog] = useState<CourseOption[]>([])
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [userSearch, setUserSearch] = useState("")
   const [userSort, setUserSort] = useState<"name" | "email" | "created_at" | "verified">("created_at")
@@ -93,8 +87,6 @@ export default function AdminPage() {
   const [dashboardAnnouncement, setDashboardAnnouncement] = useState("The Spring Cohort applications close Friday. Secure your seat now.")
   const [landingAnnouncement, setLandingAnnouncement] = useState("We have launched. Don\'t miss your spot.")
   const [announcementStatus, setAnnouncementStatus] = useState("")
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([])
-  const [courseCatalog, setCourseCatalog] = useState<CourseOption[]>([])
   const [accessBusy, setAccessBusy] = useState("")
 
   const config = sections[section]
@@ -125,7 +117,7 @@ export default function AdminPage() {
       client.from("courses").select("id, title, is_free").order("title"),
       client.from("course_enrollments").select("id, user_id, course_id, status, source, created_at").order("created_at", { ascending: false }),
     ])
-    setCourseCatalog((catalog as CourseSummary[]) || [])
+    setCourseCatalog((catalog as CourseOption[]) || [])
     setEnrollments((rows as Enrollment[]) || [])
   }
   async function loadUsers() { const response = await fetch("/api/admin/users"); if (response.ok) setUsers((await response.json()).users) }
@@ -145,11 +137,16 @@ export default function AdminPage() {
   async function setCourseAccess(userId: string, courseId: string, status: "enrolled" | "revoked") {
     const client = createClient()
     const existing = enrollments.find((enrollment) => enrollment.user_id === userId && enrollment.course_id === courseId)
-    const { error } = existing
-      ? await client.from("course_enrollments").update({ status, source: "admin", updated_at: new Date().toISOString() }).eq("id", existing.id)
-      : await client.from("course_enrollments").insert({ user_id: userId, course_id: courseId, status, source: "admin" })
-    setUserStatus(error ? "Unable to update course access." : status === "enrolled" ? "Course access granted." : "Course access revoked.")
-    if (!error) await loadCourseAccess()
+    setAccessBusy(`${userId}:${courseId}`)
+    try {
+      const { error } = existing
+        ? await client.from("course_enrollments").update({ status, source: "admin", updated_at: new Date().toISOString() }).eq("id", existing.id)
+        : await client.from("course_enrollments").insert({ user_id: userId, course_id: courseId, status, source: "admin" })
+      setUserStatus(error ? "Unable to update course access." : status === "enrolled" ? "Course access granted." : "Course access revoked.")
+      if (!error) await loadCourseAccess()
+    } finally {
+      setAccessBusy("")
+    }
   }
   function validateForm() {
     const errors: Record<string, string> = {}
@@ -180,7 +177,6 @@ export default function AdminPage() {
     resetForm()
     setStatus(editingId ? "Changes saved." : "Published successfully.")
     await loadItems()
-    if (section === "courses") await loadCourseAccess()
     if (section === "courses") await loadCourseAccess()
   }
   async function remove(item: Item) { if (!window.confirm(`Remove “${String(item.title)}”?`)) return; const { error } = await createClient().from(section).delete().eq("id", item.id); setStatus(error ? "Unable to remove this item." : "Item removed."); if (!error) await loadItems() }
@@ -228,6 +224,30 @@ export default function AdminPage() {
 
 function StatTile({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return <div className={`rounded-xl border bg-card/60 p-4 ${highlight ? "border-[#dcb567]/60" : "border-border"}`}><p className="text-2xl font-semibold text-foreground">{value}</p><p className="text-xs text-muted-foreground">{label}</p></div>
+}
+
+function PendingCourseRequests({ users, courses, enrollments, busy, onGrant }: { users: User[]; courses: CourseOption[]; enrollments: Enrollment[]; busy: string; onGrant: (userId: string, courseId: string) => void }) {
+  const pending = enrollments.filter((enrollment) => enrollment.status === "pending")
+  return <section aria-labelledby="pending-course-requests-title" className="rounded-xl border border-border p-4">
+    <h3 id="pending-course-requests-title" className="font-medium">Pending course requests</h3>
+    {pending.length === 0
+      ? <p className="mt-2 text-sm text-muted-foreground">There are no course requests waiting for approval.</p>
+      : <ul className="mt-3 flex flex-col gap-3">{pending.map((enrollment) => {
+        const user = users.find((candidate) => candidate.id === enrollment.user_id)
+        const course = courses.find((candidate) => candidate.id === enrollment.course_id)
+        const isBusy = busy === `${enrollment.user_id}:${enrollment.course_id}`
+        return <li key={enrollment.id} className="flex flex-col gap-3 rounded-lg border border-border bg-card/60 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{String(user?.user_metadata?.full_name || user?.email || "Member")}</p>
+            <p className="truncate text-sm text-muted-foreground">{course?.title || "Course"}{user?.email ? ` · ${user.email}` : ""}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Requested {formatDate(enrollment.created_at)}</p>
+          </div>
+          <Button size="sm" className="btn-gold" disabled={isBusy} onClick={() => onGrant(enrollment.user_id, enrollment.course_id)}>
+            {isBusy ? "Granting..." : "Grant access"}
+          </Button>
+        </li>
+      })}</ul>}
+  </section>
 }
 
 function MemberDetails({ user, reviewNote, onReviewNoteChange, onReview, courses, enrollments, busy, onGrant, onRevoke }: { user: User; reviewNote: string; onReviewNoteChange: (value: string) => void; onReview: (status: "approved" | "rejected") => void; courses: CourseOption[]; enrollments: Enrollment[]; busy: string; onGrant: (courseId: string) => void; onRevoke: (courseId: string) => void }) {
