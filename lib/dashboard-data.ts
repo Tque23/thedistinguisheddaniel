@@ -12,8 +12,11 @@ export type Opportunity = {
   createdAt: string
 }
 
+export type CourseEnrollmentStatus = "pending" | "enrolled" | "revoked"
+
 export type Course = {
   id: string
+  slug: string
   title: string
   instructor: string
   category: string
@@ -21,6 +24,17 @@ export type Course = {
   duration: string
   eventDate: string
   thumbnailUrl: string
+  price: string
+  isFree: boolean
+  createdAt: string
+}
+
+export type CourseEnrollment = {
+  id: string
+  courseId: string
+  userId: string
+  status: CourseEnrollmentStatus
+  source: string
   createdAt: string
 }
 
@@ -79,6 +93,7 @@ export function toOpportunity(row: Row): Opportunity {
 export function toCourse(row: Row): Course {
   return {
     id: text(row.id),
+    slug: text(row.slug),
     title: text(row.title),
     instructor: text(row.instructor),
     category: text(row.category) || "Course",
@@ -86,8 +101,30 @@ export function toCourse(row: Row): Course {
     duration: text(row.duration),
     eventDate: text(row.event_date),
     thumbnailUrl: text(row.thumbnail_url),
+    price: text(row.price),
+    isFree: row.is_free === true,
     createdAt: text(row.created_at),
   }
+}
+
+export function toEnrollment(row: Row): CourseEnrollment {
+  const status = text(row.status)
+  return {
+    id: text(row.id),
+    courseId: text(row.course_id),
+    userId: text(row.user_id),
+    status: status === "enrolled" || status === "revoked" ? status : "pending",
+    source: text(row.source),
+    createdAt: text(row.created_at),
+  }
+}
+
+export function enrollmentFor(enrollments: CourseEnrollment[], courseId: string) {
+  return enrollments.find((enrollment) => enrollment.courseId === courseId)
+}
+
+export function hasCourseAccess(enrollments: CourseEnrollment[], courseId: string) {
+  return enrollmentFor(enrollments, courseId)?.status === "enrolled"
 }
 
 export function toResource(row: Row): Resource {

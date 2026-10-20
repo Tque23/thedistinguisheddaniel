@@ -40,14 +40,14 @@ export function LectureLibraryShowcase() {
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)) return
     let active = true
-    void createClient().from("courses").select("id,title,instructor,category,thumbnail_url").eq("published", true).order("created_at", { ascending: false }).then(({ data }) => {
+    void createClient().from("courses").select("id,slug,title,instructor,category,thumbnail_url,is_free").eq("published", true).order("created_at", { ascending: false }).then(({ data }) => {
       if (!active || !data?.length) return
-      setManagedLectures(data.map((course) => ({
+      setManagedLectures(data.filter((course) => !COURSES.some((featured) => featured.id === course.slug || featured.title === course.title)).map((course) => ({
         id: course.id,
         title: course.title,
         speaker: course.instructor,
         category: course.category || "Lectures",
-        tags: [course.category || "Lectures"],
+        tags: [course.is_free ? "Free" : "Paid", course.category || "Lectures"],
         image: course.thumbnail_url || "/placeholder.svg",
       })))
     })

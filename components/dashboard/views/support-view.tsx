@@ -15,7 +15,7 @@ const topics = ["Account & sign-in", "Institute courses", "Network & opportuniti
 const faqs: { q: string; a: string; view?: DashboardView; cta?: string }[] = [
   { q: "How do I change my password?", a: "Open Settings, choose Change password and enter a new password of at least 8 characters.", view: "settings", cta: "Open settings" },
   { q: "Why does my profile say “Pending review”?", a: "Every professional profile is reviewed by the DDNI team before it is shared with the Network. You'll be able to see the status in Account History.", view: "history", cta: "View history" },
-  { q: "How do I enrol in a course?", a: "Open a course in the Institute and choose “Enquire about this course”. The Institute team will reply with next steps.", view: "institute", cta: "Browse courses" },
+  { q: "How do I enrol in a course?", a: "Open a course in the Institute and choose Sign up. Free courses open immediately. Paid courses stay pending until an administrator grants access after payment.", view: "institute", cta: "Browse courses" },
   { q: "How do I respond to an opportunity?", a: "Select Respond on any opportunity in the Network. Your email app opens with the opportunity referenced in the subject line." , view: "network", cta: "Open the Network" },
   { q: "Can I update my contact email?", a: "Yes. In Settings, enter your new email and confirm the change from the link we send to your inbox." },
 ]

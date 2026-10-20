@@ -10,14 +10,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { EmptyState, StatusMessage, ViewHeader } from "@/components/dashboard/dashboard-ui"
-import { SUPPORT_EMAIL, formatDate, type Course, type Resource } from "@/lib/dashboard-data"
-import { BookOpen, CalendarDays, Clock, ExternalLink, FileText, PlayCircle, Search, UserRound } from "lucide-react"
+import { SUPPORT_EMAIL, enrollmentFor, formatDate, type Course, type Resource } from "@/lib/dashboard-data"
+import { catalogCourse } from "@/lib/courses"
+import { BookOpen, CalendarDays, Clock, ExternalLink, FileText, MapPin, PlayCircle, Search, UserRound } from "lucide-react"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 const isMedia = (type: string) => /video|recording|audio|podcast|webinar/i.test(type)
 
 function FilterChips({ options, value, onChange }: { options: string[]; value: string; onChange: (value: string) => void }) {
-  if (options.length <= 2) return null
+  if (options.length <= 1) return null
   return (
     <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter">
       {options.map((option) => (
@@ -48,28 +49,60 @@ function ResourceAction({ resource }: { resource: Resource }) {
   )
 }
 
-export function InstituteView({ data }: DashboardViewProps) {
+function accessCopy(course: Course, status: string | undefined) {
+  if (status === "enrolled") return course.isFree ? "You’re registered. You have immediate access to this free course." : "Access granted. You’re confirmed for this course."
+  if (status === "pending") return "Sign-up received. An administrator will grant access after payment is confirmed."
+  if (status === "revoked") return "Access was revoked. You can request access again."
+  return course.isFree ? "Sign up to get immediate access." : "Sign up to request access. An administrator will confirm paid enrolment."
+}
+
+export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProps) {
   const [courseQuery, setCourseQuery] = useState("")
-  const [courseCategory, setCourseCategory] = useState("All")
+  const [courseFilter, setCourseFilter] = useState("All")
   const [resourceQuery, setResourceQuery] = useState("")
   const [resourceType, setResourceType] = useState("All")
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const [busyCourseId, setBusyCourseId] = useState<string | null>(null)
+  const [signupMessage, setSignupMessage] = useState("")
 
-  const courseCategories = useMemo(() => ["All", ...Array.from(new Set(data.courses.map((c) => c.category)))], [data.courses])
+  const courseFilters = useMemo(() => {
+    const options = ["All"]
+    if (data.courses.some((course) => course.isFree)) options.push("Free")
+    if (data.courses.some((course) => !course.isFree)) options.push("Paid")
+    if (data.enrollments.some((enrollment) => enrollment.status === "enrolled" || enrollment.status === "pending")) options.push("My courses")
+    return options
+  }, [data.courses, data.enrollments])
   const resourceTypes = useMemo(() => ["All", ...Array.from(new Set(data.resources.map((r) => r.type)))], [data.resources])
 
-  const courses = data.courses.filter((c) => {
+  const courses = data.courses.filter((course) => {
     const q = courseQuery.trim().toLowerCase()
-    return (courseCategory === "All" || c.category === courseCategory) && (!q || [c.title, c.instructor, c.description].some((v) => v.toLowerCase().includes(q)))
+    const enrollment = enrollmentFor(data.enrollments, course.id)
+    const matchesFilter =
+      courseFilter === "All"
+      || (courseFilter === "Free" && course.isFree)
+      || (courseFilter === "Paid" && !course.isFree)
+      || (courseFilter === "My courses" && (enrollment?.status === "enrolled" || enrollment?.status === "pending"))
+    return matchesFilter && (!q || [course.title, course.instructor, course.description, course.category].some((value) => value.toLowerCase().includes(q)))
   })
   const resources = data.resources.filter((r) => {
     const q = resourceQuery.trim().toLowerCase()
     return (resourceType === "All" || r.type === resourceType) && (!q || [r.title, r.description].some((v) => v.toLowerCase().includes(q)))
   })
 
+  async function signUp(course: Course) {
+    setBusyCourseId(course.id)
+    setSignupMessage("")
+    const error = await onRequestCourseAccess(course)
+    setBusyCourseId(null)
+    setSignupMessage(error || (course.isFree ? "You now have access to this course." : "Sign-up received. We’ll grant access once payment is confirmed."))
+  }
+
+  const selectedEnrollment = selectedCourse ? enrollmentFor(data.enrollments, selectedCourse.id) : undefined
+  const selectedCatalog = catalogCourse(selectedCourse?.slug)
+
   return (
     <div className="flex flex-col gap-6">
-      <ViewHeader kicker="The Institute" title="Grow in wisdom and understanding" description="Courses, teachings and resources published by the Distinguished Daniel Institute." />
+      <ViewHeader kicker="The Institute" title="Grow in wisdom and understanding" description="Browse Institute courses, sign up from here, and open anything you already have access to." />
 
       <Tabs defaultValue="courses" className="gap-4">
         <TabsList>
@@ -80,28 +113,36 @@ export function InstituteView({ data }: DashboardViewProps) {
         <TabsContent value="courses" className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <SearchInput value={courseQuery} onChange={setCourseQuery} placeholder="Search courses" />
-            <FilterChips options={courseCategories} value={courseCategory} onChange={setCourseCategory} />
+            <FilterChips options={courseFilters} value={courseFilter} onChange={setCourseFilter} />
           </div>
           {data.errors.courses && <StatusMessage tone="error">{data.errors.courses}</StatusMessage>}
+          {data.errors.enrollments && <StatusMessage tone="error">{data.errors.enrollments}</StatusMessage>}
           {data.loading ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-64 rounded-xl" />)}</div>
           ) : courses.length === 0 ? (
-            <EmptyState icon={BookOpen} title={data.courses.length ? "No courses match your search" : "Courses are being prepared"} description={data.courses.length ? "Try a different search or category." : "New courses from the Institute will appear here as soon as they're published."} />
+            <EmptyState icon={BookOpen} title={data.courses.length ? "No courses match your search" : "Courses are being prepared"} description={data.courses.length ? "Try a different search or filter." : "New courses from the Institute will appear here as soon as they're published."} />
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {courses.map((course) => (
-                <Card key={course.id} className="dashboard-card-hover flex flex-col overflow-hidden pt-0">
-                  <div className="aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-[#132c40] to-[#0c1e2c]">
-                    {course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center"><BookOpen className="size-8 text-[#f3d27a]/60" /></div>}
-                  </div>
-                  <CardContent className="flex flex-1 flex-col gap-2">
-                    <Badge variant="outline" className="w-fit text-[10px]">{course.category}</Badge>
-                    <p className="text-sm leading-snug font-medium text-foreground">{course.title}</p>
-                    <p className="text-xs text-muted-foreground">{[course.instructor, course.duration].filter(Boolean).join(" · ")}</p>
-                    <Button size="sm" className="btn-gold mt-auto" onClick={() => setSelectedCourse(course)}>View details</Button>
-                  </CardContent>
-                </Card>
-              ))}
+              {courses.map((course) => {
+                const enrollment = enrollmentFor(data.enrollments, course.id)
+                return (
+                  <Card key={course.id} className="dashboard-card-hover flex flex-col overflow-hidden pt-0">
+                    <div className="aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-[#132c40] to-[#0c1e2c]">
+                      {course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center"><BookOpen className="size-8 text-[#f3d27a]/60" /></div>}
+                    </div>
+                    <CardContent className="flex flex-1 flex-col gap-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge variant="outline" className="w-fit text-[10px]">{course.isFree ? "Free" : "Paid"}</Badge>
+                        {enrollment?.status === "enrolled" && <Badge className="w-fit text-[10px]">Access granted</Badge>}
+                        {enrollment?.status === "pending" && <Badge variant="secondary" className="w-fit text-[10px]">Awaiting access</Badge>}
+                      </div>
+                      <p className="text-sm leading-snug font-medium text-foreground">{course.title}</p>
+                      <p className="text-xs text-muted-foreground">{[course.instructor, course.price || course.duration].filter(Boolean).join(" · ")}</p>
+                      <Button size="sm" className="btn-gold mt-auto" onClick={() => { setSelectedCourse(course); setSignupMessage("") }}>View details</Button>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           )}
         </TabsContent>
@@ -152,7 +193,7 @@ export function InstituteView({ data }: DashboardViewProps) {
         </TabsContent>
       </Tabs>
 
-      <Sheet open={selectedCourse !== null} onOpenChange={(open) => { if (!open) setSelectedCourse(null) }}>
+      <Sheet open={selectedCourse !== null} onOpenChange={(open) => { if (!open) { setSelectedCourse(null); setSignupMessage("") } }}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-md">
           {selectedCourse && (
             <>
@@ -160,17 +201,52 @@ export function InstituteView({ data }: DashboardViewProps) {
                 {selectedCourse.thumbnailUrl ? <img src={selectedCourse.thumbnailUrl} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center"><BookOpen className="size-10 text-[#f3d27a]/60" /></div>}
               </div>
               <SheetHeader className="gap-2">
-                <Badge variant="outline" className="w-fit text-[10px]">{selectedCourse.category}</Badge>
+                <div className="flex flex-wrap gap-1.5">
+                  <Badge variant="outline" className="w-fit text-[10px]">{selectedCourse.isFree ? "Free" : "Paid"}</Badge>
+                  {selectedEnrollment?.status === "enrolled" && <Badge className="w-fit text-[10px]">Access granted</Badge>}
+                  {selectedEnrollment?.status === "pending" && <Badge variant="secondary" className="w-fit text-[10px]">Awaiting access</Badge>}
+                </div>
                 <SheetTitle className="font-display text-xl">{selectedCourse.title}</SheetTitle>
                 <SheetDescription className="whitespace-pre-line">{selectedCourse.description || "Full course details will be shared by the Institute team."}</SheetDescription>
               </SheetHeader>
               <div className="flex flex-col gap-2 px-4 text-sm text-muted-foreground">
                 {selectedCourse.instructor && <p className="flex items-center gap-2"><UserRound className="size-4 text-[#f3d27a]" />{selectedCourse.instructor}</p>}
-                {selectedCourse.eventDate && <p className="flex items-center gap-2"><CalendarDays className="size-4 text-[#f3d27a]" />{formatDate(selectedCourse.eventDate, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>}
+                {selectedCourse.eventDate && <p className="flex items-center gap-2"><CalendarDays className="size-4 text-[#f3d27a]" />{formatDate(selectedCourse.eventDate, { weekday: "long", day: "numeric", month: "long", year: "numeric" }) || selectedCourse.eventDate}</p>}
                 {selectedCourse.duration && <p className="flex items-center gap-2"><Clock className="size-4 text-[#f3d27a]" />{selectedCourse.duration}</p>}
+                {selectedCourse.price && <p className="flex items-center gap-2"><span className="text-[#f3d27a]">{selectedCourse.price}</span></p>}
               </div>
+              {selectedCatalog?.formats.length ? (
+                <div className="flex flex-col gap-3 px-4">
+                  {selectedCatalog.formats.map((format) => (
+                    <div key={format.label} className="rounded-xl border border-border p-3">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#dcb567]">{format.label}</p>
+                        <p className="text-sm font-medium">{format.price}</p>
+                      </div>
+                      <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                        <li className="flex gap-2"><CalendarDays className="mt-0.5 size-3.5 shrink-0 text-[#f3d27a]" />{format.seating}</li>
+                        <li className="flex gap-2"><Clock className="mt-0.5 size-3.5 shrink-0 text-[#f3d27a]" />{format.time}</li>
+                        <li className="flex gap-2"><MapPin className="mt-0.5 size-3.5 shrink-0 text-[#f3d27a]" />{format.location.value}</li>
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              <p className="px-4 text-sm text-muted-foreground">{accessCopy(selectedCourse, selectedEnrollment?.status)}</p>
+              {signupMessage && <div className="px-4"><StatusMessage tone={signupMessage.startsWith("Unable") || signupMessage.startsWith("Please") ? "error" : "success"}>{signupMessage}</StatusMessage></div>}
               <SheetFooter>
-                <Button className="btn-gold" render={<a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Course enquiry: ${selectedCourse.title}`)}`} />}>Enquire about this course</Button>
+                {selectedEnrollment?.status === "enrolled" ? (
+                  <Button className="btn-gold" disabled>You have access</Button>
+                ) : selectedEnrollment?.status === "pending" ? (
+                  <Button className="btn-gold" disabled>Awaiting admin access</Button>
+                ) : (
+                  <Button className="btn-gold" disabled={busyCourseId === selectedCourse.id} onClick={() => void signUp(selectedCourse)}>
+                    {busyCourseId === selectedCourse.id ? "Signing up…" : selectedCourse.isFree ? "Sign up for free access" : selectedEnrollment?.status === "revoked" ? "Request access again" : "Sign up"}
+                  </Button>
+                )}
+                {!selectedCourse.isFree && selectedEnrollment?.status !== "enrolled" && (
+                  <Button variant="outline" render={<a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Proof of payment: ${selectedCourse.title}`)}`} />}>Send proof of payment</Button>
+                )}
                 <Button variant="outline" onClick={() => setSelectedCourse(null)}>Close</Button>
               </SheetFooter>
             </>

@@ -7,15 +7,17 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/dashboard/dashboard-ui"
-import { formatDate, profileCompletion, relativeTime } from "@/lib/dashboard-data"
+import { enrollmentFor, formatDate, profileCompletion, relativeTime } from "@/lib/dashboard-data"
 import { ArrowRight, BookOpen, Briefcase, CheckCircle2, Circle, FileText, GraduationCap, UserRound } from "lucide-react"
 import type { DashboardView, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 export function OverviewView({ member, data, onNavigate }: DashboardViewProps) {
   const completion = profileCompletion(member, data.profile)
+  const enrolledCount = data.enrollments.filter((enrollment) => enrollment.status === "enrolled").length
+  const pendingCount = data.enrollments.filter((enrollment) => enrollment.status === "pending").length
   const nextSteps: { label: string; done: boolean; view: DashboardView }[] = [
     { label: "Complete your professional profile", done: completion.percent === 100, view: "profile" },
-    { label: "Explore the Institute course catalogue", done: false, view: "institute" },
+    { label: "Sign up for an Institute course", done: enrolledCount + pendingCount > 0, view: "institute" },
     { label: "Browse opportunities in the Network", done: false, view: "network" },
     { label: "Review your communication preferences", done: false, view: "settings" },
   ]
@@ -33,11 +35,11 @@ export function OverviewView({ member, data, onNavigate }: DashboardViewProps) {
           <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
             {data.loading
               ? "Gathering the latest from the Institute and the Network…"
-              : `${data.courses.length} ${data.courses.length === 1 ? "course" : "courses"} and ${data.resources.length} ${data.resources.length === 1 ? "resource" : "resources"} in the Institute, and ${data.opportunities.length} ${data.opportunities.length === 1 ? "opportunity" : "opportunities"} in the Network.`}
+              : `${data.courses.length} ${data.courses.length === 1 ? "course" : "courses"} open for sign-up, ${enrolledCount} with access, and ${data.opportunities.length} ${data.opportunities.length === 1 ? "opportunity" : "opportunities"} in the Network.`}
           </p>
           <div className="flex flex-wrap gap-2 pt-1">
             <Button className="btn-gold rounded-full px-4" onClick={() => onNavigate("institute")}>
-              Explore the Institute <ArrowRight data-icon="inline-end" />
+              Browse courses <ArrowRight data-icon="inline-end" />
             </Button>
             {completion.percent < 100 && (
               <Button variant="outline" className="rounded-full px-4" onClick={() => onNavigate("profile")}>
@@ -50,7 +52,7 @@ export function OverviewView({ member, data, onNavigate }: DashboardViewProps) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={BookOpen} label="Institute courses" value={data.courses.length} loading={data.loading} onClick={() => onNavigate("institute")} />
+        <StatCard icon={BookOpen} label="Courses with access" value={enrolledCount} loading={data.loading} onClick={() => onNavigate("institute")} />
         <StatCard icon={FileText} label="Resources available" value={data.resources.length} loading={data.loading} onClick={() => onNavigate("institute")} />
         <StatCard icon={Briefcase} label="Open opportunities" value={data.opportunities.length} loading={data.loading} onClick={() => onNavigate("network")} />
         <StatCard icon={UserRound} label="Profile complete" value={`${completion.percent}%`} loading={data.loading} onClick={() => onNavigate("profile")} />
@@ -62,18 +64,22 @@ export function OverviewView({ member, data, onNavigate }: DashboardViewProps) {
           <CardContent className="flex flex-col gap-3">
             {data.loading ? <ListSkeleton /> : data.courses.length === 0 ? (
               <EmptyState icon={GraduationCap} title="New courses are on the way" description="Courses published by the Institute will appear here." />
-            ) : data.courses.slice(0, 3).map((course) => (
+            ) : data.courses.slice(0, 3).map((course) => {
+              const enrollment = enrollmentFor(data.enrollments, course.id)
+              const statusLabel = enrollment?.status === "enrolled" ? "Access granted" : enrollment?.status === "pending" ? "Awaiting access" : course.isFree ? "Free · Sign up" : "Paid · Sign up"
+              return (
               <button key={course.id} type="button" onClick={() => onNavigate("institute")} className="flex items-center gap-4 rounded-xl border border-border p-3 text-left transition-colors hover:border-[#dcb567]/40 hover:bg-accent/40">
                 <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-[#132c40] to-[#0c1e2c]">
                   {course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-[#f3d27a]/70"><BookOpen className="size-5" /></div>}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{course.title}</p>
-                  <p className="truncate text-xs text-muted-foreground">{[course.instructor, course.eventDate ? formatDate(course.eventDate) : course.category].filter(Boolean).join(" · ")}</p>
+                  <p className="truncate text-xs text-muted-foreground">{[course.instructor, statusLabel].filter(Boolean).join(" · ")}</p>
                 </div>
                 <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
               </button>
-            ))}
+              )
+            })}
           </CardContent>
         </Card>
 

@@ -19,10 +19,12 @@ import {
   emptyProfile,
   toCourse,
   toDirectoryMember,
+  toEnrollment,
   toOpportunity,
   toProfile,
   toResource,
   type Course,
+  type CourseEnrollment,
   type DirectoryMember,
   type MemberProfile,
   type Opportunity,
@@ -64,16 +66,18 @@ export type DashboardData = {
   loading: boolean
   opportunities: Opportunity[]
   courses: Course[]
+  enrollments: CourseEnrollment[]
   resources: Resource[]
   profile: MemberProfile
   directory: DirectoryMember[]
-  errors: Partial<Record<"opportunities" | "courses" | "resources" | "profile" | "directory", string>>
+  errors: Partial<Record<"opportunities" | "courses" | "enrollments" | "resources" | "profile" | "directory", string>>
 }
 
 const initialData: DashboardData = {
   loading: true,
   opportunities: [],
   courses: [],
+  enrollments: [],
   resources: [],
   profile: emptyProfile,
   directory: [],
@@ -126,9 +130,10 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
 
   const loadData = useCallback(async (userId: string) => {
     const client = createClient()
-    const [opportunities, courses, resources, profile, directory] = await Promise.all([
+    const [opportunities, courses, enrollments, resources, profile, directory] = await Promise.all([
       client.from("announcements").select("id, title, body, created_at").eq("published", true).not("title", "in", RESERVED_ANNOUNCEMENTS).order("created_at", { ascending: false }).limit(50),
       client.from("courses").select("*").eq("published", true).order("created_at", { ascending: false }),
+      client.from("course_enrollments").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
       client.from("resources").select("*").eq("published", true).order("created_at", { ascending: false }),
       client.from("member_profiles").select("*").eq("id", userId).maybeSingle(),
       client.from("member_profiles").select("*").neq("id", userId).limit(60),
@@ -137,12 +142,14 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
       loading: false,
       opportunities: (opportunities.data || []).map(toOpportunity),
       courses: (courses.data || []).map(toCourse),
+      enrollments: (enrollments.data || []).map(toEnrollment),
       resources: (resources.data || []).map(toResource),
       profile: toProfile(profile.data),
       directory: (directory.data || []).map(toDirectoryMember),
       errors: {
         opportunities: opportunities.error ? "We couldn't load opportunities." : undefined,
         courses: courses.error ? "We couldn't load courses." : undefined,
+        enrollments: enrollments.error ? "We couldn't load your course sign-ups." : undefined,
         resources: resources.error ? "We couldn't load resources." : undefined,
         profile: profile.error ? "We couldn't load your professional profile." : undefined,
         directory: directory.error ? "We couldn't load the member directory." : undefined,
@@ -180,8 +187,23 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
 
   const updateMember = useCallback((updates: Partial<DashboardMember>) => setMember((current) => ({ ...current, ...updates })), [])
   const updateProfile = useCallback((profile: MemberProfile) => setData((current) => ({ ...current, profile, errors: { ...current.errors, profile: undefined } })), [])
+  const requestCourseAccess = useCallback(async (course: Course) => {
+    const client = createClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return "Please sign in again to sign up for this course."
+    const nextStatus = course.isFree ? "enrolled" : "pending"
+    const { data: existing, error: existingError } = await client.from("course_enrollments").select("id, status").eq("user_id", user.id).eq("course_id", course.id).maybeSingle()
+    if (existingError) return "Unable to check your current sign-up."
+    if (existing?.status === "enrolled" || existing?.status === "pending") return null
+    const { error } = existing
+      ? await client.from("course_enrollments").update({ status: nextStatus, source: "self", updated_at: new Date().toISOString() }).eq("id", existing.id)
+      : await client.from("course_enrollments").insert({ user_id: user.id, course_id: course.id, status: nextStatus, source: "self" })
+    if (error) return course.isFree ? "Unable to open this course just now." : "Unable to send your sign-up just now."
+    await loadData(user.id)
+    return null
+  }, [loadData])
 
-  const viewProps = useMemo(() => ({ member, data, onNavigate: navigate }), [member, data, navigate])
+  const viewProps = useMemo(() => ({ member, data, onNavigate: navigate, onRequestCourseAccess: requestCourseAccess }), [member, data, navigate, requestCourseAccess])
 
   if (accessState === null) return <main className="fixed inset-0 z-[100] grid place-items-center bg-[#071520] text-white" role="status" aria-live="polite"><div className="flex flex-col items-center gap-4"><div className="size-10 animate-spin rounded-full border-2 border-white/20 border-t-[#d8b865]" /><span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">Loading dashboard</span></div></main>
   if (accessState !== "active") {
@@ -237,4 +259,5 @@ export type DashboardViewProps = {
   member: DashboardMember
   data: DashboardData
   onNavigate: (view: DashboardView) => void
+  onRequestCourseAccess: (course: Course) => Promise<string | null>
 }

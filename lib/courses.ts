@@ -69,3 +69,8 @@ export const COURSES: Course[] = [
     ],
   },
 ]
+
+export function catalogCourse(idOrSlug: string | null | undefined) {
+  if (!idOrSlug) return undefined
+  return COURSES.find((course) => course.id === idOrSlug)
+}
