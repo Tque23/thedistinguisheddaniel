@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type TouchEvent } from "react"
+import { useCallback, useRef, useState, type KeyboardEvent, type TouchEvent } from "react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
 const SWIPE_THRESHOLD = 40
@@ -22,7 +22,6 @@ export function GallerySlider({
   id = "gallery",
 }: GallerySliderProps) {
   const [active, setActive] = useState(0)
-  const thumbsRef = useRef<HTMLDivElement>(null)
   const touchStart = useRef<{ x: number; y: number } | null>(null)
   const total = images.length
   const titleId = `${id}-title`
@@ -34,14 +33,6 @@ export function GallerySlider({
     },
     [total],
   )
-
-  useEffect(() => {
-    const strip = thumbsRef.current
-    const thumb = strip?.children[active] as HTMLElement | undefined
-    if (!strip || !thumb) return
-    const target = thumb.offsetLeft - (strip.clientWidth - thumb.offsetWidth) / 2
-    strip.scrollTo({ left: Math.max(0, target), behavior: "smooth" })
-  }, [active])
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === "ArrowRight") {
@@ -84,37 +75,31 @@ export function GallerySlider({
         </div>
       </div>
       <div className="home-gallery-frame" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ touchAction: "pan-y" }}>
-        {images.map((image, index) => {
-          const distance = Math.min((index - active + total) % total, (active - index + total) % total)
-          return (
-            <Image
-              key={image}
-              src={image}
-              alt={`Gallery moment ${index + 1} of ${total}`}
-              aria-hidden={index !== active}
-              fill
-              priority={index === 0}
-              loading={distance <= 1 ? "eager" : "lazy"}
-              sizes="(max-width: 768px) 100vw, 90vw"
-              className={`home-gallery-image home-gallery-slide${index === active ? " is-active" : ""}`}
-            />
-          )
-        })}
-        <div className="home-gallery-overlay" aria-hidden="true" />
+        <div className="home-gallery-track">
+          {images.map((image, index) => {
+            const offset = (index - active + total) % total
+            const position = offset === 0 ? "is-active" : offset === 1 ? "is-next" : offset === total - 1 ? "is-prev" : "is-hidden"
+            return (
+              <div key={image} className={`home-gallery-slide ${position}`} aria-hidden={index !== active}>
+                <Image
+                  src={image}
+                  alt={`Gallery moment ${index + 1} of ${total}`}
+                  fill
+                  priority={index === 0}
+                  loading={offset <= 1 || offset === total - 1 ? "eager" : "lazy"}
+                  sizes="(max-width: 768px) 82vw, 72vw"
+                  className="home-gallery-image"
+                />
+              </div>
+            )
+          })}
+        </div>
+        <button type="button" className="home-gallery-arrow home-gallery-arrow-prev" onClick={() => move(-1)} aria-label="Previous gallery image"><ArrowLeft aria-hidden="true" /></button>
+        <button type="button" className="home-gallery-arrow home-gallery-arrow-next" onClick={() => move(1)} aria-label="Next gallery image"><ArrowRight aria-hidden="true" /></button>
       </div>
-      <div ref={thumbsRef} className="home-gallery-thumbs" role="tablist" aria-label="Gallery images">
+      <div className="home-gallery-dots" role="tablist" aria-label="Gallery images">
         {images.map((image, index) => (
-          <button
-            key={image}
-            type="button"
-            role="tab"
-            aria-selected={active === index}
-            aria-label={`Show gallery image ${index + 1}`}
-            onClick={() => setActive(index)}
-            className={active === index ? "is-active" : ""}
-          >
-            <Image src={image} alt="" fill sizes="80px" />
-          </button>
+          <button key={image} type="button" role="tab" aria-selected={active === index} aria-label={`Show gallery image ${index + 1}`} onClick={() => setActive(index)} className={active === index ? "is-active" : ""} />
         ))}
       </div>
     </section>
