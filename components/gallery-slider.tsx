@@ -75,6 +75,8 @@ export function GallerySlider({
         </div>
       </div>
       <div className="home-gallery-frame" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ touchAction: "pan-y" }}>
+        <div className="home-gallery-browserbar" aria-hidden="true"><span /><span /><span /></div>
+        <div className="home-gallery-stage">
         <div className="home-gallery-track">
           {images.map((image, index) => {
             const offset = (index - active + total) % total
@@ -96,8 +98,14 @@ export function GallerySlider({
         </div>
         <button type="button" className="home-gallery-arrow home-gallery-arrow-prev" onClick={() => move(-1)} aria-label="Previous gallery image"><ArrowLeft aria-hidden="true" /></button>
         <button type="button" className="home-gallery-arrow home-gallery-arrow-next" onClick={() => move(1)} aria-label="Next gallery image"><ArrowRight aria-hidden="true" /></button>
+        </div>
+        <div className="home-gallery-dots" role="tablist" aria-label="Gallery images">
+          {images.map((image, index) => (
+            <button key={image} type="button" role="tab" aria-selected={active === index} aria-label={`Show gallery image ${index + 1}`} onClick={() => setActive(index)} className={active === index ? "is-active" : ""} />
+          ))}
+        </div>
       </div>
-      <div className="home-gallery-dots" role="tablist" aria-label="Gallery images">
+      <div className="home-gallery-dots home-gallery-mobile-dots" role="tablist" aria-label="Gallery images">
         {images.map((image, index) => (
           <button key={image} type="button" role="tab" aria-selected={active === index} aria-label={`Show gallery image ${index + 1}`} onClick={() => setActive(index)} className={active === index ? "is-active" : ""} />
         ))}
