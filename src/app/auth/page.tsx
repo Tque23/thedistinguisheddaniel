@@ -60,14 +60,6 @@ function AuthForm() {
       return
     }
 
-    if (!isSignUp && email.trim().toLowerCase() === "admin@distinguisheddaniel.com" && password === "DDNIadmin26") {
-      const bootstrap = await fetch("/api/admin/bootstrap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) })
-      if (!bootstrap.ok) {
-        setError("Unable to prepare admin access.")
-        await finishLoading()
-        return
-      }
-    }
     if (isForgot) {
       // Recovery tokens are delivered in the URL hash, so land directly on the
       // reset screen instead of passing through a server redirect that drops it.
@@ -90,7 +82,8 @@ function AuthForm() {
 
     if (result.error) {
       const rawMessage = result.error.message.toLowerCase()
-      setError(rawMessage.includes("already registered") || rawMessage.includes("already exists") ? "An account already exists for this email. Log in or reset your password instead." : rawMessage.includes("invalid") ? "Invalid email or password." : result.error.message)
+      const actionable = rawMessage.includes("email not confirmed") || rawMessage.includes("password should") || rawMessage.includes("rate limit") || rawMessage.includes("too many")
+      setError(rawMessage.includes("invalid") || rawMessage.includes("credentials") ? "Invalid email or password." : actionable ? result.error.message : "Unable to complete authentication. Please try again.")
     } else if (isSignUp) {
       const identities = result.data.user?.identities
       if (identities && identities.length === 0) {

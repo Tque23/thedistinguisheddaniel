@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
   if (authError) {
     const errorUrl = new URL("/auth", url.origin)
-    errorUrl.searchParams.set("error", authErrorDescription || authError)
+    errorUrl.searchParams.set("error", "Authentication could not be completed. Please request a new link and try again.")
     return NextResponse.redirect(errorUrl)
   }
 

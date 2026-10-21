@@ -16,7 +16,10 @@ export async function GET() {
   if (error) return NextResponse.json({ error: "Unable to load users" }, { status: 500 })
   const { data: profiles } = await adminClient.from("member_profiles").select("*")
   const profileById = new Map(((profiles || []) as { id: string }[]).map((profile) => [profile.id, profile]))
-  return NextResponse.json({ users: data.users.map((user) => ({ id: user.id, email: user.email, created_at: user.created_at, last_sign_in_at: user.last_sign_in_at, email_confirmed_at: user.email_confirmed_at, user_metadata: user.user_metadata, app_metadata: user.app_metadata, profile: profileById.get(user.id) || null })) })
+  return NextResponse.json(
+    { users: data.users.map((user) => ({ id: user.id, email: user.email, created_at: user.created_at, last_sign_in_at: user.last_sign_in_at, email_confirmed_at: user.email_confirmed_at, user_metadata: { full_name: user.user_metadata?.full_name, dashboard_status: user.user_metadata?.dashboard_status, professional_profile_status: user.user_metadata?.professional_profile_status, profile_review_note: user.user_metadata?.profile_review_note, profile_reviewed_at: user.user_metadata?.profile_reviewed_at }, app_metadata: { is_admin: user.app_metadata?.is_admin === true }, profile: profileById.get(user.id) || null })) },
+    { headers: { "Cache-Control": "private, no-store" } },
+  )
 }
 
 export async function PATCH(request: Request) {
@@ -47,7 +50,7 @@ export async function PATCH(request: Request) {
     const temporaryPassword = typeof body.temporary_password === "string" && body.temporary_password.length >= 8 ? body.temporary_password : `${crypto.randomUUID().slice(0, 8)}Aa!9`
     const { error } = await createAdminClient().auth.admin.updateUserById(body.id, { password: temporaryPassword })
     if (error) return NextResponse.json({ error: "Unable to reset password" }, { status: 400 })
-    return NextResponse.json({ ok: true, temporary_password: temporaryPassword })
+    return NextResponse.json({ ok: true })
   }
   const { data, error } = await adminClient.auth.admin.updateUserById(body.id, updates)
   if (error) return NextResponse.json({ error: "Unable to update user" }, { status: 400 })
