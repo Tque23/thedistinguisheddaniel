@@ -2,7 +2,7 @@ import "./landing.css"
 import { Navigation } from "@/components/navigation"
 import { Hero } from "@/components/hero"
 import { Footer } from "@/components/footer"
-import { FacultySection } from "@/components/board"
+import { MeetTheCommitteeBento } from "@/components/meet-the-committee-bento"
 import { GallerySlider } from "@/components/gallery-slider"
 import { PhilosophySection } from "@/components/philosophy-section"
 import { getFolderImages } from "@/lib/gallery"
@@ -27,7 +27,7 @@ export default function Page() {
           <div className="separator-line line-bottom"></div>
         </div>
 
-        <FacultySection />
+        <MeetTheCommitteeBento />
 
         {/* Gallery slider uses images from /public/gallery */}
         <GallerySlider images={mainGalleryImages} />
