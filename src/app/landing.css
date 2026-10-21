@@ -38,7 +38,7 @@
 .home-gallery-controls button { display: grid; place-items: center; size: 2.5rem; width: 2.5rem; height: 2.5rem; border: 1px solid rgba(23,43,58,.25); border-radius: 999px; color: #172b3a; transition: background .2s ease, color .2s ease; }
 .home-gallery-controls button:hover, .home-gallery-controls button:focus-visible { background: #172b3a; color: #f4f0e7; outline: none; }
 .home-gallery-controls svg { width: 1rem; }
-.home-gallery-frame { position: relative; width: 100%; aspect-ratio: 16 / 8; min-height: 280px; overflow: hidden; isolation: isolate; background: #172b3a; }
+.home-gallery-frame { position: relative; width: 100%; aspect-ratio: 16 / 8; min-height: 280px; overflow: hidden; isolation: isolate; background: #172b3a; border-radius: 1.5rem; }
 .home-gallery-image { display: block; object-fit: cover; }
 .home-gallery-overlay { z-index: 1; }
 .home-gallery-thumbs { position: relative; z-index: 2; }
@@ -48,7 +48,7 @@
 .home-gallery-overlay { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(7,21,32,.25), transparent 55%, rgba(7,21,32,.15)); }
 .home-gallery-thumbs { display: flex; gap: .65rem; overflow-x: auto; padding-top: .8rem; scrollbar-width: none; }
 .home-gallery-thumbs::-webkit-scrollbar { display: none; }
-.home-gallery-thumbs button { position: relative; flex: 0 0 5rem; height: 3.5rem; overflow: hidden; border: 2px solid transparent; opacity: .55; transition: opacity .2s ease, border-color .2s ease; }
+.home-gallery-thumbs button { position: relative; flex: 0 0 5rem; height: 3.5rem; overflow: hidden; border: 2px solid transparent; border-radius: 1.5rem; opacity: .55; transition: opacity .2s ease, border-color .2s ease; }
 .home-gallery-thumbs button.is-active, .home-gallery-thumbs button:hover, .home-gallery-thumbs button:focus-visible { border-color: #c89b3c; opacity: 1; outline: none; }
 
 /* ---------------- HERO ---------------- */
