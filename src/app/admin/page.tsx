@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Field, StatusMessage } from "@/components/dashboard/dashboard-ui"
 import { formatDate, isValidUrl, normalizeSkills, relativeTime } from "@/lib/dashboard-data"
-import { Pencil, Plus, Trash2, X, Users, ShieldCheck, Settings2, ChevronDown, Check, MessageSquareWarning } from "lucide-react"
+import { Pencil, Plus, Trash2, X, Users, ShieldCheck, Settings2, ChevronDown, Check, MessageSquareWarning, LayoutDashboard, FileText, Megaphone } from "lucide-react"
 
 type FieldKind = "text" | "textarea" | "url" | "select"
 type FieldConfig = { name: string; label: string; kind?: FieldKind; required?: boolean; placeholder?: string; hint?: string; options?: readonly string[] }
@@ -50,6 +50,7 @@ const sections = {
 } satisfies Record<string, { title: string; singular: string; destination: string; fields: FieldConfig[] }>
 
 type Section = keyof typeof sections
+type AdminArea = "overview" | "content" | "members" | "announcements"
 type Item = Record<string, string | boolean | null> & { id: string; published?: boolean; is_free?: boolean }
 type Profile = { headline?: string; company?: string; role?: string; bio?: string; location?: string; website?: string; linkedin_url?: string; skills?: unknown; updated_at?: string }
 type User = { id: string; email?: string; created_at: string; last_sign_in_at?: string; email_confirmed_at?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown>; profile?: Profile | null }
@@ -68,6 +69,7 @@ function profileStatusOf(user: User) { return String(user.user_metadata?.profess
 
 export default function AdminPage() {
   const [allowed, setAllowed] = useState<boolean | null>(null)
+  const [activeArea, setActiveArea] = useState<AdminArea>("overview")
   const [section, setSection] = useState<Section>("announcements")
   const [form, setForm] = useState<Record<string, string>>({})
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
@@ -129,7 +131,29 @@ export default function AdminPage() {
     if (ok) setReviewNote("")
   }
   async function resendVerification(user: User) { const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true }) }); setVerificationStatus(response.ok ? `Verification email sent to ${user.email || "member"}.` : "Unable to send verification email.") }
-  async function resendUnverifiedInBulk() { const unverified = users.filter((user) => !user.email_confirmed_at && user.email); if (!unverified.length) { setVerificationStatus("There are no unverified users to contact."); return }; setVerificationStatus(`Sending ${unverified.length} verification email${unverified.length === 1 ? "" : "s"}...`); const results = await Promise.all(unverified.map((user) => fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true }) }))); const sent = results.filter((response) => response.ok).length; setVerificationStatus(`Sent ${sent} of ${unverified.length} verification emails.`) }
+  async function resendUnverifiedInBulk() {
+    const unverified = users.filter((user) => !user.email_confirmed_at && user.email)
+    if (!unverified.length) { setVerificationStatus("There are no unverified users to contact."); return }
+    if (!window.confirm(`Send verification emails to ${unverified.length} unverified members?`)) return
+    setVerificationStatus(`Sending ${unverified.length} verification email${unverified.length === 1 ? "" : "s"}...`)
+    const results = await Promise.all(unverified.map((user) => fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true }) })))
+    const sent = results.filter((response) => response.ok).length
+    setVerificationStatus(`Sent ${sent} of ${unverified.length} verification emails.`)
+  }
+  async function updateAllMemberAccess(dashboard_status: "prepared" | "active" | "updates", label: string) {
+    const members = users.filter((user) => user.email !== "admin@distinguisheddaniel.com")
+    if (!members.length) { setUserStatus("There are no members to update."); return }
+    if (!window.confirm(`${label} for all ${members.length} members?`)) return
+    setUserStatus(`Updating access for ${members.length} members...`)
+    const results = await Promise.all(members.map((user) => fetch("/api/admin/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: user.id, dashboard_status }),
+    })))
+    const updated = results.filter((response) => response.ok).length
+    setUserStatus(`Updated access for ${updated} of ${members.length} members.`)
+    if (updated > 0) await loadUsers()
+  }
   async function deleteUser(user: User) { if (!window.confirm(`Delete the account for ${user.email || "this user"}?`)) return; const response = await fetch("/api/admin/users", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id }) }); setUserStatus(response.ok ? "User account deleted." : "Unable to delete user."); if (response.ok) await loadUsers() }
   useEffect(() => { void (async () => { const client = createClient(); let { data: { user } } = await client.auth.getUser(); if (user?.app_metadata?.is_admin !== true) { const { data: refreshed } = await client.auth.refreshSession(); user = refreshed.session?.user || user } const isAdmin = user?.app_metadata?.is_admin === true; setAllowed(isAdmin); if (isAdmin) { await loadItems(); await loadUsers(); await loadAnnouncementSettings(); await loadCourseAccess() } })() }, [])
   function resetForm() { setEditingId(null); setForm({}); setFormErrors({}); setStatus("") }
@@ -193,12 +217,66 @@ export default function AdminPage() {
 
   if (allowed === null) return <main className="tdd-dashboard min-h-screen p-8 text-muted-foreground">Checking access...</main>
   if (!allowed) return <main className="tdd-dashboard grid min-h-screen place-items-center p-8"><Card><CardHeader><CardTitle>Admin access required</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">This area is restricted to administrators.</p></CardContent></Card></main>
+  const areas: { id: AdminArea; label: string; description: string; icon: typeof LayoutDashboard }[] = [
+    { id: "overview", label: "Overview", description: "A summary of members and items that need attention.", icon: LayoutDashboard },
+    { id: "content", label: "Content", description: "Create, update, and publish courses, resources, opportunities, and blog posts.", icon: FileText },
+    { id: "members", label: "Members", description: "Review member profiles, manage account access, and approve course requests.", icon: Users },
+    { id: "announcements", label: "Announcements", description: "Manage the live messages shown on the public site and member dashboard.", icon: Megaphone },
+  ]
+  const activeAreaInfo = areas.find((area) => area.id === activeArea) ?? areas[0]
+
   return <main className="tdd-dashboard min-h-screen"><div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
-    <div className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">The Distinguished Daniel</p><h1 className="font-display text-3xl sm:text-4xl">Admin dashboard</h1><p className="text-muted-foreground">Manage member access, administrators, courses, and all published member content.</p></div><Button variant="outline" render={<a href="/dashboard" />}>Open member dashboard</Button></div>
-    <div className="mb-6 grid gap-3 sm:grid-cols-4"><StatTile label="Members" value={users.length} /><StatTile label="Active dashboards" value={users.filter((user) => user.user_metadata?.dashboard_status === "active").length} /><StatTile label="Unverified" value={users.filter((user) => !user.email_confirmed_at).length} /><button type="button" className="text-left" onClick={() => { setReviewFilter("pending_review"); document.getElementById("member-access")?.scrollIntoView({ behavior: "smooth" }) }}><StatTile label="Profiles to review" value={reviewCounts.pending_review} highlight={reviewCounts.pending_review > 0} /></button></div>
-    <Card className="mb-6"><CardHeader><CardTitle>Live announcements</CardTitle><p className="text-sm text-muted-foreground">These two messages are shown immediately on the public landing page and member dashboard. Opportunities are managed separately below.</p></CardHeader><CardContent className="grid gap-4 lg:grid-cols-2"><div className="flex flex-col gap-2"><label htmlFor="dashboard-announcement" className="text-sm font-medium">Member dashboard announcement</label><Textarea id="dashboard-announcement" value={dashboardAnnouncement} onChange={(event) => setDashboardAnnouncement(event.target.value)} /><p className="text-xs text-muted-foreground">Shown in the bar at the top of every member dashboard view. Members can dismiss it for their session.</p><Button className="w-fit btn-gold" onClick={() => void saveAnnouncementSetting(dashboardAnnouncementKey, dashboardAnnouncement)}>Save dashboard announcement</Button></div><div className="flex flex-col gap-2"><label htmlFor="landing-announcement" className="text-sm font-medium">Landing page announcement</label><Textarea id="landing-announcement" value={landingAnnouncement} onChange={(event) => setLandingAnnouncement(event.target.value)} /><p className="text-xs text-muted-foreground">Shown on the public homepage.</p><Button className="w-fit btn-gold" onClick={() => void saveAnnouncementSetting(landingAnnouncementKey, landingAnnouncement)}>Save landing announcement</Button></div>{announcementStatus && <p role="status" className="text-sm text-muted-foreground lg:col-span-2">{announcementStatus}</p>}</CardContent></Card>
-    <div className="mb-6 flex flex-wrap gap-2">{(Object.keys(sections) as Section[]).map((key) => <Button key={key} variant={section === key ? "default" : "outline"} className={section === key ? "btn-gold" : ""} onClick={() => { setSection(key); resetForm(); void loadItems(key) }}>{sections[key].title}</Button>)}</div>
-    <div className="grid gap-6 xl:grid-cols-[380px_1fr]">
+    <div className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <div><p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">The Distinguished Daniel</p><h1 className="font-display text-3xl sm:text-4xl">Admin dashboard</h1><p className="mt-1 text-sm text-muted-foreground">A central workspace for site content and member operations.</p></div>
+      <Button variant="outline" render={<a href="/dashboard" />}>Open member dashboard</Button>
+    </div>
+    <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+      <nav aria-label="Admin sections" className="h-fit rounded-xl border border-border bg-card p-2 lg:sticky lg:top-6">
+        <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
+        <div className="grid grid-cols-2 gap-1 lg:grid-cols-1">
+          {areas.map(({ id, label, icon: Icon }) => (
+            <button key={id} type="button" aria-current={activeArea === id ? "page" : undefined} onClick={() => setActiveArea(id)} className={`flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${activeArea === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+              <Icon className="size-4 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 flex-1">{label}</span>
+              {id === "members" && (reviewCounts.pending_review > 0 || enrollments.some((enrollment) => enrollment.status === "pending")) && <span className={`rounded-full px-1.5 py-0.5 text-xs ${activeArea === id ? "bg-primary-foreground/15" : "bg-muted"}`}>{reviewCounts.pending_review + enrollments.filter((enrollment) => enrollment.status === "pending").length}</span>}
+            </button>
+          ))}
+        </div>
+      </nav>
+      <div className="min-w-0">
+        <header className="mb-6">
+          <h2 className="font-display text-2xl">{activeAreaInfo.label}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{activeAreaInfo.description}</p>
+        </header>
+        {activeArea === "overview" && <>
+          <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <StatTile label="Members" value={users.length} />
+            <StatTile label="Active dashboards" value={users.filter((user) => user.user_metadata?.dashboard_status === "active").length} />
+            <StatTile label="Unverified members" value={users.filter((user) => !user.email_confirmed_at).length} />
+            <button type="button" className="text-left" onClick={() => { setReviewFilter("pending_review"); setActiveArea("members") }}><StatTile label="Profiles to review" value={reviewCounts.pending_review} highlight={reviewCounts.pending_review > 0} /></button>
+          </div>
+          <Card>
+            <CardHeader><CardTitle>Needs attention</CardTitle><p className="text-sm text-muted-foreground">Review outstanding requests and member profiles from the Members workspace.</p></CardHeader>
+            <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap gap-2"><Badge variant={enrollments.some((enrollment) => enrollment.status === "pending") ? "default" : "secondary"}>{enrollments.filter((enrollment) => enrollment.status === "pending").length} course requests</Badge><Badge variant={reviewCounts.pending_review > 0 ? "default" : "secondary"}>{reviewCounts.pending_review} profiles to review</Badge></div>
+              <Button variant="outline" onClick={() => setActiveArea("members")}>Open member management</Button>
+            </CardContent>
+          </Card>
+        </>}
+        {activeArea === "announcements" && <Card>
+          <CardHeader><CardTitle>Live announcements</CardTitle><p className="text-sm text-muted-foreground">These messages appear immediately on the public landing page and member dashboard. Network opportunities are managed separately under Content.</p></CardHeader>
+          <CardContent className="grid gap-6 lg:grid-cols-2">
+            <div className="flex flex-col gap-2"><label htmlFor="dashboard-announcement" className="text-sm font-medium">Member dashboard announcement</label><Textarea id="dashboard-announcement" value={dashboardAnnouncement} onChange={(event) => setDashboardAnnouncement(event.target.value)} /><p className="text-xs text-muted-foreground">Shown in the bar at the top of every member dashboard view. Members can dismiss it for their session.</p><Button className="w-fit btn-gold" onClick={() => void saveAnnouncementSetting(dashboardAnnouncementKey, dashboardAnnouncement)}>Save dashboard announcement</Button></div>
+            <div className="flex flex-col gap-2"><label htmlFor="landing-announcement" className="text-sm font-medium">Landing page announcement</label><Textarea id="landing-announcement" value={landingAnnouncement} onChange={(event) => setLandingAnnouncement(event.target.value)} /><p className="text-xs text-muted-foreground">Shown on the public homepage.</p><Button className="w-fit btn-gold" onClick={() => void saveAnnouncementSetting(landingAnnouncementKey, landingAnnouncement)}>Save landing announcement</Button></div>
+            {announcementStatus && <p role="status" className="text-sm text-muted-foreground lg:col-span-2">{announcementStatus}</p>}
+          </CardContent>
+        </Card>}
+        {activeArea === "content" && <>
+          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
+            <span className="mr-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Manage</span>
+            {(Object.keys(sections) as Section[]).map((key) => <Button key={key} size="sm" variant={section === key ? "default" : "outline"} className={section === key ? "btn-gold" : ""} onClick={() => { setSection(key); resetForm(); void loadItems(key) }}>{sections[key].title}</Button>)}
+          </div>
+          <div className="grid gap-6 xl:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)]">
       <Card className="h-fit"><CardHeader><CardTitle className="flex items-center justify-between">{editingId ? `Edit ${config.singular}` : `Add ${config.singular}`}<Button variant="ghost" size="icon" onClick={resetForm} aria-label="Clear form"><X /></Button></CardTitle><p className="text-xs text-muted-foreground">Appears in: {config.destination}</p></CardHeader><CardContent><form onSubmit={submit} noValidate className="flex flex-col gap-4">
         {(config.fields as FieldConfig[]).map((field) => { const id = `admin-${section}-${field.name}`; const value = form[field.name] || ""; const onChange = (next: string) => { setForm({ ...form, [field.name]: next }); if (formErrors[field.name]) setFormErrors({ ...formErrors, [field.name]: "" }) }; const label = field.required ? `${field.label} *` : field.label; return <Field key={field.name} id={id} label={label} error={formErrors[field.name]} hint={field.hint}>
           {field.kind === "textarea" ? <Textarea id={id} rows={5} value={value} aria-invalid={Boolean(formErrors[field.name])} placeholder={field.placeholder} onChange={(e) => onChange(e.target.value)} />
@@ -208,17 +286,22 @@ export default function AdminPage() {
         <div className="flex gap-3"><Button type="submit" className="btn-gold"><Plus data-icon="inline-start" />{editingId ? "Save changes" : "Publish"}</Button>{editingId && <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>}</div>{status && <p role="status" className="text-sm text-muted-foreground">{status}</p>}
       </form></CardContent></Card>
       <Card><CardHeader><CardTitle>{config.title}</CardTitle><p className="text-xs text-muted-foreground">Hidden items stay saved but aren&apos;t shown to members.</p></CardHeader><CardContent className="flex flex-col gap-3">{items.map((item) => <div key={item.id} className="flex flex-col gap-3 rounded-xl border border-border bg-card/60 p-4 sm:flex-row sm:items-start"><div className="min-w-0 flex-1"><div className="flex flex-wrap gap-2"><p className="font-medium">{String(item.title)}</p><Badge variant={item.published ? "default" : "secondary"}>{item.published ? "Published" : "Hidden"}</Badge>{(item.resource_type || item.category) && <Badge variant="outline">{String(item.resource_type || item.category)}</Badge>}</div><p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{String(item.description || item.body || item.instructor || item.url || "")}</p>{typeof item.created_at === "string" && <p className="mt-1 text-xs text-muted-foreground">Added {formatDate(item.created_at)}</p>}</div><div className="flex shrink-0 gap-1"><Button variant="ghost" size="icon" onClick={() => startEdit(item)} aria-label="Edit"><Pencil /></Button><Button variant="ghost" size="icon" className="text-destructive" onClick={() => void remove(item)} aria-label="Delete"><Trash2 /></Button><Button variant="outline" size="sm" onClick={() => void togglePublished(item)}>{item.published ? "Hide" : "Publish"}</Button></div></div>)}{items.length === 0 && <p className="text-sm text-muted-foreground">No {config.title.toLowerCase()} yet.</p>}</CardContent></Card>
-    </div>
-    <Card id="member-access" className="mt-8"><CardHeader><CardTitle className="flex items-center gap-2"><Settings2 /> Member access and admin roles</CardTitle><p className="text-sm text-muted-foreground">Use bulk actions to keep everyone on the same message, or customize individual access and paid course permissions.</p></CardHeader><CardContent className="flex flex-col gap-4">
+          </div>
+        </>}
+        {activeArea === "members" && <Card id="member-access">
+          <CardHeader><CardTitle className="flex items-center gap-2"><Settings2 /> Member access and admin roles</CardTitle><p className="text-sm text-muted-foreground">Review course requests, update individual accounts, or use carefully confirmed bulk actions.</p></CardHeader><CardContent className="flex flex-col gap-5">
       <PendingCourseRequests users={users} courses={courseCatalog} enrollments={enrollments} busy={accessBusy} onGrant={(userId, courseId) => void setCourseAccess(userId, courseId, "enrolled")} />
-      <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => void Promise.all(users.filter((u) => u.email !== "admin@distinguisheddaniel.com").map((u) => updateUser(u.id, { dashboard_status: "prepared" })))}>Set all to “Dashboard is being prepared”</Button><Button variant="outline" onClick={() => void Promise.all(users.filter((u) => u.email !== "admin@distinguisheddaniel.com").map((u) => updateUser(u.id, { dashboard_status: "active" })))}>Activate all members</Button><Button variant="outline" onClick={() => void Promise.all(users.filter((u) => u.email !== "admin@distinguisheddaniel.com").map((u) => updateUser(u.id, { dashboard_status: "updates" })))}>Set all to updates</Button><Button variant="outline" onClick={() => void resendUnverifiedInBulk()}>Resend verification to unverified</Button></div>
+      <section aria-labelledby="bulk-member-actions" className="rounded-xl border border-border bg-muted/30 p-4"><div className="mb-3"><h3 id="bulk-member-actions" className="font-medium">Bulk actions</h3><p className="text-sm text-muted-foreground">Changes apply to every member except the primary administrator.</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => void updateAllMemberAccess("prepared", "Set dashboard access to prepared")}>Set all to prepared</Button><Button variant="outline" onClick={() => void updateAllMemberAccess("active", "Activate dashboards")}>Activate all members</Button><Button variant="outline" onClick={() => void updateAllMemberAccess("updates", "Set dashboard access to updates")}>Set all to updates</Button><Button variant="outline" onClick={() => void resendUnverifiedInBulk()}>Resend verification emails</Button></div></section>
       {verificationStatus && <p role="status" className="text-sm text-muted-foreground">{verificationStatus}</p>}
       {userStatus && <p role="status" className="text-sm text-muted-foreground">{userStatus}</p>}
       <div className="flex flex-col gap-2 sm:flex-row"><Input aria-label="Search users" placeholder="Search by name, email or company" value={userSearch} onChange={(event) => setUserSearch(event.target.value)} /><select aria-label="Filter by profile review" className={`${selectClass} h-10`} value={reviewFilter} onChange={(event) => setReviewFilter(event.target.value as typeof reviewFilter)}><option value="all">All profiles</option><option value="pending_review">Pending review ({reviewCounts.pending_review})</option><option value="approved">Approved</option><option value="rejected">Changes requested</option><option value="none">Not submitted</option></select><select aria-label="Sort users" className={`${selectClass} h-10`} value={userSort} onChange={(event) => setUserSort(event.target.value as typeof userSort)}><option value="created_at">Newest first</option><option value="name">Name</option><option value="email">Email</option><option value="verified">Unverified first</option></select></div>
       <div className="flex flex-col gap-3">{visibleUsers.map((user) => { const expanded = expandedUserId === user.id; const profileStatus = profileStatusOf(user); return <div key={user.id} className="rounded-xl border border-border bg-card/60 p-4"><div className="flex flex-col gap-4 lg:flex-row lg:items-center"><div className="min-w-0 flex-1"><p className="truncate font-medium">{String(user.user_metadata?.full_name || "Member")}</p><p className="truncate text-sm text-muted-foreground">{user.email || "No email"}{user.user_metadata?.title ? ` · ${String(user.user_metadata.title)}` : ""}</p><div className="mt-2 flex flex-wrap gap-2"><Badge variant={user.app_metadata?.is_admin === true ? "default" : "secondary"}>{user.app_metadata?.is_admin === true ? "Admin" : "Member"}</Badge><Badge variant={user.email_confirmed_at ? "outline" : "destructive"}>{user.email_confirmed_at ? "Verified" : "Unverified"}</Badge><Badge variant="outline">{accessLabels[String(user.user_metadata?.dashboard_status || "prepared")]}</Badge>{profileStatus && <Badge variant={profileStatus === "pending_review" ? "default" : "outline"} className={profileStatus === "pending_review" ? "btn-gold" : ""}>{reviewLabels[profileStatus] || profileStatus}</Badge>}</div></div><div className="flex flex-wrap gap-2"><select aria-label={`Dashboard access for ${user.email}`} className={selectClass} value={String(user.user_metadata?.dashboard_status || "prepared")} onChange={(e) => void updateUser(user.id, { dashboard_status: e.target.value })}>{accessOptions.map((option) => <option key={option} value={option}>{accessLabels[option]}</option>)}</select><Button variant="outline" size="sm" onClick={() => void toggleAdmin(user)}><ShieldCheck data-icon="inline-start" />{user.app_metadata?.is_admin === true ? "Remove admin" : "Assign admin"}</Button><Button variant="outline" size="sm" onClick={() => void updateContact(user)}><Pencil data-icon="inline-start" />Contact</Button>{!user.email_confirmed_at && user.email && <Button variant="outline" size="sm" onClick={() => void resendVerification(user)}>Resend verification</Button>}<Button variant="ghost" size="sm" aria-expanded={expanded} onClick={() => { setExpandedUserId(expanded ? null : user.id); setReviewNote("") }}><ChevronDown data-icon="inline-start" className={expanded ? "rotate-180 transition-transform" : "transition-transform"} />Profile</Button>{user.email !== "admin@distinguisheddaniel.com" && <Button variant="outline" size="sm" className="text-destructive" aria-label={`Delete ${user.email || "user"}`} onClick={() => void deleteUser(user)}><Trash2 /></Button>}</div></div>
         {expanded && <MemberDetails user={user} reviewNote={reviewNote} onReviewNoteChange={setReviewNote} onReview={(next) => void reviewProfile(user, next)} courses={courseCatalog} enrollments={enrollments.filter((enrollment) => enrollment.user_id === user.id)} busy={accessBusy} onGrant={(courseId) => void setCourseAccess(user.id, courseId, "enrolled")} onRevoke={(courseId) => void setCourseAccess(user.id, courseId, "revoked")} />}
       </div> })}{visibleUsers.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No users match this search.</p>}</div>
-    </CardContent></Card>
+          </CardContent>
+        </Card>}
+      </div>
+    </div>
   </div></main>
 }
 

@@ -16,7 +16,7 @@ const facultyData: FacultyMember[] = [
   {
     id: 1,
     name: "Apostle K. Zungu",
-    image: "/board/Apostle.jpg",
+    image: "/board/Apostle1.jpg",
     position: "Founder & President",
   },
   {
