@@ -48,7 +48,7 @@
 .home-gallery-overlay { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(7,21,32,.25), transparent 55%, rgba(7,21,32,.15)); }
 .home-gallery-thumbs { display: flex; gap: .65rem; overflow-x: auto; padding-top: .8rem; scrollbar-width: none; }
 .home-gallery-thumbs::-webkit-scrollbar { display: none; }
-.home-gallery-thumbs button { position: relative; flex: 0 0 5rem; height: 3.5rem; overflow: hidden; border: 2px solid transparent; border-radius: 1.5rem; opacity: .55; transition: opacity .2s ease, border-color .2s ease; }
+.home-gallery-thumbs button { position: relative; flex: 0 0 5rem; height: 3.5rem; overflow: hidden; border: 2px solid transparent; border-radius: .5rem; opacity: .55; transition: opacity .2s ease, border-color .2s ease; }
 .home-gallery-thumbs button.is-active, .home-gallery-thumbs button:hover, .home-gallery-thumbs button:focus-visible { border-color: #c89b3c; opacity: 1; outline: none; }
 
 /* ---------------- HERO ---------------- */
