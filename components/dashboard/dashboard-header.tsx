@@ -78,14 +78,11 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
     <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border px-4 sm:px-6">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="h-5" />
-      <div className="min-w-0 flex-1">
-        <h1 className="truncate text-sm font-semibold text-foreground sm:text-base">
-          {activeView === "overview" ? `${copy.title}, ${firstName}` : copy.title}
-        </h1>
-        <p className="hidden truncate text-xs text-muted-foreground sm:block">{copy.subtitle}</p>
+      <div className="min-w-0 flex-1 md:hidden">
+        <h1 className="truncate text-sm font-semibold text-foreground">{activeView === "overview" ? `${copy.title}, ${firstName}` : copy.title}</h1>
       </div>
 
-      <div className="relative hidden min-w-0 max-w-xs flex-1 md:block">
+      <div className="relative hidden min-w-0 max-w-[22rem] flex-1 md:block">
         <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
           ref={inputRef}
