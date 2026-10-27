@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Field, StatusMessage } from "@/components/dashboard/dashboard-ui"
 import { formatDate, isValidUrl, normalizeSkills, relativeTime } from "@/lib/dashboard-data"
-import { Pencil, Plus, Trash2, X, Users, ShieldCheck, Settings2, ChevronDown, Check, MessageSquareWarning, LayoutDashboard, FileText, Megaphone } from "lucide-react"
+import { Pencil, Plus, Trash2, X, Users, ShieldCheck, Settings2, ChevronDown, Check, MessageSquareWarning, LayoutDashboard, FileText, Megaphone, GraduationCap } from "lucide-react"
+import { ClassManagement } from "@/components/admin/class-management"
 
 type FieldKind = "text" | "textarea" | "url" | "select"
 type FieldConfig = { name: string; label: string; kind?: FieldKind; required?: boolean; placeholder?: string; hint?: string; options?: readonly string[] }
@@ -20,18 +21,6 @@ const sections = {
   announcements: { title: "Opportunities", singular: "opportunity", destination: "Member dashboard → The Network", fields: [
     { name: "title", label: "Title", required: true },
     { name: "body", label: "Details", kind: "textarea", required: true, hint: "Members can expand and respond by email." },
-  ] },
-  courses: { title: "Courses", singular: "course", destination: "Member dashboard → The Institute, and the public Institute page", fields: [
-    { name: "title", label: "Course title", required: true },
-    { name: "instructor", label: "Instructor", required: true },
-    { name: "category", label: "Category", placeholder: "e.g. Leadership", hint: "Used for the Institute category filters." },
-    { name: "is_free", label: "Access type", kind: "select", required: true, options: ["Free", "Paid"], hint: "Free courses grant access as soon as a member signs up. Paid courses need admin approval." },
-    { name: "price", label: "Price", placeholder: "e.g. From R400 or Free" },
-    { name: "slug", label: "Slug", placeholder: "e.g. building-self", hint: "Optional unique id. Generated from the title if left blank." },
-    { name: "duration", label: "Duration", placeholder: "e.g. 6 weeks" },
-    { name: "event_date", label: "Start date", placeholder: "YYYY-MM-DD or 5, 6 and 7 November 2026" },
-    { name: "thumbnail_url", label: "Thumbnail link", kind: "url", placeholder: "https://… or /courses/example.png" },
-    { name: "description", label: "Description", kind: "textarea", required: true },
   ] },
   resources: { title: "Resources", singular: "resource", destination: "Member dashboard → The Institute → Resource library", fields: [
     { name: "title", label: "Title", required: true },
@@ -50,7 +39,7 @@ const sections = {
 } satisfies Record<string, { title: string; singular: string; destination: string; fields: FieldConfig[] }>
 
 type Section = keyof typeof sections
-type AdminArea = "overview" | "content" | "members" | "announcements"
+type AdminArea = "overview" | "classes" | "content" | "members" | "announcements"
 type Item = Record<string, string | boolean | null> & { id: string; published?: boolean; is_free?: boolean }
 type Profile = { headline?: string; company?: string; role?: string; bio?: string; location?: string; website?: string; linkedin_url?: string; skills?: unknown; updated_at?: string }
 type User = { id: string; email?: string; created_at: string; last_sign_in_at?: string; email_confirmed_at?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown>; profile?: Profile | null }
@@ -219,7 +208,8 @@ export default function AdminPage() {
   if (!allowed) return <main className="tdd-dashboard grid min-h-screen place-items-center p-8"><Card><CardHeader><CardTitle>Admin access required</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">This area is restricted to administrators.</p></CardContent></Card></main>
   const areas: { id: AdminArea; label: string; description: string; icon: typeof LayoutDashboard }[] = [
     { id: "overview", label: "Overview", description: "A summary of members and items that need attention.", icon: LayoutDashboard },
-    { id: "content", label: "Content", description: "Create, update, and publish courses, resources, opportunities, and blog posts.", icon: FileText },
+    { id: "classes", label: "Class management", description: "Build course learning paths, sessions, assessments, and learner reviews in one course-scoped workspace.", icon: GraduationCap },
+    { id: "content", label: "Content", description: "Create, update, and publish resources, opportunities, and blog posts.", icon: FileText },
     { id: "members", label: "Members", description: "Review member profiles, manage account access, and approve course requests.", icon: Users },
     { id: "announcements", label: "Announcements", description: "Manage the live messages shown on the public site and member dashboard.", icon: Megaphone },
   ]
@@ -263,6 +253,7 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </>}
+        {activeArea === "classes" && <ClassManagement />}
         {activeArea === "announcements" && <Card>
           <CardHeader><CardTitle>Live announcements</CardTitle><p className="text-sm text-muted-foreground">These messages appear immediately on the public landing page and member dashboard. Network opportunities are managed separately under Content.</p></CardHeader>
           <CardContent className="grid gap-6 lg:grid-cols-2">
