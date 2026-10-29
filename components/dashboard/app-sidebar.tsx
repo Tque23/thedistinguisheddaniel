@@ -16,30 +16,21 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { GraduationCap, History, House, LayoutGrid, LifeBuoy, Settings, ShieldCheck, UserRound, Users2 } from "lucide-react"
+import { Bell, BookOpen, BriefcaseBusiness, CalendarDays, House, LayoutGrid, Library, Settings, ShieldCheck, UserRound, Users2, Award } from "lucide-react"
 import type { DashboardMember, DashboardView } from "@/components/dashboard/dashboard-shell"
-import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
-
 type NavItem = { id: DashboardView; label: string; icon: typeof LayoutGrid }
 
-const navGroups: { label: string; items: NavItem[] }[] = [
-  {
-    label: "Member",
-    items: [
-      { id: "overview", label: "Overview", icon: LayoutGrid },
-      { id: "institute", label: "The Institute", icon: GraduationCap },
-      { id: "network", label: "The Network", icon: Users2 },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { id: "profile", label: "My Profile", icon: UserRound },
-      { id: "history", label: "Account History", icon: History },
-      { id: "settings", label: "Settings", icon: Settings },
-      { id: "support", label: "Support", icon: LifeBuoy },
-    ],
-  },
+const navItems: NavItem[] = [
+  { id: "overview", label: "Dashboard", icon: LayoutGrid },
+  { id: "institute", label: "My Courses", icon: BookOpen },
+  { id: "overview", label: "My Calendar", icon: CalendarDays },
+  { id: "institute", label: "Resource Library", icon: Library },
+  { id: "profile", label: "My Certificates", icon: Award },
+  { id: "network", label: "DDNI Network", icon: Users2 },
+  { id: "network", label: "Opportunities", icon: BriefcaseBusiness },
+  { id: "overview", label: "Announcements", icon: Bell },
+  { id: "profile", label: "My Profile", icon: UserRound },
+  { id: "settings", label: "Settings", icon: Settings },
 ]
 
 export function AppSidebar({
@@ -81,39 +72,37 @@ export function AppSidebar({
           />
         </Link>
       </SidebarHeader>
-      <SidebarContent>
-        {navGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-[#dcb567]/70">{group.label}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton
-                      isActive={activeView === item.id}
-                      tooltip={item.label}
-                      onClick={() => navigate(item.id)}
-                    >
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-        <SidebarGroup className="mt-auto">
+      <SidebarContent className="px-2 py-5">
+        <SidebarGroup className="p-0">
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1.5">
+              {navItems.map((item, index) => (
+                <SidebarMenuItem key={`${item.label}-${index}`}>
+                  <SidebarMenuButton
+                    isActive={index === 0 ? activeView === "overview" : false}
+                    tooltip={item.label}
+                    onClick={() => navigate(item.id)}
+                    className="h-9 rounded-lg px-2.5 text-[15px] font-normal text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
+                  >
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup className="mt-auto p-0">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Back to website" render={<Link href="/" />}>
+                <SidebarMenuButton tooltip="Back to website" render={<Link href="/" />} className="h-9 rounded-lg px-2.5 text-[15px] font-normal">
                   <House /><span>Back to website</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               {member.isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Admin dashboard" onClick={() => void openAdminDashboard()}>
+                  <SidebarMenuButton tooltip="Admin dashboard" onClick={() => void openAdminDashboard()} className="h-9 rounded-lg px-2.5 text-[15px] font-normal">
                     <ShieldCheck /><span>Admin dashboard</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -122,24 +111,11 @@ export function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <button
-          type="button"
-          onClick={() => navigate("profile")}
-          className="flex items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
-          aria-label="Open my profile"
-        >
-          <div
-            className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold"
-            style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}
-          >
-            <MemberAvatarContent member={member} />
-          </div>
-          <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-            <span className="truncate text-sm font-medium text-sidebar-foreground">{member.name}</span>
-            <span className="truncate text-xs text-sidebar-foreground/60">{member.isAdmin ? "Administrator" : "DDNI Member"}</span>
-          </div>
-        </button>
+      <SidebarFooter className="border-t border-sidebar-border px-5 py-6">
+        <blockquote className="text-[16px] leading-[1.45] text-sidebar-foreground">
+          “But the people who know their God and carry out great exploits.”
+          <cite className="mt-1 block not-italic">Daniel 11:32 (NETV)</cite>
+        </blockquote>
       </SidebarFooter>
     </Sidebar>
   )

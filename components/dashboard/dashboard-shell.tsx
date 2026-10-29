@@ -237,7 +237,7 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="mx-auto w-full max-w-7xl p-4 sm:p-6 lg:p-8"
+                className="mx-auto w-full max-w-[1440px] p-4 sm:p-5 lg:p-6"
               >
                 {activeView === "overview" && <OverviewView {...viewProps} />}
                 {activeView === "institute" && <InstituteView {...viewProps} />}

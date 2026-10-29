@@ -8,150 +8,73 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/dashboard/dashboard-ui"
 import { enrollmentFor, formatDate, profileCompletion, relativeTime } from "@/lib/dashboard-data"
-import { ArrowRight, BookOpen, Briefcase, CheckCircle2, Circle, FileText, GraduationCap, UserRound } from "lucide-react"
+import { ArrowRight, Bell, BookOpen, BriefcaseBusiness, CalendarDays, CheckCircle2, Circle, FileText, Gift, MapPin, Network, Search, UsersRound } from "lucide-react"
 import type { DashboardView, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 export function OverviewView({ member, data, onNavigate }: DashboardViewProps) {
   const completion = profileCompletion(member, data.profile)
   const enrolledCount = data.enrollments.filter((enrollment) => enrollment.status === "enrolled").length
-  const pendingCount = data.enrollments.filter((enrollment) => enrollment.status === "pending").length
+  const upcomingCourses = data.courses.filter((course) => course.eventDate).slice(0, 3)
   const nextSteps: { label: string; done: boolean; view: DashboardView }[] = [
     { label: "Complete your professional profile", done: completion.percent === 100, view: "profile" },
-    { label: "Sign up for an Institute course", done: enrolledCount + pendingCount > 0, view: "institute" },
+    { label: "Sign up for an Institute course", done: data.enrollments.length > 0, view: "institute" },
     { label: "Browse opportunities in the Network", done: false, view: "network" },
-    { label: "Review your communication preferences", done: false, view: "settings" },
   ]
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-[#0c1e2c] via-[#0c1e2c] to-[#132c40] p-6 sm:p-8">
-        <div className="relative z-10 flex flex-col gap-4">
-          <Badge variant="outline" className="w-fit border-[#dcb567]/40 text-[#f3d27a]">
-            {member.tier} Member{member.memberSince ? ` since ${member.memberSince}` : ""}
-          </Badge>
-          <h2 className="font-display text-2xl leading-tight text-foreground sm:text-4xl">
-            Welcome back, <span className="text-gold">{member.name.split(" ")[0]}</span>
-          </h2>
-          <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-            {data.loading
-              ? "Gathering the latest from the Institute and the Network…"
-              : `${data.courses.length} ${data.courses.length === 1 ? "course" : "courses"} open for sign-up, ${enrolledCount} with access, and ${data.opportunities.length} ${data.opportunities.length === 1 ? "opportunity" : "opportunities"} in the Network.`}
-          </p>
-          <div className="flex flex-wrap gap-2 pt-1">
-            <Button className="btn-gold rounded-full px-4" onClick={() => onNavigate("institute")}>
-              Browse courses <ArrowRight data-icon="inline-end" />
-            </Button>
-            {completion.percent < 100 && (
-              <Button variant="outline" className="rounded-full px-4" onClick={() => onNavigate("profile")}>
-                Complete your profile
-              </Button>
-            )}
+    <div className="flex flex-col gap-4 sm:gap-5">
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-[linear-gradient(110deg,#102536,#0b1b29_65%,#172e40)] px-5 py-5 sm:px-7 sm:py-6">
+        <div className="relative z-10 grid gap-6 lg:grid-cols-[1fr_280px] lg:items-center">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.04em] text-[#f3d27a]">Distinguished Daniel Network &amp; Institute</p>
+            <h2 className="mt-2 font-display text-3xl leading-tight text-foreground sm:text-4xl">Welcome back, <span className="text-gold">{member.name.split(" ")[0]}</span></h2>
+            <p className="mt-2 max-w-2xl text-sm leading-5 text-muted-foreground">Raising Distinguished Daniel, Building Kingdom Influence, dignified impact continues. Learn, connect and prepare to make an impact in the marketplace.</p>
           </div>
+          <blockquote className="border-l border-[#dcb567]/35 pl-5 text-sm leading-5 text-foreground/90">“But the people who know their God shall be strong, strong, and carry out great exploits,”<cite className="mt-1 block text-xs not-italic text-muted-foreground">Daniel 11:32 (NETV)</cite></blockquote>
         </div>
-        <div aria-hidden className="absolute -top-12 -right-12 size-56 rounded-full bg-[#dcb567]/10 blur-3xl" />
+      </section>
+
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <StatCard icon={BookOpen} value={enrolledCount} label="My Enrolled Courses" detail="View courses" loading={data.loading} onClick={() => onNavigate("institute")} />
+        <StatCard icon={CalendarDays} value={upcomingCourses.length} label="Upcoming Sessions" detail="View calendar" loading={data.loading} onClick={() => onNavigate("institute")} />
+        <StatCard icon={Gift} value={data.resources.length} label="Certificates Earned" detail="View certificate" loading={data.loading} onClick={() => onNavigate("history")} />
+        <button type="button" onClick={() => onNavigate("profile")} className="dashboard-card-hover flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-3 text-left">
+          <div className="relative grid size-14 shrink-0 place-items-center rounded-full border-4 border-[#dcb567]/30 text-xs font-semibold text-[#f3d27a]" style={{ background: `conic-gradient(#dcb567 ${completion.percent}%, #263847 0)` }}><span className="grid size-10 place-items-center rounded-full bg-card">{completion.percent}%</span></div>
+          <span className="min-w-0"><strong className="block truncate text-sm font-medium text-foreground">Profile Completion</strong><span className="text-sm text-[#f3d27a]">{completion.percent}%</span></span>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={BookOpen} label="Courses with access" value={enrolledCount} loading={data.loading} onClick={() => onNavigate("institute")} />
-        <StatCard icon={FileText} label="Resources available" value={data.resources.length} loading={data.loading} onClick={() => onNavigate("institute")} />
-        <StatCard icon={Briefcase} label="Open opportunities" value={data.opportunities.length} loading={data.loading} onClick={() => onNavigate("network")} />
-        <StatCard icon={UserRound} label="Profile complete" value={`${completion.percent}%`} loading={data.loading} onClick={() => onNavigate("profile")} />
+      <div className="grid gap-4 xl:grid-cols-[1.15fr_1fr_.95fr]">
+        <Panel icon={BookOpen} title="My Learning Journey" action={<ViewAll onClick={() => onNavigate("institute")} />}>
+          {data.loading ? <ListSkeleton /> : data.courses.length === 0 ? <EmptyState icon={BookOpen} title="New courses are on the way" description="Courses published by the Institute will appear here." /> : data.courses.slice(0, 1).map((course) => {
+            const enrollment = enrollmentFor(data.enrollments, course.id)
+            return <div key={course.id} className="overflow-hidden rounded-xl border border-border bg-background/30"><div className="grid grid-cols-[132px_1fr] gap-3"><div className="min-h-36 bg-[#162d3d]">{course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-[#f3d27a]"><BookOpen /></div>}</div><div className="flex flex-col justify-center gap-1 py-3 pr-3"><h3 className="font-medium text-foreground">{course.title}</h3><p className="text-xs text-muted-foreground">{course.category}</p><p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays /> {course.eventDate ? formatDate(course.eventDate) : "Course access"}</p><p className="text-xs text-muted-foreground"><MapPin className="mr-1 inline" /> {course.instructor || "DDNI Institute"}</p></div></div><Button className="btn-gold m-3 mt-0 w-[calc(100%-1.5rem)] rounded-full" onClick={() => onNavigate("institute")}>{enrollment?.status === "enrolled" ? "Continue Learning" : "View Course"}<ArrowRight data-icon="inline-end" /></Button></div>
+          })}
+        </Panel>
+
+        <Panel icon={CalendarDays} title="Upcoming Courses & Events" action={<ViewAll onClick={() => onNavigate("institute")} />}>
+          {upcomingCourses.length === 0 ? <EmptyState icon={CalendarDays} title="No upcoming sessions" description="New Institute sessions will appear here." /> : upcomingCourses.map((course) => <button type="button" key={course.id} onClick={() => onNavigate("institute")} className="flex items-center gap-3 border-b border-border pb-3 text-left last:border-0 last:pb-0"><span className="grid size-11 shrink-0 place-items-center rounded-lg bg-[#dcb567]/10 text-center text-xs text-[#f3d27a]"><b>{course.eventDate ? new Date(course.eventDate).getDate() : "—"}</b></span><span className="min-w-0"><strong className="block truncate text-sm font-medium text-foreground">{course.title}</strong><span className="text-xs text-muted-foreground">{course.eventDate ? formatDate(course.eventDate, { hour: "2-digit", minute: "2-digit", month: "short", day: "numeric" }) : "In-Person"}</span></span></button>)}
+          <Button variant="ghost" className="mt-1 w-full text-xs text-[#f3d27a]" onClick={() => onNavigate("institute")}>View full calendar <ArrowRight data-icon="inline-end" /></Button>
+        </Panel>
+
+        <Panel icon={Bell} title="Announcements" action={<ViewAll onClick={() => onNavigate("network")} />}>
+          {data.opportunities.slice(0, 3).map((item) => <button type="button" key={item.id} onClick={() => onNavigate("network")} className="flex gap-3 border-b border-border pb-3 text-left last:border-0 last:pb-0"><span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#dcb567]/10 text-[#f3d27a]"><Bell /></span><span className="min-w-0"><strong className="block text-sm font-medium text-foreground">{item.title}</strong><span className="line-clamp-2 text-xs text-muted-foreground">{item.description || relativeTime(item.createdAt)}</span></span></button>)}
+          {data.opportunities.length === 0 && <EmptyState icon={Bell} title="No announcements yet" />}
+        </Panel>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <SectionHeader icon={GraduationCap} title="From the Institute" action={<ViewAll onClick={() => onNavigate("institute")} />} />
-          <CardContent className="flex flex-col gap-3">
-            {data.loading ? <ListSkeleton /> : data.courses.length === 0 ? (
-              <EmptyState icon={GraduationCap} title="New courses are on the way" description="Courses published by the Institute will appear here." />
-            ) : data.courses.slice(0, 3).map((course) => {
-              const enrollment = enrollmentFor(data.enrollments, course.id)
-              const statusLabel = enrollment?.status === "enrolled" ? "Access granted" : enrollment?.status === "pending" ? "Awaiting access" : course.isFree ? "Free · Sign up" : "Paid · Sign up"
-              return (
-              <button key={course.id} type="button" onClick={() => onNavigate("institute")} className="flex items-center gap-4 rounded-xl border border-border p-3 text-left transition-colors hover:border-[#dcb567]/40 hover:bg-accent/40">
-                <div className="size-14 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-[#132c40] to-[#0c1e2c]">
-                  {course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-[#f3d27a]/70"><BookOpen className="size-5" /></div>}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">{course.title}</p>
-                  <p className="truncate text-xs text-muted-foreground">{[course.instructor, statusLabel].filter(Boolean).join(" · ")}</p>
-                </div>
-                <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
-              </button>
-              )
-            })}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <SectionHeader icon={Briefcase} title="Latest opportunities" action={<ViewAll onClick={() => onNavigate("network")} />} />
-          <CardContent className="flex flex-col gap-4">
-            {data.loading ? <ListSkeleton /> : data.opportunities.length === 0 ? (
-              <EmptyState icon={Briefcase} title="No opportunities yet" description="Opportunities shared by the DDNI team will appear here." />
-            ) : data.opportunities.slice(0, 3).map((op) => (
-              <button key={op.id} type="button" onClick={() => onNavigate("network")} className="flex flex-col gap-1 border-b border-border pb-3 text-left last:border-0 last:pb-0 hover:text-[#f3d27a]">
-                <span className="text-sm leading-snug font-medium text-foreground">{op.title}</span>
-                <span className="text-xs text-muted-foreground">DDNI Administration · {relativeTime(op.createdAt)}</span>
-              </button>
-            ))}
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Panel icon={UsersRound} title="My Network" action={<ViewAll onClick={() => onNavigate("network")} />}><div className="flex items-center gap-3"><div className="flex -space-x-2">{data.directory.slice(0, 4).map((person) => <div key={person.id} className="grid size-10 place-items-center rounded-full border-2 border-card bg-[#dcb567]/20 text-xs text-[#f3d27a]">{person.name.slice(0, 2).toUpperCase()}</div>)}<div className="grid size-10 place-items-center rounded-full border-2 border-card bg-[#dcb567]/20 text-xs text-[#f3d27a]">+{Math.max(5, data.directory.length)}</div></div><p className="text-xs text-muted-foreground">Connect with other distinguished people, with, vote, share, and grow together.</p></div><Button className="btn-gold mt-4 w-full rounded-full" onClick={() => onNavigate("network")}>Explore the Network <ArrowRight data-icon="inline-end" /></Button></Panel>
+        <Panel icon={BriefcaseBusiness} title="Opportunities" action={<ViewAll onClick={() => onNavigate("network")} />}><div className="flex flex-col gap-2">{data.opportunities.slice(0, 2).map((item) => <button key={item.id} type="button" onClick={() => onNavigate("network")} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-left"><span><strong className="block text-sm text-foreground">{item.title}</strong><span className="text-xs text-muted-foreground">DDNI Network · {relativeTime(item.createdAt)}</span></span><ArrowRight /></button>)}{data.opportunities.length === 0 && <p className="text-sm text-muted-foreground">New opportunities will appear here.</p>}</div></Panel>
+        <Panel icon={FileText} title="Resource Library" action={<ViewAll onClick={() => onNavigate("institute")} />}><div className="grid grid-cols-3 gap-2">{data.resources.slice(0, 3).map((resource) => <button key={resource.id} type="button" onClick={() => onNavigate("institute")} className="flex min-h-24 flex-col justify-between rounded-lg bg-[#162d3d] p-3 text-left"><span className="line-clamp-3 text-xs font-medium text-foreground">{resource.title}</span><span className="text-[10px] text-[#f3d27a]">{resource.type || "PDF"}</span></button>)}{data.resources.length === 0 && <p className="col-span-3 text-sm text-muted-foreground">Your resources will appear here.</p>}</div></Panel>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <SectionHeader icon={CheckCircle2} title="Your next steps" />
-          <CardContent className="flex flex-col gap-1">
-            {nextSteps.map((step) => (
-              <button key={step.label} type="button" onClick={() => onNavigate(step.view)} className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-left text-sm transition-colors hover:bg-accent/40">
-                {step.done ? <CheckCircle2 className="size-4 shrink-0 text-[#f3d27a]" /> : <Circle className="size-4 shrink-0 text-muted-foreground" />}
-                <span className={step.done ? "text-muted-foreground line-through" : "text-foreground"}>{step.label}</span>
-                <ArrowRight className="ml-auto size-3.5 shrink-0 text-muted-foreground" />
-              </button>
-            ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <SectionHeader icon={UserRound} title="Profile strength" />
-          <CardContent className="flex flex-col gap-3">
-            <div className="flex items-end justify-between"><span className="text-3xl font-semibold text-[#f3d27a]">{completion.percent}%</span><span className="text-xs text-muted-foreground">{completion.missing.length === 0 ? "Complete" : `${completion.missing.length} to go`}</span></div>
-            <Progress value={completion.percent} className="h-1.5" />
-            {completion.missing.length > 0 && <p className="text-xs text-muted-foreground">Next: {completion.missing.slice(0, 3).join(", ")}</p>}
-            <Button variant="outline" size="sm" className="mt-1" onClick={() => onNavigate("profile")}>Update profile</Button>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="grid gap-4 lg:grid-cols-[1fr_280px]"><Panel icon={CheckCircle2} title="Your next steps">{nextSteps.map((step) => <button key={step.label} type="button" onClick={() => onNavigate(step.view)} className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm hover:bg-accent/40">{step.done ? <CheckCircle2 className="text-[#f3d27a]" /> : <Circle className="text-muted-foreground" />}<span className={step.done ? "text-muted-foreground line-through" : "text-foreground"}>{step.label}</span><ArrowRight className="ml-auto text-muted-foreground" /></button>)}</Panel><Panel icon={Search} title="Profile strength"><div className="flex items-end justify-between"><span className="text-3xl font-semibold text-[#f3d27a]">{completion.percent}%</span><span className="text-xs text-muted-foreground">{completion.missing.length} to go</span></div><Progress value={completion.percent} className="mt-3 h-1.5" /><Button variant="outline" className="mt-4 w-full" onClick={() => onNavigate("profile")}>Update profile</Button></Panel></div>
     </div>
   )
 }
 
-function SectionHeader({ icon: Icon, title, action }: { icon: typeof BookOpen; title: string; action?: ReactNode }) {
-  return (
-    <CardHeader className="flex flex-row items-center justify-between gap-2">
-      <CardTitle className="flex items-center gap-2 text-base"><Icon className="size-4 text-[#f3d27a]" />{title}</CardTitle>
-      {action}
-    </CardHeader>
-  )
-}
-
-function ViewAll({ onClick }: { onClick: () => void }) {
-  return <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={onClick}>View all <ArrowRight data-icon="inline-end" /></Button>
-}
-
-function ListSkeleton() {
-  return <>{[0, 1, 2].map((i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}</>
-}
-
-function StatCard({ icon: Icon, label, value, loading, onClick }: { icon: typeof BookOpen; label: string; value: number | string; loading: boolean; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="dashboard-card-hover rounded-xl border border-border bg-card text-left">
-      <div className="flex items-center gap-3 p-4">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#dcb567]/10 text-[#f3d27a]"><Icon className="size-4.5" /></div>
-        <div className="flex flex-col">
-          {loading ? <Skeleton className="h-7 w-10" /> : <span className="text-xl font-semibold text-foreground">{value}</span>}
-          <span className="text-xs text-muted-foreground">{label}</span>
-        </div>
-      </div>
-    </button>
-  )
-}
+function Panel({ icon: Icon, title, action, children }: { icon: typeof BookOpen; title: string; action?: ReactNode; children: ReactNode }) { return <Card className="overflow-hidden"><CardHeader className="flex flex-row items-center justify-between gap-2 pb-3"><CardTitle className="flex items-center gap-2 text-base"><Icon className="text-[#f3d27a]" />{title}</CardTitle>{action}</CardHeader><CardContent className="flex flex-col gap-3 pt-0">{children}</CardContent></Card> }
+function ViewAll({ onClick }: { onClick: () => void }) { return <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={onClick}>View all <ArrowRight data-icon="inline-end" /></Button> }
+function ListSkeleton() { return <>{[0, 1, 2].map((i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}</> }
+function StatCard({ icon: Icon, value, label, detail, loading, onClick }: { icon: typeof BookOpen; value: number; label: string; detail: string; loading: boolean; onClick: () => void }) { return <button type="button" onClick={onClick} className="dashboard-card-hover flex min-w-0 items-center gap-3 rounded-xl border border-border bg-card p-3 text-left"><span className="grid size-11 shrink-0 place-items-center rounded-lg bg-[#dcb567]/10 text-[#f3d27a]"><Icon /></span><span className="min-w-0"><strong className="block text-xl leading-none text-foreground">{loading ? "—" : value}</strong><span className="mt-1 block truncate text-sm text-foreground">{label}</span><span className="block text-xs text-[#dcb567]">{detail} <ArrowRight className="inline size-3" /></span></span></button> }
