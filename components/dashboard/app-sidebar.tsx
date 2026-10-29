@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Bell, BookOpen, BriefcaseBusiness, CalendarDays, House, LayoutGrid, Library, Settings, ShieldCheck, UserRound, Users2, Award } from "lucide-react"
 import type { DashboardMember, DashboardView } from "@/components/dashboard/dashboard-shell"
+import { cormorantGaramond } from "@/src/app/fonts"
 type NavItem = { id: DashboardView; label: string; icon: typeof LayoutGrid }
 
 const navItems: NavItem[] = [
@@ -112,7 +113,7 @@ export function AppSidebar({
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="max-h-40 overflow-hidden border-t border-sidebar-border px-5 py-6 opacity-100 transition-[max-height,opacity,transform,padding] duration-200 ease-out group-data-[collapsible=icon]:max-h-0 group-data-[collapsible=icon]:translate-y-2 group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:px-5 group-data-[collapsible=icon]:py-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none">
-        <blockquote className="text-[16px] leading-[1.45] text-sidebar-foreground">
+        <blockquote className={`${cormorantGaramond.className} text-[16px] leading-[1.45] text-sidebar-foreground`}>
           “But the people who know their God and carry out great exploits.”
           <cite className="mt-1 block not-italic">Daniel 11:32 (NETV)</cite>
         </blockquote>
