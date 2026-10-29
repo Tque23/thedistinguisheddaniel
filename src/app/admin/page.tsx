@@ -46,9 +46,6 @@ type User = { id: string; email?: string; created_at: string; last_sign_in_at?: 
 type Enrollment = { id: string; user_id: string; course_id: string; status: "pending" | "enrolled" | "revoked"; source: string; created_at: string }
 type CourseOption = { id: string; title: string; is_free: boolean }
 
-function slugify(value: string) {
-  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80)
-}
 const accessOptions = ["prepared", "updates", "active", "blocked"] as const
 const accessLabels: Record<string, string> = { prepared: "Dashboard is being prepared", updates: "Updates to the dashboard are being made", active: "Active", blocked: "Blocked" }
 const reviewLabels: Record<string, string> = { pending_review: "Profile pending review", approved: "Profile approved", rejected: "Profile changes requested" }
@@ -179,18 +176,12 @@ export default function AdminPage() {
     if (!user || !allowed) return
     setStatus(editingId ? "Saving..." : "Publishing...")
     const values: Record<string, string | boolean | null> = Object.fromEntries(config.fields.map((field) => [field.name, (form[field.name] || "").trim() || null]))
-    if (section === "courses") {
-      values.is_free = (form.is_free || "Paid") === "Free"
-      values.slug = String(values.slug || slugify(form.title || "") || null)
-      if (values.is_free && !values.price) values.price = "Free"
-    }
     const query = editingId ? createClient().from(section).update(values).eq("id", editingId) : createClient().from(section).insert({ ...values, published: true, created_by: user.id })
     const { error } = await query
     if (error) { setStatus("Unable to save this item."); return }
     resetForm()
     setStatus(editingId ? "Changes saved." : "Published successfully.")
     await loadItems()
-    if (section === "courses") await loadCourseAccess()
   }
   async function remove(item: Item) { if (!window.confirm(`Remove “${String(item.title)}”?`)) return; const { error } = await createClient().from(section).delete().eq("id", item.id); setStatus(error ? "Unable to remove this item." : "Item removed."); if (!error) await loadItems() }
   async function togglePublished(item: Item) { const { error } = await createClient().from(section).update({ published: !item.published }).eq("id", item.id); setStatus(error ? "Unable to change visibility." : item.published ? "Hidden from members." : "Published to members."); await loadItems() }

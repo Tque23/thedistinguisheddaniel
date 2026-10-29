@@ -197,7 +197,10 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
     if (existing?.status === "enrolled" || existing?.status === "pending") return null
     const { error } = existing
       ? await client.from("course_enrollments").update({ status: nextStatus, source: "self", updated_at: new Date().toISOString() }).eq("id", existing.id)
-      : await client.from("course_enrollments").insert({ user_id: user.id, course_id: course.id, status: nextStatus, source: "self" })
+      : await client.from("course_enrollments").upsert(
+        { user_id: user.id, course_id: course.id, status: nextStatus, source: "self" },
+        { onConflict: "user_id,course_id", ignoreDuplicates: true },
+      )
     if (error) return course.isFree ? "Unable to open this course just now." : "Unable to send your sign-up just now."
     await loadData(user.id)
     return null

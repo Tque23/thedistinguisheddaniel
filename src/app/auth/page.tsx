@@ -60,14 +60,6 @@ function AuthForm() {
       return
     }
 
-    if (!isSignUp && email.trim().toLowerCase() === "admin@distinguisheddaniel.com" && password === "DDNIadmin26") {
-      const bootstrap = await fetch("/api/admin/bootstrap", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) })
-      if (!bootstrap.ok) {
-        setError("Unable to prepare admin access.")
-        await finishLoading()
-        return
-      }
-    }
     if (isForgot) {
       // Recovery tokens are delivered in the URL hash, so land directly on the
       // reset screen instead of passing through a server redirect that drops it.
@@ -90,14 +82,13 @@ function AuthForm() {
 
     if (result.error) {
       const rawMessage = result.error.message.toLowerCase()
-      setError(rawMessage.includes("already registered") || rawMessage.includes("already exists") ? "An account already exists for this email. Log in or reset your password instead." : rawMessage.includes("invalid") ? "Invalid email or password." : result.error.message)
-    } else if (isSignUp) {
-      const identities = result.data.user?.identities
-      if (identities && identities.length === 0) {
-        setError("An account already exists for this email. Log in or reset your password instead.")
+      if (isSignUp && (rawMessage.includes("already registered") || rawMessage.includes("already exists"))) {
+        setMessage("Check your inbox for next steps")
       } else {
-        setMessage("Check your email to confirm your account, then return here to log in. If you don’t see it, please check your spam or junk folder.")
+        setError(rawMessage.includes("invalid") ? "Invalid email or password." : result.error.message)
       }
+    } else if (isSignUp) {
+      setMessage("Check your inbox for next steps")
     } else {
       router.push(email.trim().toLowerCase() === "admin@distinguisheddaniel.com" ? "/admin" : "/dashboard")
       router.refresh()

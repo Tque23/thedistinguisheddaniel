@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin"
 
 export async function POST(request: Request) {
   const { email, password } = await request.json()
-  if (email !== "admin@distinguisheddaniel.com" || password !== "DDNIadmin26") {
+  if (email !== "info@distinguisheddaniel.com" || password !== "W3R$@!d3nD@n!3l") {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
   }
 
