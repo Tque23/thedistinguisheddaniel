@@ -23,18 +23,18 @@ export function OverviewView({ member, data, onNavigate }: DashboardViewProps) {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-5">
-      <section className="relative overflow-hidden rounded-2xl border border-border bg-[linear-gradient(110deg,#102536,#0b1b29_65%,#172e40)] px-5 py-5 sm:px-7 sm:py-6">
-        <div className="relative z-10 grid gap-6 lg:grid-cols-[1fr_280px] lg:items-center">
+      <section className="relative overflow-hidden rounded-2xl border border-[#dcb567]/20 bg-[linear-gradient(110deg,#102536,#0b1b29_65%,#172e40)] px-5 py-6 shadow-[0_18px_50px_rgba(3,15,25,0.18)] sm:px-8 sm:py-8">
+        <div className="relative z-10 grid gap-7 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-center">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.04em] text-[#f3d27a]">Distinguished Daniel Network &amp; Institute</p>
-            <h2 className="mt-2 font-display text-3xl leading-tight text-foreground sm:text-4xl">Welcome back, <span className="text-gold">{member.name.split(" ")[0]}</span></h2>
-            <p className="mt-2 max-w-2xl text-sm leading-5 text-muted-foreground">Raising Distinguished Daniel, Building Kingdom Influence, dignified impact continues. Learn, connect and prepare to make an impact in the marketplace.</p>
+            <h2 className="mt-2 font-display text-3xl leading-tight text-white sm:text-4xl">Welcome back, <span className="text-[#f3d27a]">{member.name.split(" ")[0]}</span></h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/65">Raising Distinguished Daniel, Building Kingdom Influence, dignified impact continues. Learn, connect and prepare to make an impact in the marketplace.</p>
           </div>
           <blockquote className="border-l border-[#dcb567]/35 pl-5 text-sm leading-5 text-foreground/90">“But the people who know their God shall be strong, strong, and carry out great exploits,”<cite className="mt-1 block text-xs not-italic text-muted-foreground">Daniel 11:32 (NETV)</cite></blockquote>
         </div>
       </section>
 
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={BookOpen} value={enrolledCount} label="My Enrolled Courses" detail="View courses" loading={data.loading} onClick={() => onNavigate("institute")} />
         <StatCard icon={CalendarDays} value={upcomingCourses.length} label="Upcoming Sessions" detail="View calendar" loading={data.loading} onClick={() => onNavigate("institute")} />
         <StatCard icon={Gift} value={data.resources.length} label="Certificates Earned" detail="View certificate" loading={data.loading} onClick={() => onNavigate("history")} />
@@ -44,11 +44,11 @@ export function OverviewView({ member, data, onNavigate }: DashboardViewProps) {
         </button>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.15fr_1fr_.95fr]">
+      <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr_1fr]">
         <Panel icon={BookOpen} title="My Learning Journey" action={<ViewAll onClick={() => onNavigate("institute")} />}>
           {data.loading ? <ListSkeleton /> : data.courses.length === 0 ? <EmptyState icon={BookOpen} title="New courses are on the way" description="Courses published by the Institute will appear here." /> : data.courses.slice(0, 1).map((course) => {
             const enrollment = enrollmentFor(data.enrollments, course.id)
-            return <div key={course.id} className="overflow-hidden rounded-xl border border-border bg-background/30"><div className="grid grid-cols-[132px_1fr] gap-3"><div className="min-h-36 bg-[#162d3d]">{course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-[#f3d27a]"><BookOpen /></div>}</div><div className="flex flex-col justify-center gap-1 py-3 pr-3"><h3 className="font-medium text-foreground">{course.title}</h3><p className="text-xs text-muted-foreground">{course.category}</p><p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays /> {course.eventDate ? formatDate(course.eventDate) : "Course access"}</p><p className="text-xs text-muted-foreground"><MapPin className="mr-1 inline" /> {course.instructor || "DDNI Institute"}</p></div></div><Button className="btn-gold m-3 mt-0 w-[calc(100%-1.5rem)] rounded-full" onClick={() => onNavigate("institute")}>{enrollment?.status === "enrolled" ? "Continue Learning" : "View Course"}<ArrowRight data-icon="inline-end" /></Button></div>
+            return <div key={course.id} className="flex flex-col gap-3"><div className="overflow-hidden rounded-xl border border-border bg-background/30"><div className="grid gap-3 sm:grid-cols-[132px_1fr]"><div className="h-32 bg-[#162d3d] sm:h-auto sm:min-h-36">{course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-[#f3d27a]"><BookOpen /></div>}</div><div className="flex flex-col justify-center gap-1 py-3 pr-3"><h3 className="font-medium text-foreground">{course.title}</h3><p className="text-xs text-muted-foreground">{course.category}</p><p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays /> {course.eventDate ? formatDate(course.eventDate) : "Course access"}</p><p className="text-xs text-muted-foreground"><MapPin className="mr-1 inline" /> {course.instructor || "DDNI Institute"}</p></div></div></div><Button className="btn-gold w-full rounded-full" onClick={() => onNavigate("institute")}>{enrollment?.status === "enrolled" ? "Continue Learning" : "View Course"}<ArrowRight data-icon="inline-end" /></Button></div>
           })}
         </Panel>
 
@@ -74,7 +74,7 @@ export function OverviewView({ member, data, onNavigate }: DashboardViewProps) {
   )
 }
 
-function Panel({ icon: Icon, title, action, children }: { icon: typeof BookOpen; title: string; action?: ReactNode; children: ReactNode }) { return <Card className="overflow-hidden"><CardHeader className="flex flex-row items-center justify-between gap-2 pb-3"><CardTitle className="flex items-center gap-2 text-base"><Icon className="text-[#f3d27a]" />{title}</CardTitle>{action}</CardHeader><CardContent className="flex flex-col gap-3 pt-0">{children}</CardContent></Card> }
+function Panel({ icon: Icon, title, action, children }: { icon: typeof BookOpen; title: string; action?: ReactNode; children: ReactNode }) { return <Card className="overflow-hidden border-border/80 shadow-sm"><CardHeader className="flex flex-row items-center justify-between gap-2 border-b border-border/60 pb-3"><CardTitle className="flex min-w-0 items-center gap-2 text-base"><span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#dcb567]/10"><Icon className="text-[#f3d27a]" /></span><span className="truncate">{title}</span></CardTitle>{action}</CardHeader><CardContent className="flex flex-col gap-3 pt-4">{children}</CardContent></Card> }
 function ViewAll({ onClick }: { onClick: () => void }) { return <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={onClick}>View all <ArrowRight data-icon="inline-end" /></Button> }
 function ListSkeleton() { return <>{[0, 1, 2].map((i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}</> }
 function StatCard({ icon: Icon, value, label, detail, loading, onClick }: { icon: typeof BookOpen; value: number; label: string; detail: string; loading: boolean; onClick: () => void }) { return <button type="button" onClick={onClick} className="dashboard-card-hover flex min-w-0 items-center gap-3 rounded-xl border border-border bg-card p-3 text-left"><span className="grid size-11 shrink-0 place-items-center rounded-lg bg-[#dcb567]/10 text-[#f3d27a]"><Icon /></span><span className="min-w-0"><strong className="block text-xl leading-none text-foreground">{loading ? "—" : value}</strong><span className="mt-1 block truncate text-sm text-foreground">{label}</span><span className="block text-xs text-[#dcb567]">{detail} <ArrowRight className="inline size-3" /></span></span></button> }
