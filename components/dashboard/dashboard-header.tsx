@@ -122,13 +122,14 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
         )}
       </div>
 
-      <Link href="/" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground sm:inline-flex">
-        Home
-      </Link>
+      <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <Link href="/" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground sm:inline-flex">
+          Home
+        </Link>
 
-      <NotificationsMenu data={data} onNavigate={onNavigate} />
+        <NotificationsMenu data={data} onNavigate={onNavigate} />
 
-      <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
+        <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
         <DropdownMenuTrigger
           render={
             <Button type="button" variant="ghost" size="sm" className="h-9 gap-2 pl-1.5 pr-2.5" aria-label={`Open profile menu for ${member.name}`}>
@@ -159,7 +160,8 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
             <DropdownMenuItem variant="destructive" onClick={() => void handleSignOut()}><LogOut />Sign Out</DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
-      </DropdownMenu>
+        </DropdownMenu>
+      </div>
     </header>
   )
 }
