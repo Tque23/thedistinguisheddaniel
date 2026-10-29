@@ -9,10 +9,6 @@ body { background: var(--background); color: var(--foreground); }
 @keyframes ddni-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 .ddni-loader { min-height: 5rem; border-radius: 1rem; background: linear-gradient(90deg, rgba(23,43,58,.08), rgba(216,184,101,.2), rgba(23,43,58,.08)); background-size: 200% 100%; animation: ddni-shimmer 1.5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .ddni-loader { animation: none; } }
-@keyframes scripture-reveal { from { opacity: 0; } to { opacity: 1; } }
-.scripture-animated { animation: scripture-reveal 260ms ease-out 180ms both; }
-@media (prefers-reduced-motion: reduce) { .scripture-animated { animation: none; } }
-
 @theme inline {
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);

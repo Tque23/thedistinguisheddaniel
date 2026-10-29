@@ -111,8 +111,8 @@ export function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border px-5 py-6 group-data-[collapsible=icon]:hidden">
-        <blockquote className="scripture-animated text-[16px] leading-[1.45] text-sidebar-foreground">
+      <SidebarFooter className="max-h-40 overflow-hidden border-t border-sidebar-border px-5 py-6 opacity-100 transition-[max-height,opacity,transform,padding] duration-200 ease-out group-data-[collapsible=icon]:max-h-0 group-data-[collapsible=icon]:translate-y-2 group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:px-5 group-data-[collapsible=icon]:py-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none">
+        <blockquote className="text-[16px] leading-[1.45] text-sidebar-foreground">
           “But the people who know their God and carry out great exploits.”
           <cite className="mt-1 block not-italic">Daniel 11:32 (NETV)</cite>
         </blockquote>
