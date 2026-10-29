@@ -112,7 +112,7 @@ export function AppSidebar({
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border px-5 py-6 group-data-[collapsible=icon]:hidden">
-        <blockquote className="text-[16px] leading-[1.45] text-sidebar-foreground">
+        <blockquote className="scripture-animated text-[16px] leading-[1.45] text-sidebar-foreground">
           “But the people who know their God and carry out great exploits.”
           <cite className="mt-1 block not-italic">Daniel 11:32 (NETV)</cite>
         </blockquote>
