@@ -65,13 +65,6 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
   const [busyCourseId, setBusyCourseId] = useState<string | null>(null)
   const [signupMessage, setSignupMessage] = useState("")
 
-  const courseFilters = useMemo(() => {
-    const options = ["All"]
-    if (data.courses.some((course) => course.isFree)) options.push("Free")
-    if (data.courses.some((course) => !course.isFree)) options.push("Paid")
-    if (data.enrollments.some((enrollment) => enrollment.status === "enrolled" || enrollment.status === "pending")) options.push("My courses")
-    return options
-  }, [data.courses, data.enrollments])
   const resourceTypes = useMemo(() => ["All", ...Array.from(new Set(data.resources.map((r) => r.type)))], [data.resources])
 
   const courses = data.courses.filter((course) => {
@@ -79,9 +72,9 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
     const enrollment = enrollmentFor(data.enrollments, course.id)
     const matchesFilter =
       courseFilter === "All"
-      || (courseFilter === "Free" && course.isFree)
-      || (courseFilter === "Paid" && !course.isFree)
-      || (courseFilter === "My courses" && (enrollment?.status === "enrolled" || enrollment?.status === "pending"))
+      || (courseFilter === "My courses" && enrollment?.status === "enrolled")
+      || (courseFilter === "Completed" && false)
+      || (courseFilter === "Available" && !enrollment)
     return matchesFilter && (!q || [course.title, course.instructor, course.description, course.category].some((value) => value.toLowerCase().includes(q)))
   })
   const resources = data.resources.filter((r) => {
@@ -108,9 +101,9 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
       </div>
 
       <Tabs defaultValue="courses" className="gap-4">
-        <TabsList>
-          <TabsTrigger value="courses">Courses{!data.loading && ` (${data.courses.length})`}</TabsTrigger>
-          <TabsTrigger value="resources">Resource library{!data.loading && ` (${data.resources.length})`}</TabsTrigger>
+        <TabsList className="h-11 rounded-lg border border-border bg-card p-1 shadow-sm">
+          <TabsTrigger value="courses" className="h-9 px-5 data-[state=active]:bg-[#c69b4b] data-[state=active]:text-white">Courses{!data.loading && ` (${data.courses.length})`}</TabsTrigger>
+          <TabsTrigger value="resources" className="h-9 px-5 data-[state=active]:bg-[#c69b4b] data-[state=active]:text-white">Resource library{!data.loading && ` (${data.resources.length})`}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="courses" className="flex flex-col gap-5">
