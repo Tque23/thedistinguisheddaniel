@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { EmptyState, StatusMessage, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import { SUPPORT_EMAIL, enrollmentFor, formatDate, type Course, type Resource } from "@/lib/dashboard-data"
 import { catalogCourse } from "@/lib/courses"
-import { BookOpen, CalendarDays, Clock, ExternalLink, FileText, MapPin, PlayCircle, Search, UserRound } from "lucide-react"
+import { BookOpen, CalendarDays, Check, Clock, ExternalLink, FileText, MapPin, PlayCircle, Search, UserRound, Users, Video } from "lucide-react"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 const isMedia = (type: string) => /video|recording|audio|podcast|webinar/i.test(type)
@@ -102,7 +102,10 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
 
   return (
     <div className="flex flex-col gap-6">
-      <ViewHeader kicker="The Institute" title="Grow in wisdom and understanding" description="Browse Institute courses, sign up from here, and open anything you already have access to." />
+      <div className="space-y-1">
+        <p className="text-xs font-medium text-muted-foreground">Home <span className="mx-2">/</span> My Courses</p>
+        <ViewHeader kicker="" title="My Courses" description="Continue your journey of growth and distinction." />
+      </div>
 
       <Tabs defaultValue="courses" className="gap-4">
         <TabsList>
@@ -110,41 +113,30 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
           <TabsTrigger value="resources">Resource library{!data.loading && ` (${data.resources.length})`}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="courses" className="flex flex-col gap-4">
+        <TabsContent value="courses" className="flex flex-col gap-5">
+          <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-border bg-card shadow-sm sm:grid-cols-4">
+            {[{ label: "All Courses", value: "All", count: data.courses.length, icon: BookOpen }, { label: "In Progress", value: "My courses", count: data.enrollments.filter((e) => e.status === "enrolled").length, icon: PlayCircle }, { label: "Completed", value: "Completed", count: 0, icon: Check }, { label: "Available Courses", value: "Available", count: data.courses.filter((c) => !enrollmentFor(data.enrollments, c.id)).length, icon: FileText }].map(({ label, value, count, icon: Icon }) => (
+              <button key={label} type="button" onClick={() => setCourseFilter(value)} className={`flex items-center justify-center gap-2 border-b border-border px-3 py-4 text-sm font-medium transition sm:border-b-0 sm:border-r last:border-r-0 ${courseFilter === value ? "bg-[#c69b4b] text-white" : "text-foreground hover:bg-muted"}`}>
+                <Icon className="size-5" /> <span>{label} ({count})</span>
+              </button>
+            ))}
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">{courses.length} courses available for your journey</p>
             <SearchInput value={courseQuery} onChange={setCourseQuery} placeholder="Search courses" />
-            <FilterChips options={courseFilters} value={courseFilter} onChange={setCourseFilter} />
           </div>
           {data.errors.courses && <StatusMessage tone="error">{data.errors.courses}</StatusMessage>}
           {data.errors.enrollments && <StatusMessage tone="error">{data.errors.enrollments}</StatusMessage>}
-          {data.loading ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-64 rounded-xl" />)}</div>
-          ) : courses.length === 0 ? (
-            <EmptyState icon={BookOpen} title={data.courses.length ? "No courses match your search" : "Courses are being prepared"} description={data.courses.length ? "Try a different search or filter." : "New courses from the Institute will appear here as soon as they're published."} />
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {data.loading ? <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-80 rounded-xl" />)}</div> : courses.length === 0 ? <EmptyState icon={BookOpen} title={data.courses.length ? "No courses match your search" : "Courses are being prepared"} description={data.courses.length ? "Try a different search or filter." : "New courses from the Institute will appear here as soon as they're published."} /> : (
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
               {courses.map((course) => {
                 const enrollment = enrollmentFor(data.enrollments, course.id)
-                return (
-                  <Card key={course.id} className="dashboard-card-hover flex flex-col overflow-hidden pt-0">
-                    <div className="aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-[#132c40] to-[#0c1e2c]">
-                      {course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center"><BookOpen className="size-8 text-[#f3d27a]/60" /></div>}
-                    </div>
-                    <CardContent className="flex flex-1 flex-col gap-2">
-                      <div className="flex flex-wrap gap-1.5">
-                        <Badge variant="outline" className="w-fit text-[10px]">{course.isFree ? "Free" : "Paid"}</Badge>
-                        {enrollment?.status === "enrolled" && <Badge className="w-fit text-[10px]">Access granted</Badge>}
-                        {enrollment?.status === "pending" && <Badge variant="secondary" className="w-fit text-[10px]">Awaiting access</Badge>}
-                      </div>
-                      <p className="text-sm leading-snug font-medium text-foreground">{course.title}</p>
-                      <p className="text-xs text-muted-foreground">{[course.instructor, course.price || course.duration].filter(Boolean).join(" · ")}</p>
-                      <Button size="sm" className="btn-gold mt-auto" onClick={() => { setSelectedCourse(course); setSignupMessage("") }}>View details</Button>
-                    </CardContent>
-                  </Card>
-                )
+                const status = enrollment?.status === "enrolled" ? "In Progress" : course.isFree ? "Available" : "Registered"
+                return <Card key={course.id} className="flex flex-col rounded-xl border-border bg-card p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex gap-3"><div className="h-44 w-28 shrink-0 overflow-hidden rounded-md bg-[#102337]">{course.thumbnailUrl ? <img src={course.thumbnailUrl} alt={`${course.title} cover`} className="size-full object-cover" /> : <div className="grid size-full place-items-center"><BookOpen className="size-8 text-[#f3d27a]" /></div>}</div><div className="min-w-0 flex-1"><Badge className={`mb-2 text-[10px] ${status === "Available" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>{status}</Badge><h3 className="font-display text-lg leading-tight text-foreground">{course.title}</h3><p className="mt-1 text-xs text-muted-foreground">{course.category} · {course.instructor || "DDNI Faculty"}</p><div className="mt-4 space-y-2 text-xs text-muted-foreground"><p className="flex items-center gap-2"><Users className="size-4 text-foreground" /> In-person</p><p className="flex items-center gap-2"><CalendarDays className="size-4 text-foreground" /> {course.eventDate ? `Starts ${formatDate(course.eventDate)}` : "Starts TBA"}</p><p className="flex items-center gap-2"><Clock className="size-4 text-foreground" /> {course.duration || "3 sessions"}</p></div></div></div>{status === "In Progress" && <div className="mt-3 border-t border-border pt-3"><div className="flex justify-between text-xs font-semibold"><span>Course Progress</span><span>33%</span></div><div className="mt-1 h-2 rounded-full bg-muted"><div className="h-full w-1/3 rounded-full bg-[#c69b4b]" /></div></div>}<Button className={`mt-3 w-full ${status === "Available" ? "btn-gold" : "bg-transparent text-[#8a6727] shadow-none hover:bg-[#c69b4b]/10"}`} variant={status === "Available" ? "default" : "outline"} onClick={() => { setSelectedCourse(course); setSignupMessage("") }}>{status === "Available" ? "Register →" : status === "In Progress" ? "Continue Learning →" : "View Course →"}</Button></Card>
               })}
             </div>
           )}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2"><Card className="border-border p-4"><div className="flex items-center justify-between"><h3 className="font-display text-xl"><CalendarDays className="mr-2 inline size-5 text-[#b78935]" />Next Session</h3><button className="text-xs text-muted-foreground">View calendar →</button></div><div className="mt-3 flex gap-3 rounded-lg border border-border p-3"><div className="h-20 w-14 shrink-0 overflow-hidden rounded bg-[#102337]"><img src="/courses/building-self.png" alt="Building Self cover" className="size-full object-cover" /></div><div><Badge variant="secondary" className="text-[10px]">Course 01</Badge><h4 className="mt-1 font-display text-lg">Building Self – Session 2</h4><p className="text-xs text-muted-foreground">Identity and Purpose in the Marketplace</p><p className="mt-2 text-xs text-muted-foreground">5 November 2026 · 19:00 – 21:00 · KAN Apostolic Hub</p></div></div></Card><Card className="border-border p-4"><div className="flex items-center justify-between"><h3 className="font-display text-xl">★ Recommended for You</h3><button className="text-xs text-muted-foreground">View all →</button></div><div className="mt-3 grid grid-cols-3 gap-2">{data.courses.slice(0, 3).map((course) => <button key={course.id} type="button" onClick={() => { setSelectedCourse(course); setSignupMessage("") }} className="text-left"><img src={course.thumbnailUrl || "/courses/building-self.png"} alt={`${course.title} cover`} className="h-20 w-full rounded object-cover" /><p className="mt-1 line-clamp-2 text-xs font-medium">{course.title}</p><span className="mt-2 block text-[11px] text-[#8a6727]">Learn more →</span></button>)}</div></Card></div>
         </TabsContent>
 
         <TabsContent value="resources" className="flex flex-col gap-4">
