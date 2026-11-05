@@ -7,6 +7,7 @@ import { enrollmentFor, type Course, type CourseEnrollment } from "@/lib/dashboa
 import { courseCodeFor, formatSessionDate, formatTimeRange, primarySessions, type Session } from "@/lib/ddni-schedule"
 import { CourseCover, DdniButton, EmptyPanel, LoadingBlock, PageHeading, Panel, Pill, SegmentedTabs, TextLink, type TabItem } from "@/components/dashboard/ddni-ui"
 import { CourseDetailsSheet } from "@/components/dashboard/course-details-sheet"
+import { ViewContainer } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 type Status = "in-progress" | "registered" | "pending" | "completed" | "available"
@@ -79,7 +80,7 @@ function CourseCard({ item, now, onOpen, onContinue }: { item: CourseItem; now: 
   const joined = status === "in-progress" || status === "registered" || status === "completed"
 
   return (
-    <article className="ddni-card ddni-card-hover flex flex-col gap-4 p-4">
+    <article className="ddni-card ddni-card-hover flex flex-col gap-6 p-6">
       <div className="flex gap-4">
         <div className="w-[7.25rem] shrink-0 sm:w-32">
           <CourseCover title={course.title} code={item.code} image={item.image} />
@@ -111,11 +112,11 @@ function CourseCard({ item, now, onOpen, onContinue }: { item: CourseItem; now: 
 
       <div className="mt-auto">
         {status === "in-progress" || status === "completed" ? (
-          <DdniButton size="lg" className="ddni-serif w-full" onClick={onContinue}>{status === "completed" ? "Review Materials" : "Continue Learning"}<ArrowRight /></DdniButton>
+          <DdniButton size="lg" className="w-full" onClick={onContinue}>{status === "completed" ? "Review Materials" : "Continue Learning"}<ArrowRight /></DdniButton>
         ) : joined || status === "pending" ? (
-          <DdniButton variant="outline" size="lg" className="ddni-serif w-full" onClick={onOpen}>View Course<ArrowRight /></DdniButton>
+          <DdniButton variant="outline" size="lg" className="w-full" onClick={onOpen}>View Course<ArrowRight /></DdniButton>
         ) : (
-          <DdniButton size="lg" className="ddni-serif w-full" onClick={onOpen}>Register<ArrowRight /></DdniButton>
+          <DdniButton size="lg" className="w-full" onClick={onOpen}>Register<ArrowRight /></DdniButton>
         )}
       </div>
     </article>
@@ -165,7 +166,7 @@ export function MyCoursesView({ data, onNavigate, onRequestCourseAccess }: Dashb
   const selectedEnrollment = selected ? enrollmentFor(data.enrollments, selected.id) : undefined
 
   return (
-    <div className="flex flex-col gap-6">
+    <ViewContainer>
       <PageHeading title="My Courses" subtitle="Continue your journey of growth and distinction." onHome={() => onNavigate("overview")} />
 
       <SegmentedTabs label="Course filters" items={tabs} value={tab} onChange={setTab} />
@@ -191,10 +192,10 @@ export function MyCoursesView({ data, onNavigate, onRequestCourseAccess }: Dashb
       )}
 
       {!data.loading && items.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
           <Panel title="Next Session" icon={CalendarDays} action={<TextLink onClick={() => onNavigate("calendar")}>View calendar<ArrowRight className="size-4" /></TextLink>}>
             {nextItem?.upcoming ? (
-              <div className="flex gap-4 rounded-lg border border-border p-3 sm:p-4">
+              <div className="flex gap-4 rounded-lg border border-border/60 bg-card p-6">
                 <div className="w-24 shrink-0 sm:w-28"><CourseCover title={nextItem.course.title} code={nextItem.code} image={nextItem.image} /></div>
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                   {nextItem.code && <Pill tone="blue" className="bg-[#e9eef8]">Course {nextItem.code}</Pill>}
@@ -219,7 +220,7 @@ export function MyCoursesView({ data, onNavigate, onRequestCourseAccess }: Dashb
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {recommended.map((item) => (
-                  <div key={item.course.id} className="ddni-card-hover flex flex-col gap-2 rounded-lg border border-border bg-white p-3">
+                  <div key={item.course.id} className="ddni-card-hover flex flex-col gap-2 rounded-lg border border-border/60 bg-card p-6">
                     <div className="flex gap-3">
                       <div className="w-14 shrink-0"><CourseCover title={item.course.title} code={item.code} image={item.image} /></div>
                       <div className="min-w-0">
@@ -238,6 +239,6 @@ export function MyCoursesView({ data, onNavigate, onRequestCourseAccess }: Dashb
       )}
 
       <CourseDetailsSheet course={selected} enrollment={selectedEnrollment} onClose={() => setSelected(null)} onRequestCourseAccess={onRequestCourseAccess} />
-    </div>
+    </ViewContainer>
   )
 }

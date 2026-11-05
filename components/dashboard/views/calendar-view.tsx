@@ -6,6 +6,7 @@ import { catalogCourse } from "@/lib/courses"
 import { cn } from "@/lib/utils"
 import { SESSIONS, downloadIcs, formatSessionDate, formatTimeRange, sameDay, sessionTitle, type Session } from "@/lib/ddni-schedule"
 import { CourseCover, DdniButton, PageHeading, Panel, TextLink } from "@/components/dashboard/ddni-ui"
+import { ViewContainer } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 type Mode = "month" | "week" | "list"
@@ -101,16 +102,16 @@ export function CalendarView({ data, onNavigate }: DashboardViewProps) {
   const nextCourseSessions = nextSession ? SESSIONS.filter((session) => session.courseSlug === nextSession.courseSlug && session.formatIndex === nextSession.formatIndex) : []
 
   return (
-    <div className="flex flex-col gap-6">
+    <ViewContainer>
       <PageHeading title="My Calendar" subtitle="Stay up to date with your courses, sessions and events." onHome={() => onNavigate("overview")} />
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_21rem]">
-        <section className="ddni-card min-w-0 p-3 sm:p-5" aria-label="Calendar">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
+        <section className="ddni-card min-w-0 p-6" aria-label="Calendar">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => shift(-1)} aria-label={mode === "week" ? "Previous week" : "Previous month"} className="ddni-btn grid size-10 place-items-center rounded-lg border border-input bg-white text-foreground shadow-sm hover:bg-[#f7efdc]"><ChevronLeft className="size-5" /></button>
+              <button type="button" onClick={() => shift(-1)} aria-label={mode === "week" ? "Previous week" : "Previous month"} className="ddni-btn grid size-11 place-items-center rounded-lg border border-input bg-card text-foreground shadow-sm hover:bg-muted"><ChevronLeft className="size-5" /></button>
               <h3 className="ddni-serif min-w-40 px-1 text-center text-xl font-bold text-foreground sm:text-2xl" aria-live="polite">{monthLabel}</h3>
-              <button type="button" onClick={() => shift(1)} aria-label={mode === "week" ? "Next week" : "Next month"} className="ddni-btn grid size-10 place-items-center rounded-lg border border-input bg-white text-foreground shadow-sm hover:bg-[#f7efdc]"><ChevronRight className="size-5" /></button>
+              <button type="button" onClick={() => shift(1)} aria-label={mode === "week" ? "Next week" : "Next month"} className="ddni-btn grid size-11 place-items-center rounded-lg border border-input bg-card text-foreground shadow-sm hover:bg-muted"><ChevronRight className="size-5" /></button>
             </div>
             <div className="ms-auto flex items-center gap-3">
               <div role="group" aria-label="Calendar view" className="inline-flex overflow-hidden rounded-lg border border-input bg-white shadow-sm">
@@ -120,13 +121,13 @@ export function CalendarView({ data, onNavigate }: DashboardViewProps) {
                     type="button"
                     aria-pressed={mode === option}
                     onClick={() => setMode(option)}
-                    className={cn("px-3.5 py-2 text-sm font-semibold capitalize transition-colors sm:px-4", mode === option ? "bg-gradient-to-b from-[#c4994a] to-[#a97b2b] text-white" : "text-foreground hover:bg-[#f7efdc]")}
+                    className={cn("min-h-11 px-4 text-sm font-medium capitalize transition-colors", mode === option ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted")}
                   >
                     {option}
                   </button>
                 ))}
               </div>
-              <button type="button" onClick={goToday} className="ddni-btn h-10 rounded-lg border border-input bg-[#f4f1ea] px-4 text-sm font-semibold text-foreground hover:bg-[#ece7d9]">Today</button>
+              <button type="button" onClick={goToday} className="ddni-btn min-h-11 rounded-lg border border-input bg-card px-4 text-sm font-medium text-foreground hover:bg-muted">Today</button>
             </div>
           </div>
 
@@ -233,8 +234,8 @@ export function CalendarView({ data, onNavigate }: DashboardViewProps) {
                   </div>
                 </div>
                 <div className="mt-4 flex flex-col gap-2.5">
-                  <DdniButton size="lg" className="ddni-serif w-full" onClick={() => onNavigate("courses")}>View Course<ChevronRight /></DdniButton>
-                  <DdniButton variant="outline" size="lg" className="ddni-serif w-full" onClick={() => downloadIcs(nextCourseSessions, `${nextSession.courseSlug}.ics`)}><CalendarDays />Add to My Calendar</DdniButton>
+                  <DdniButton size="lg" className="w-full" onClick={() => onNavigate("courses")}>View Course<ChevronRight /></DdniButton>
+                  <DdniButton variant="outline" size="lg" className="w-full" onClick={() => downloadIcs(nextCourseSessions, `${nextSession.courseSlug}.ics`)}><CalendarDays />Add to My Calendar</DdniButton>
                 </div>
               </>
             ) : (
@@ -280,6 +281,6 @@ export function CalendarView({ data, onNavigate }: DashboardViewProps) {
           </Panel>
         </aside>
       </div>
-    </div>
+    </ViewContainer>
   )
 }

@@ -8,6 +8,7 @@ import { ANNOUNCEMENT_CATEGORIES, announcementCategory, longDate, type Announcem
 import { SESSIONS, formatTimeRange, sessionTitle } from "@/lib/ddni-schedule"
 import { cn } from "@/lib/utils"
 import { DdniButton, EmptyPanel, LoadingBlock, PageHeading, Panel, TextLink } from "@/components/dashboard/ddni-ui"
+import { ViewContainer } from "@/components/dashboard/dashboard-ui"
 import type { DashboardView, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 const SEEN_KEY = "ddni-notifications-seen-at"
@@ -119,11 +120,11 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
   const upcoming = SESSIONS.filter((session) => session.end.getTime() >= Date.now() && session.mode === "in-person").slice(0, 3)
 
   return (
-    <div className="flex flex-col gap-5">
+    <ViewContainer>
       <PageHeading title="Announcements" subtitle="Stay informed. Stay connected." onHome={() => onNavigate("overview")} />
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_19rem]">
-        <div className="flex min-w-0 flex-col gap-4">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
+        <div className="flex min-w-0 flex-col gap-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div role="group" aria-label="Announcement filters" className="flex flex-wrap gap-2">
               {tabs.map((item) => {
@@ -134,14 +135,14 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
                     type="button"
                     aria-pressed={active}
                     onClick={() => setTab(item.id)}
-                    className={cn("ddni-btn ddni-serif h-10 rounded-md border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c1d3a]", active ? "ddni-btn-gold" : "border-input bg-white text-foreground hover:bg-[#f7efdc]")}
+                    className={cn("min-h-11 rounded-lg border px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]", active ? "btn-gold border-transparent" : "border-border bg-card text-foreground hover:bg-muted")}
                   >
                     {item.label}
                   </button>
                 )
               })}
             </div>
-            <button type="button" onClick={markAllRead} disabled={unreadCount === 0} className="inline-flex items-center gap-2 rounded-sm text-sm font-medium text-[#8a6420] underline underline-offset-4 transition-colors hover:text-[#5f4312] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c1d3a] disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" onClick={markAllRead} disabled={unreadCount === 0} className="inline-flex min-h-11 items-center gap-2 rounded-sm px-1 text-sm font-medium text-primary underline underline-offset-4 transition-colors hover:text-primary/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50">
               <Mail className="size-4" aria-hidden />Mark All as Read
             </button>
           </div>
@@ -164,7 +165,7 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
           ) : (
             <>
               {showPinned && pinned && (
-                <article className="flex flex-col gap-4 rounded-xl border border-[#e8d9b4] bg-[#fbf1dc] p-4 shadow-sm sm:p-5">
+                <article className="flex flex-col gap-4 rounded-xl border border-border/60 bg-card p-6 shadow-sm">
                   <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.18em] text-[#8a6420] uppercase"><Pin className="size-3.5 fill-current" aria-hidden />Pinned Announcement</p>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <Tile category={announcementCategory(pinned)} className="size-20 sm:size-28" />
@@ -173,7 +174,7 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
                       <p className={cn("text-sm leading-relaxed text-foreground/85", !expanded.has(pinned.id) && "line-clamp-3")}>{pinned.description}</p>
                       <Meta date={pinned.createdAt} />
                     </div>
-                    <DdniButton size="lg" className="ddni-serif sm:self-center" onClick={() => act(pinned)}>{CATEGORY_ACTION[announcementCategory(pinned)].label}<ArrowRight /></DdniButton>
+                    <DdniButton size="lg" className="sm:self-center" onClick={() => act(pinned)}>{CATEGORY_ACTION[announcementCategory(pinned)].label}<ArrowRight /></DdniButton>
                   </div>
                 </article>
               )}
@@ -185,7 +186,7 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
                   const open = expanded.has(item.id)
                   return (
                     <li key={item.id}>
-                      <article className="ddni-card ddni-card-hover flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:p-4">
+                      <article className="ddni-card ddni-card-hover flex flex-col gap-4 p-6 sm:flex-row sm:items-center">
                         <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
                           <span className={cn("size-3 shrink-0 rounded-full", unread ? "bg-[#b8893a]" : "bg-transparent")} aria-label={unread ? "Unread" : undefined} role={unread ? "img" : undefined} />
                           <Tile category={cat} className="size-16 sm:size-20" />
@@ -196,7 +197,7 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 self-end sm:self-center">
-                          <DdniButton variant="outline" size="md" className="ddni-serif" onClick={() => act(item)} aria-expanded={CATEGORY_ACTION[cat].view ? undefined : open}>{!CATEGORY_ACTION[cat].view && open ? "Show Less" : CATEGORY_ACTION[cat].label}<ArrowRight /></DdniButton>
+                          <DdniButton variant="outline" size="md" onClick={() => act(item)} aria-expanded={CATEGORY_ACTION[cat].view ? undefined : open}>{!CATEGORY_ACTION[cat].view && open ? "Show Less" : CATEGORY_ACTION[cat].label}<ArrowRight /></DdniButton>
                           <DropdownMenu>
                             <DropdownMenuTrigger render={<button type="button" aria-label={`More actions for ${item.title}`} className="grid size-9 place-items-center rounded-md text-foreground/80 transition-colors hover:bg-[#f7efdc]" />}>
                               <MoreVertical className="size-5" />
@@ -255,7 +256,7 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
             )}
           </Panel>
 
-          <section className="ddni-card p-5">
+          <section className="ddni-card p-6">
             <div className="flex items-start gap-3">
               <BookOpen className="size-9 shrink-0 text-[#d9bf87]" aria-hidden />
               <div>
@@ -263,10 +264,10 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
                 <p className="mt-1 text-sm text-foreground/80">Access course materials, manuals and more in the Resource Library.</p>
               </div>
             </div>
-            <DdniButton variant="outline" size="lg" className="ddni-serif mt-4 w-full" onClick={() => onNavigate("library")}>Go to Resource Library<ArrowRight /></DdniButton>
+            <DdniButton variant="outline" size="lg" className="mt-4 w-full" onClick={() => onNavigate("library")}>Go to Resource Library<ArrowRight /></DdniButton>
           </section>
         </aside>
       </div>
-    </div>
+    </ViewContainer>
   )
 }

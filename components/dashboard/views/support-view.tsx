@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Field, StatusMessage, ViewHeader, selectClassName } from "@/components/dashboard/dashboard-ui"
+import { Field, StatusMessage, ViewContainer, ViewHeader, selectClassName } from "@/components/dashboard/dashboard-ui"
 import { SUPPORT_EMAIL, SUPPORT_PHONE, SUPPORT_PHONE_HREF, SUPPORT_WHATSAPP_HREF } from "@/lib/dashboard-data"
 import { ChevronDown, Mail, MessageCircle, Phone, Send } from "lucide-react"
 import type { DashboardView, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
@@ -48,16 +48,16 @@ export function SupportView({ member, onNavigate }: DashboardViewProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <ViewContainer>
       <ViewHeader kicker="Support" title="We're here to help" description="Send the DDNI team a message, or find a quick answer below." />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,0.8fr)]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Send us a message</CardTitle>
+        <Card className="gap-6 border border-border/60 bg-card p-6 shadow-sm">
+          <CardHeader className="p-0">
+            <CardTitle className="font-semibold">Send us a message</CardTitle>
             <CardDescription>Your message opens in your email app, addressed to {SUPPORT_EMAIL}, with your member details included.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <form onSubmit={submit} noValidate className="flex flex-col gap-4">
               <Field id="support-topic" label="Topic" error={errors.topic}>
                 <select id="support-topic" name="topic" required className={selectClassName} value={form.topic} aria-invalid={Boolean(errors.topic)} aria-describedby={errors.topic ? "support-topic-error" : undefined} onChange={(e) => setForm({ ...form, topic: e.target.value })}>
@@ -72,7 +72,7 @@ export function SupportView({ member, onNavigate }: DashboardViewProps) {
                 <Textarea id="support-message" name="message" required value={form.message} maxLength={2000} rows={6} aria-invalid={Boolean(errors.message)} aria-describedby={errors.message ? "support-message-error" : "support-message-hint"} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Share as much detail as you can." />
               </Field>
               <div className="flex flex-wrap items-center gap-3">
-                <Button type="submit" className="btn-gold"><Send data-icon="inline-start" />Send message</Button>
+                <Button type="submit" className="btn-gold min-h-11 px-4"><Send data-icon="inline-start" />Send message</Button>
                 {sent && <StatusMessage tone="success">Your email app should open now. If it doesn&apos;t, email us at {SUPPORT_EMAIL}.</StatusMessage>}
               </div>
             </form>
@@ -80,9 +80,9 @@ export function SupportView({ member, onNavigate }: DashboardViewProps) {
         </Card>
 
         <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader><CardTitle>Contact the team</CardTitle><CardDescription>Wiseman Mavundla, Network Coordinator</CardDescription></CardHeader>
-            <CardContent className="flex flex-col gap-2">
+          <Card className="gap-6 border border-border/60 bg-card p-6 shadow-sm">
+            <CardHeader className="p-0"><CardTitle className="font-semibold">Contact the team</CardTitle><CardDescription>Wiseman Mavundla, Network Coordinator</CardDescription></CardHeader>
+            <CardContent className="flex flex-col gap-2 p-0">
               <ContactLink href={`mailto:${SUPPORT_EMAIL}`} icon={Mail} label={SUPPORT_EMAIL} />
               <ContactLink href={SUPPORT_PHONE_HREF} icon={Phone} label={SUPPORT_PHONE} />
               <ContactLink href={SUPPORT_WHATSAPP_HREF} icon={MessageCircle} label="Message on WhatsApp" external />
@@ -91,9 +91,9 @@ export function SupportView({ member, onNavigate }: DashboardViewProps) {
         </div>
       </div>
 
-      <Card>
-        <CardHeader><CardTitle>Frequently asked questions</CardTitle></CardHeader>
-        <CardContent className="flex flex-col divide-y divide-border">
+      <Card className="gap-6 border border-border/60 bg-card p-6 shadow-sm">
+        <CardHeader className="p-0"><CardTitle className="font-semibold">Frequently asked questions</CardTitle></CardHeader>
+        <CardContent className="flex flex-col divide-y divide-border p-0">
           {faqs.map((faq) => (
             <details key={faq.q} className="group py-3">
               <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-foreground marker:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] [&::-webkit-details-marker]:hidden">
@@ -108,7 +108,7 @@ export function SupportView({ member, onNavigate }: DashboardViewProps) {
           ))}
         </CardContent>
       </Card>
-    </div>
+    </ViewContainer>
   )
 }
 

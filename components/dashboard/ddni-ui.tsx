@@ -3,6 +3,7 @@
 import type { ComponentProps, ComponentType, ReactNode } from "react"
 import { ChevronDown, House, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
 
 type IconType = ComponentType<{ className?: string }>
 
@@ -10,15 +11,15 @@ export function PageHeading({ title, subtitle, crumb, onHome, className }: { tit
   return (
     <header className={cn("flex flex-col", className)}>
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button type="button" onClick={onHome} className="inline-flex min-h-9 items-center gap-1.5 rounded-sm transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]">
+        <button type="button" onClick={onHome} className="inline-flex min-h-11 items-center gap-1.5 rounded-sm px-1 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]">
           <House className="size-3.5" aria-hidden />
           Home
         </button>
         <span aria-hidden>/</span>
         <span aria-current="page">{crumb ?? title}</span>
       </nav>
-      <h2 className="ddni-serif mt-3 text-3xl font-bold leading-snug tracking-tight text-foreground sm:text-4xl">{title}</h2>
-      <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">{subtitle}</p>
+      <h2 className="font-display mt-3 text-2xl font-semibold leading-snug tracking-tight text-foreground sm:text-3xl">{title}</h2>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{subtitle}</p>
     </header>
   )
 }
@@ -34,18 +35,16 @@ type DdniButtonProps = Omit<ComponentProps<"button">, "type"> & {
 }
 
 const buttonSizes = {
-  sm: "h-10 px-3 text-sm",
-  md: "h-11 px-4 text-sm",
-  lg: "h-12 px-5 text-base",
+  sm: "min-h-11 px-4 text-sm",
+  md: "min-h-11 px-4 text-sm",
+  lg: "min-h-11 px-4 text-sm",
 }
 
 export function DdniButton({ variant = "gold", size = "md", href, target, rel, download, className, children, type = "button", ...rest }: DdniButtonProps) {
-  const classes = cn(
-    "ddni-btn inline-flex max-w-full items-center justify-center gap-2 rounded-lg font-semibold whitespace-nowrap [&_svg]:size-4 [&_svg]:shrink-0",
-    variant === "gold" ? "ddni-btn-gold" : "ddni-btn-outline",
-    buttonSizes[size],
-    className,
-  )
+  const classes = buttonVariants({
+    variant: variant === "gold" ? "default" : "outline",
+    className: cn(buttonSizes[size], variant === "gold" && "btn-gold", className),
+  })
   if (href && !rest.disabled) {
     return (
       <a href={href} target={target} rel={rel} download={download} className={classes} aria-label={rest["aria-label"]} title={rest.title}>
@@ -181,9 +180,9 @@ export function CourseCover({ title, code, image, className }: { title: string; 
 
 export function Panel({ title, icon: Icon, action, children, className }: { title: string; icon?: IconType; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cn("ddni-card p-5 sm:p-6", className)}>
+    <section className={cn("ddni-card min-w-0 p-6", className)}>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="ddni-serif flex min-w-0 items-center gap-2.5 text-lg font-bold tracking-tight text-foreground sm:text-xl">
+        <h3 className="flex min-w-0 items-center gap-2.5 text-base font-semibold leading-snug tracking-tight text-foreground">
           {Icon && <Icon className="size-5 shrink-0 text-primary" aria-hidden />}
           <span className="truncate">{title}</span>
         </h3>
@@ -196,7 +195,7 @@ export function Panel({ title, icon: Icon, action, children, className }: { titl
 
 export function TextLink({ children, onClick, className }: { children: ReactNode; onClick: () => void; className?: string }) {
   return (
-    <button type="button" onClick={onClick} className={cn("inline-flex min-h-9 items-center gap-1 rounded-sm text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]", className)}>
+    <button type="button" onClick={onClick} className={cn("inline-flex min-h-11 items-center gap-1 rounded-sm px-1 text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]", className)}>
       {children}
     </button>
   )

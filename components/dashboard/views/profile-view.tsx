@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { AccountHistory } from "@/components/dashboard/views/history-view"
-import { Field, StatusMessage, ViewHeader } from "@/components/dashboard/dashboard-ui"
+import { Field, StatusMessage, ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
 import { initialsFor, isValidUrl, normalizeSkills, profileCompletion, type MemberProfile } from "@/lib/dashboard-data"
 import { Check, Circle, History, ShieldCheck, UserRound, Pencil, Save } from "lucide-react"
@@ -236,97 +236,79 @@ export function ProfileView({
   const profileLocation = data.profile.location || member.location
 
   return (
-    <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-6">
+    <ViewContainer>
       <ViewHeader kicker="Member account" title="Your DDNI account" description="Review your account activity and keep your professional profile current." />
 
-      {status && <StatusMessage tone={status.tone}>{status.text}</StatusMessage>}
-      {data.errors.profile && <StatusMessage tone="error">{data.errors.profile}</StatusMessage>}
-      {member.profileStatus === "rejected" && (
-        <StatusMessage tone="error">
-          {`The DDNI team requested changes${member.profileReviewNote ? `: ${member.profileReviewNote}` : "."} Update your profile and save to resubmit.`}
-        </StatusMessage>
-      )}
-
-      {/* Unified Member Summary Header */}
-      <Card className="border border-border/60 bg-card p-6 shadow-sm">
-        <CardContent className="p-0">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div
-                className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl text-lg font-semibold ring-1 ring-border/60"
-                style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}
-              >
-                <MemberAvatarContent member={member} imageClassName="rounded-2xl" />
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold tracking-wider text-primary uppercase">DDNI Member</span>
-                  {member.profileStatus && (
-                    <Badge variant="outline" className="border-border/60 bg-muted/50 text-xs">
-                      {statusLabels[member.profileStatus] || member.profileStatus}
-                    </Badge>
-                  )}
-                </div>
-                <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">{member.name}</h2>
-                <p className="text-sm text-muted-foreground">{member.title !== "DDNI Member" ? member.title : "Member account"}</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
-              {member.emailConfirmedAt && (
-                <Badge variant="outline" className="gap-1.5 border-primary/20 bg-primary/10 text-foreground">
-                  <ShieldCheck className="size-3.5 text-primary" aria-hidden="true" />
-                  Verified email
-                </Badge>
-              )}
-              {member.memberSince && (
-                <p className="rounded-lg bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground">
-                  Member since <span className="font-medium text-foreground">{member.memberSince}</span>
-                </p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabs Root */}
-      <Tabs defaultValue="details" className="w-full space-y-6">
-        {/* Full-width Tab Navigation positioned directly at the top of the view body */}
-        <div className="border-b border-border/60">
+      <Tabs defaultValue="details" className="w-full min-w-0 gap-6">
+        <div className="w-full border-b border-border/60">
           <TabsList variant="line" aria-label="Profile sections" className="h-auto w-full justify-start gap-2 px-0 pb-0">
-            <TabsTrigger value="details" className="min-h-11 gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground border-b-2 border-transparent data-active:border-primary">
+            <TabsTrigger value="details" className="min-h-11 flex-none gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground">
               <UserRound className="size-4" aria-hidden="true" />
               Profile details
             </TabsTrigger>
-            <TabsTrigger value="activity" className="min-h-11 gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground border-b-2 border-transparent data-active:border-primary">
+            <TabsTrigger value="activity" className="min-h-11 flex-none gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground">
               <History className="size-4" aria-hidden="true" />
               Account history
             </TabsTrigger>
           </TabsList>
         </div>
 
-        {/* Tab 1: Profile details */}
         <TabsContent value="details">
-          <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[1fr_320px]">
+          <div className="flex min-w-0 flex-col gap-6">
+            {status && <StatusMessage tone={status.tone}>{status.text}</StatusMessage>}
+            {data.errors.profile && <StatusMessage tone="error">{data.errors.profile}</StatusMessage>}
+            {member.profileStatus === "rejected" && (
+              <StatusMessage tone="error">
+                {`The DDNI team requested changes${member.profileReviewNote ? `: ${member.profileReviewNote}` : "."} Update your profile and save to resubmit.`}
+              </StatusMessage>
+            )}
+
+            <Card className="min-w-0 border border-border/60 bg-card p-6 shadow-sm">
+              <CardContent className="p-0">
+                <div className="flex min-w-0 flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl text-lg font-semibold ring-1 ring-border/60" style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}>
+                      <MemberAvatarContent member={member} imageClassName="rounded-2xl" />
+                    </div>
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-semibold tracking-wider text-primary uppercase">DDNI Member</span>
+                        {member.profileStatus && <Badge variant="outline" className="border-border/60 bg-muted/50 text-xs">{statusLabels[member.profileStatus] || member.profileStatus}</Badge>}
+                      </div>
+                      <h2 className="break-words font-display text-2xl font-semibold leading-snug tracking-tight text-foreground">{member.name}</h2>
+                      <p className="text-sm text-muted-foreground">{member.title !== "DDNI Member" ? member.title : "Member account"}</p>
+                      {member.email && <p className="break-all text-sm text-muted-foreground">{member.email}</p>}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
+                    {member.emailConfirmedAt && <Badge variant="outline" className="gap-1.5 border-primary/20 bg-primary/10 text-foreground"><ShieldCheck className="size-3.5 text-primary" aria-hidden="true" />Verified email</Badge>}
+                    {member.memberSince && <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">Member since <span className="font-medium text-foreground">{member.memberSince}</span></p>}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(16rem,0.75fr)]">
             <form onSubmit={requestSave} noValidate className="min-w-0">
-              <Card className="border border-border/60 bg-card p-6 shadow-sm">
-                <CardHeader className="flex flex-col gap-4 p-0 pb-6 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 mb-6">
+              <Card className="min-w-0 gap-6 border border-border/60 bg-card p-6 shadow-sm">
+                <CardHeader className="flex flex-col gap-4 border-b border-border/60 p-0 pb-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">
-                    <CardTitle className="text-lg tracking-tight">Personal & Professional Details</CardTitle>
+                    <CardTitle className="text-base font-semibold tracking-tight">Personal &amp; professional details</CardTitle>
                     <CardDescription className="leading-relaxed">Your public profile details shared with Network members after review.</CardDescription>
                   </div>
                   <div className="flex shrink-0 gap-2">
                     {isEditing ? (
                       <>
-                        <Button type="button" variant="ghost" className="min-h-10 px-4" onClick={cancelEditing} disabled={saving}>
+                        <Button type="button" variant="ghost" className="min-h-11 px-4" onClick={cancelEditing} disabled={saving}>
                           Cancel
                         </Button>
-                        <Button type="submit" className="btn-gold min-h-10 px-4 gap-1.5" disabled={!dirty || saving}>
+                        <Button type="submit" className="btn-gold min-h-11 gap-1.5 px-4" disabled={!dirty || saving}>
                           <Save className="size-4" />
                           {saving ? "Saving…" : "Save Changes"}
                         </Button>
                       </>
                     ) : (
-                      <Button type="button" variant="outline" className="min-h-10 px-4 gap-1.5" onClick={beginEditing}>
+                      <Button type="button" variant="outline" className="min-h-11 gap-1.5 px-4" onClick={beginEditing}>
                         <Pencil className="size-4" />
                         Edit Profile
                       </Button>
@@ -334,9 +316,9 @@ export function ProfileView({
                   </div>
                 </CardHeader>
 
-                <CardContent className="p-0">
+                <CardContent className="min-w-0 p-0">
                   {isEditing ? (
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                       <section className="space-y-4" aria-labelledby="edit-account-heading">
                         <div className="border-b border-border/40 pb-2">
                           <h3 id="edit-account-heading" className="text-sm font-semibold tracking-tight text-foreground">Account details</h3>
@@ -383,7 +365,7 @@ export function ProfileView({
                       </section>
                     </div>
                   ) : (
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                       <section className="space-y-4">
                         <div className="border-b border-border/40 pb-2">
                           <h3 className="text-sm font-semibold tracking-tight text-foreground">Account details</h3>
@@ -464,9 +446,9 @@ export function ProfileView({
             </form>
 
             {/* Profile Strength Sidebar */}
-            <Card className="sticky top-6 border border-border/60 bg-card p-6 shadow-sm">
+            <Card className="min-w-0 gap-6 border border-border/60 bg-card p-6 shadow-sm">
               <CardHeader className="p-0 pb-4">
-                <CardTitle className="text-base tracking-tight">Profile strength</CardTitle>
+                <CardTitle className="text-base font-semibold tracking-tight">Profile strength</CardTitle>
                 <CardDescription className="text-xs leading-relaxed">Complete your profile to maximize member discovery.</CardDescription>
               </CardHeader>
               <CardContent className="p-0 space-y-4">
@@ -492,6 +474,7 @@ export function ProfileView({
                 </ul>
               </CardContent>
             </Card>
+          </div>
           </div>
         </TabsContent>
 
@@ -521,6 +504,6 @@ export function ProfileView({
           </Dialog.Popup>
         </Dialog.Portal>
       </Dialog.Root>
-    </div>
+    </ViewContainer>
   )
 }

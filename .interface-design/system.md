@@ -30,11 +30,14 @@ Use the dashboard semantic CSS variables in `src/app/dashboard/dashboard.css`; d
 ## Component patterns
 
 - Prefer existing shadcn-style primitives in `components/ui`: `Button`, `Card`, `Tabs`, `Input`, `Textarea`, `Badge`, and Base UI `Dialog`. Keep controls native or primitive-backed; do not hand-roll keyboard behavior.
-- Profile hub: `Account history` is the default tab; `Profile details` is secondary. Map legacy `history` navigation and URLs to `profile`.
+- Dashboard views share a centered `max-w-5xl` container with `min-w-0` and `gap-6`; use responsive grids that collapse before their contents become cramped.
+- Major dashboard cards use `p-6`, `border-border/60`, `bg-card`, and restrained `shadow-sm`. Reset nested `CardHeader`/`CardContent` padding where the card owns the spacing.
+- Shared page headings use the display face at `text-2xl`/`sm:text-3xl`, semibold weight, tight tracking, and `text-sm` supporting copy. Action buttons use at least `min-h-11 px-4`; reserve `btn-gold` for primary actions, with outline, ghost, and destructive variants for secondary and consequential actions.
+- Profile hub: place the full-width `Profile details` / `Account history` tab bar immediately below the page heading; keep the identity banner in Profile details so the tabs stay at the top of the view. Map legacy `history` navigation and URLs to `profile`.
 - Profile details are static, semantic `<dl>` values and muted badges by default. A single `Edit Profile` action unlocks fields. In edit mode, show `Save Changes` (primary) and `Cancel`; cancel restores the last saved values.
 - Validate before opening confirmation; focus the first invalid field. Save only after the confirmation dialog asks, “Are you sure you want to update your profile details?” Keep server actions as the persistence boundary; surface failures and retain unsaved form values.
 - Email is displayed read-only in the profile editor; account email changes belong in Settings. Communication preferences are summarized and edited in Settings.
-- Keep account activity as a reverse-chronological, accessible ordered timeline with dates and a polished empty state.
+- Keep account activity as a reverse-chronological, accessible ordered timeline with dates and a polished empty state. Always end the history section with the account-safety notice and links to security settings and support.
 - Controls require labels, field-specific descriptions/errors, visible `focus-visible` rings, and disabled states. Dialogs/tabs should use their existing primitives for keyboard support and focus management.
 - Motion is brief, limited to opacity/transform, and guarded by reduced-motion preferences.
 - Every data surface has loading, empty, and error states; state is communicated by text as well as color.
@@ -42,10 +45,10 @@ Use the dashboard semantic CSS variables in `src/app/dashboard/dashboard.css`; d
 ## Profile hierarchy
 
 1. Page title and short purpose statement.
-2. Two keyboard-accessible tabs: Activity first, Details second.
-3. Keep a single DDNI identity banner above both tabs; it identifies whose account is being viewed without repeating the profile card inside the details form.
-4. Activity view uses one compact account-summary band, a dated event list, and a quiet account-safety callout. Avoid separate mini-cards for every statistic.
-5. Details view groups read-only values into Account details and Professional presence; profile strength is supporting context, not a competing hero.
+2. Full-width, keyboard-accessible tabs directly below the heading: Profile details first, Account history second.
+3. Keep the DDNI identity banner at the beginning of Profile details, before the editable/read-only account and professional information.
+4. Account history uses one compact account-summary band, a dated event list, and a quiet account-safety notice at the bottom. Avoid separate mini-cards for every statistic.
+5. Details groups values into Account details and Professional presence; profile strength is supporting context, not a competing hero.
 
 ## Verification checklist
 

@@ -1,5 +1,9 @@
-import type { ReactNode } from "react"
+import type { ComponentProps, ReactNode } from "react"
 import { cn } from "@/lib/utils"
+
+export function ViewContainer({ className, ...props }: ComponentProps<"div">) {
+  return <div className={cn("mx-auto flex w-full min-w-0 max-w-5xl flex-col gap-6", className)} {...props} />
+}
 
 export function ViewHeader({ kicker, title, description, actions }: { kicker: string; title: ReactNode; description?: string; actions?: ReactNode }) {
   return (
@@ -9,7 +13,7 @@ export function ViewHeader({ kicker, title, description, actions }: { kicker: st
           <span aria-hidden className="h-px w-8 bg-[#dcb567]/60" />
           {kicker}
         </p>
-        <h2 className="mt-3 font-display text-2xl leading-snug tracking-tight text-foreground sm:text-3xl">{title}</h2>
+        <h2 className="mt-3 font-display text-2xl font-semibold leading-snug tracking-tight text-foreground sm:text-3xl">{title}</h2>
         {description && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap gap-3">{actions}</div>}

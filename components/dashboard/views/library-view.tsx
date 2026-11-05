@@ -6,6 +6,7 @@ import { COURSES } from "@/lib/courses"
 import { cn } from "@/lib/utils"
 import { formatDate, type Resource } from "@/lib/dashboard-data"
 import { CourseCover, DdniButton, EmptyPanel, LoadingBlock, PageHeading, Pill, SearchBox, SelectField, UnderlineTabs, type TabItem } from "@/components/dashboard/ddni-ui"
+import { ViewContainer } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 type TabId = "all" | "manuals" | "recordings" | "presentations" | "saved"
@@ -48,7 +49,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
   const course = matchCourse(resource)
   const TypeIcon = isMedia(resource) ? Video : FileText
   return (
-    <article className="ddni-card ddni-card-hover flex flex-col gap-3 p-3 sm:p-4">
+    <article className="ddni-card ddni-card-hover flex flex-col gap-6 p-6">
       <div className="flex gap-3 sm:gap-4">
         <div className="w-24 shrink-0 sm:w-28"><ResourceCover resource={resource} course={course} /></div>
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -133,10 +134,10 @@ export function LibraryView({ data, onNavigate }: DashboardViewProps) {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <ViewContainer>
       <PageHeading title="Resource Library" subtitle="Resources to support your learning and growth." onHome={() => onNavigate("overview")} />
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
         <SearchBox value={query} onChange={setQuery} placeholder="Search resources by title, keyword or author..." label="Search resources" className="self-center" />
         <SelectField id="library-course" label="Course" value={course} onChange={setCourse} icon={BookOpen} options={[{ value: "all", label: "All Courses" }, ...COURSES.map((item) => ({ value: item.id, label: item.title }))]} />
         <SelectField id="library-topic" label="Topic" value={topic} onChange={setTopic} icon={Tag} options={[{ value: "all", label: "All Topics" }, ...TOPICS.map((item) => ({ value: item.label, label: item.label }))]} />
@@ -145,7 +146,7 @@ export function LibraryView({ data, onNavigate }: DashboardViewProps) {
 
       <UnderlineTabs label="Resource categories" items={tabs} value={tab} onChange={setTab} />
 
-      <section className="flex flex-col items-start justify-between gap-3 rounded-xl border border-[#eadfc6] bg-[linear-gradient(90deg,#f8efdb,#faf4e6)] p-4 sm:flex-row sm:items-center sm:p-5" aria-label="Recently added">
+      <section className="flex flex-col items-start justify-between gap-6 rounded-xl border border-border/60 bg-card p-6 sm:flex-row sm:items-center" aria-label="Recently added">
         <div className="flex items-center gap-4">
           <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-[#f1e2bd] text-[#a9792a]"><Star className="size-8 fill-current" aria-hidden /></span>
           <div>
@@ -172,6 +173,6 @@ export function LibraryView({ data, onNavigate }: DashboardViewProps) {
           {visible.map((resource) => <ResourceCard key={resource.id} resource={resource} saved={saved.has(resource.id)} onToggleSave={() => toggleSaved(resource.id)} />)}
         </div>
       )}
-    </div>
+    </ViewContainer>
   )
 }

@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { EmptyState, StatusMessage, ViewHeader } from "@/components/dashboard/dashboard-ui"
+import { EmptyState, StatusMessage, ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import { SUPPORT_EMAIL, enrollmentFor, formatDate, type Course, type Resource } from "@/lib/dashboard-data"
 import { catalogCourse } from "@/lib/courses"
 import { BookOpen, CalendarDays, Clock, ExternalLink, FileText, MapPin, PlayCircle, Search, UserRound } from "lucide-react"
@@ -22,7 +22,7 @@ function FilterChips({ options, value, onChange }: { options: string[]; value: s
   return (
     <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter">
       {options.map((option) => (
-        <Button key={option} size="sm" variant={value === option ? "default" : "outline"} aria-pressed={value === option} className={value === option ? "btn-gold h-7 text-xs" : "h-7 text-xs"} onClick={() => onChange(option)}>
+        <Button key={option} variant={value === option ? "default" : "outline"} aria-pressed={value === option} className={value === option ? "btn-gold min-h-11 px-4" : "min-h-11 px-4"} onClick={() => onChange(option)}>
           {option}
         </Button>
       ))}
@@ -43,7 +43,7 @@ function ResourceAction({ resource }: { resource: Resource }) {
   if (!resource.url) return <span className="text-xs text-muted-foreground">Link coming soon</span>
   const Icon = isMedia(resource.type) ? PlayCircle : ExternalLink
   return (
-    <Button variant="outline" size="sm" className="h-7 text-xs" render={<a href={resource.url} target="_blank" rel="noopener noreferrer" />}>
+    <Button variant="outline" className="min-h-11 px-4" render={<a href={resource.url} target="_blank" rel="noopener noreferrer" />}>
       <Icon data-icon="inline-start" />{isMedia(resource.type) ? "Watch" : "Open"}
     </Button>
   )
@@ -101,16 +101,16 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
   const selectedCatalog = catalogCourse(selectedCourse?.slug)
 
   return (
-    <div className="flex flex-col gap-6">
+    <ViewContainer>
       <ViewHeader kicker="The Institute" title="Grow in wisdom and understanding" description="Browse Institute courses, sign up from here, and open anything you already have access to." />
 
-      <Tabs defaultValue="courses" className="gap-4">
+      <Tabs defaultValue="courses" className="min-w-0 gap-6">
         <TabsList>
           <TabsTrigger value="courses">Courses{!data.loading && ` (${data.courses.length})`}</TabsTrigger>
           <TabsTrigger value="resources">Resource library{!data.loading && ` (${data.resources.length})`}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="courses" className="flex flex-col gap-4">
+        <TabsContent value="courses" className="flex min-w-0 flex-col gap-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <SearchInput value={courseQuery} onChange={setCourseQuery} placeholder="Search courses" />
             <FilterChips options={courseFilters} value={courseFilter} onChange={setCourseFilter} />
@@ -122,7 +122,7 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
           ) : courses.length === 0 ? (
             <EmptyState icon={BookOpen} title={data.courses.length ? "No courses match your search" : "Courses are being prepared"} description={data.courses.length ? "Try a different search or filter." : "New courses from the Institute will appear here as soon as they're published."} />
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {courses.map((course) => {
                 const enrollment = enrollmentFor(data.enrollments, course.id)
                 return (
@@ -138,7 +138,7 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
                       </div>
                       <p className="text-sm leading-snug font-medium text-foreground">{course.title}</p>
                       <p className="text-xs text-muted-foreground">{[course.instructor, course.price || course.duration].filter(Boolean).join(" · ")}</p>
-                      <Button size="sm" className="btn-gold mt-auto" onClick={() => { setSelectedCourse(course); setSignupMessage("") }}>View details</Button>
+                      <Button className="btn-gold mt-auto min-h-11 px-4" onClick={() => { setSelectedCourse(course); setSignupMessage("") }}>View details</Button>
                     </CardContent>
                   </Card>
                 )
@@ -236,23 +236,23 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
               {signupMessage && <div className="px-4"><StatusMessage tone={signupMessage.startsWith("Unable") || signupMessage.startsWith("Please") ? "error" : "success"}>{signupMessage}</StatusMessage></div>}
               <SheetFooter>
                 {selectedEnrollment?.status === "enrolled" ? (
-                  <Button className="btn-gold" disabled>You have access</Button>
+                  <Button className="btn-gold min-h-11 px-4" disabled>You have access</Button>
                 ) : selectedEnrollment?.status === "pending" ? (
-                  <Button className="btn-gold" disabled>Awaiting admin access</Button>
+                  <Button className="btn-gold min-h-11 px-4" disabled>Awaiting admin access</Button>
                 ) : (
-                  <Button className="btn-gold" disabled={busyCourseId === selectedCourse.id} onClick={() => void signUp(selectedCourse)}>
+                  <Button className="btn-gold min-h-11 px-4" disabled={busyCourseId === selectedCourse.id} onClick={() => void signUp(selectedCourse)}>
                     {busyCourseId === selectedCourse.id ? "Signing up…" : selectedCourse.isFree ? "Sign up for free access" : selectedEnrollment?.status === "revoked" ? "Request access again" : "Sign up"}
                   </Button>
                 )}
                 {!selectedCourse.isFree && selectedEnrollment?.status !== "enrolled" && (
-                  <Button variant="outline" render={<a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Proof of payment: ${selectedCourse.title}`)}`} />}>Send proof of payment</Button>
+                  <Button variant="outline" className="min-h-11 px-4" render={<a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Proof of payment: ${selectedCourse.title}`)}`} />}>Send proof of payment</Button>
                 )}
-                <Button variant="outline" onClick={() => setSelectedCourse(null)}>Close</Button>
+                <Button variant="outline" className="min-h-11 px-4" onClick={() => setSelectedCourse(null)}>Close</Button>
               </SheetFooter>
             </>
           )}
         </SheetContent>
       </Sheet>
-    </div>
+    </ViewContainer>
   )
 }

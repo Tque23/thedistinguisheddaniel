@@ -5,6 +5,7 @@ import { ArrowRight, Briefcase, Building2, ExternalLink, GraduationCap, Lightbul
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { SUPPORT_EMAIL, initialsFor, isValidUrl, profileCompletion, type DirectoryMember } from "@/lib/dashboard-data"
 import { DdniButton, EmptyPanel, LoadingBlock, Panel, SelectField, TextLink, UnderlineTabs, type TabItem } from "@/components/dashboard/ddni-ui"
+import { ViewContainer } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 type TabId = "discover" | "connections" | "groups"
@@ -35,7 +36,7 @@ function MemberCard({ person, onView }: { person: DirectoryMember; onView: () =>
   const external = link.startsWith("http")
   const subtitle = [person.role, person.company].filter(Boolean).join(", ") || person.headline || "DDNI member"
   return (
-    <article className="ddni-card ddni-card-hover flex flex-col gap-3 p-4">
+    <article className="ddni-card ddni-card-hover flex flex-col gap-6 p-6">
       <div className="flex items-center gap-3">
         <Avatar name={person.name} />
         <div className="min-w-0">
@@ -132,7 +133,7 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
   )
 
   return (
-    <div className="flex flex-col gap-5">
+    <ViewContainer>
       <header className="relative overflow-hidden rounded-2xl bg-[linear-gradient(110deg,#081a36,#0c2347_60%,#0a1d3b)] px-5 py-6 text-white shadow-[0_18px_40px_-20px_rgba(8,26,54,0.7)] sm:px-8 sm:py-7">
         <div aria-hidden className="pointer-events-none absolute -top-24 -right-16 size-72 rounded-full border border-[#c9a14f]/40" />
         <div aria-hidden className="pointer-events-none absolute -top-16 -right-8 size-72 rounded-full border border-[#c9a14f]/25" />
@@ -142,13 +143,13 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
           <span aria-hidden>/</span>
           <span aria-current="page" className="text-[#e4c276]">DDNI Network</span>
         </nav>
-        <h2 className="ddni-serif relative mt-3 text-3xl leading-tight font-bold tracking-tight sm:text-5xl">DDNI <span className="text-[#e4c276]">Network</span></h2>
-        <p className="ddni-serif relative mt-1 max-w-2xl text-base text-white/90 sm:text-xl">Connect with distinguished people. Grow your <strong className="text-white">Kingdom influence.</strong></p>
+        <h2 className="font-display relative mt-3 text-2xl leading-snug font-semibold tracking-tight text-white sm:text-3xl">DDNI <span className="text-[#e4c276]">Network</span></h2>
+        <p className="relative mt-2 max-w-2xl text-sm leading-relaxed text-white/90">Connect with distinguished people. Grow your <strong className="text-white">Kingdom influence.</strong></p>
       </header>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_19rem]">
-        <div className="flex min-w-0 flex-col gap-5">
-          <form onSubmit={submit} className="ddni-card flex flex-col gap-3 p-3 sm:p-4" role="search" aria-label="Search members">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
+        <div className="flex min-w-0 flex-col gap-6">
+          <form onSubmit={submit} className="ddni-card flex min-w-0 flex-col gap-6 p-6" role="search" aria-label="Search members">
             <div className="relative">
               <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-foreground/70" aria-hidden />
               <input
@@ -165,7 +166,7 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
               <SelectField id="net-location" label="Location" value={draft.location} onChange={(value) => setDraft({ ...draft, location: value })} icon={MapPin} options={toOptions("All locations", options.location)} />
               <SelectField id="net-skill" label="Skills" value={draft.skill} onChange={(value) => setDraft({ ...draft, skill: value })} icon={GraduationCap} options={toOptions("All skills", options.skill)} />
               <SelectField id="net-role" label="Role" value={draft.role} onChange={(value) => setDraft({ ...draft, role: value })} icon={Tag} options={toOptions("All roles", options.role)} />
-              <DdniButton type="submit" size="lg" className="ddni-serif sm:col-span-2 lg:col-span-1">Search</DdniButton>
+              <DdniButton type="submit" size="lg" className="sm:col-span-2 lg:col-span-1">Search</DdniButton>
             </div>
           </form>
 
@@ -212,7 +213,7 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
         </div>
 
         <aside className="flex min-w-0 flex-col gap-4" aria-label="Network summary">
-          <section className="ddni-card flex items-center gap-4 p-4 sm:p-5">
+          <section className="ddni-card flex items-center gap-4 p-6">
             <span className="grid size-14 shrink-0 place-items-center rounded-full bg-[#f5ecd6] text-[#a9792a]"><Users2 className="size-8" aria-hidden /></span>
             <div className="min-w-0">
               <p className="ddni-serif text-4xl leading-none font-bold text-foreground">{data.loading ? "—" : data.directory.length}</p>
@@ -260,12 +261,12 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
                 {selected.headline && <p className="text-foreground">{selected.headline}</p>}
                 {selected.bio && <p className="whitespace-pre-line">{selected.bio}</p>}
                 {selected.skills.length > 0 && <div className="flex flex-wrap gap-1.5">{selected.skills.map((skill) => <span key={skill} className="rounded-full border border-border px-2.5 py-1 text-xs text-foreground">{skill}</span>)}</div>}
-                <a href={connectLink(selected)} target={connectLink(selected).startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="btn-gold inline-flex h-9 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold"><ExternalLink className="size-4" />Connect with {selected.name.split(" ")[0]}</a>
+                <DdniButton href={connectLink(selected)} target={connectLink(selected).startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"><ExternalLink />Connect with {selected.name.split(" ")[0]}</DdniButton>
               </div>
             </>
           )}
         </SheetContent>
       </Sheet>
-    </div>
+    </ViewContainer>
   )
 }

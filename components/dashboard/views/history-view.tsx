@@ -29,21 +29,21 @@ export function AccountHistory({ member, data, onNavigate }: Pick<DashboardViewP
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:grid-cols-3 sm:p-5">
+      <div className="grid min-w-0 gap-3 rounded-2xl border border-border/60 bg-card p-6 shadow-sm sm:grid-cols-3">
         <Summary label="Member since" value={member.memberSince || "—"} icon={UserPlus} />
         <Summary label="Last sign-in" value={member.lastSignInAt ? relativeTime(member.lastSignInAt) : "—"} icon={LogIn} />
         <Summary label="Email verification" value={member.emailConfirmedAt ? "Verified" : "Not verified"} icon={BadgeCheck} />
       </div>
 
-      <Card className="border-border/60 shadow-sm">
-        <CardHeader className="flex flex-col gap-1 border-b border-border/60 pb-4 sm:flex-row sm:items-end sm:justify-between">
+      <Card className="min-w-0 gap-6 border border-border/60 bg-card p-6 shadow-sm">
+        <CardHeader className="flex flex-col gap-1 border-b border-border/60 p-0 pb-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
-            <CardTitle className="text-lg tracking-tight">Account activity</CardTitle>
+            <CardTitle className="text-base font-semibold tracking-tight">Account activity</CardTitle>
             <CardDescription className="leading-relaxed">A dated record of important events on your member account.</CardDescription>
           </div>
           <p className="text-xs font-medium tabular-nums text-muted-foreground">{events.length} {events.length === 1 ? "event" : "events"}</p>
         </CardHeader>
-        <CardContent className="pt-5">
+        <CardContent className="min-w-0 p-0 pt-5">
           {events.length === 0 ? (
             <EmptyState icon={History} title="No activity yet" description="Account activity will appear here." />
           ) : (
@@ -67,19 +67,19 @@ export function AccountHistory({ member, data, onNavigate }: Pick<DashboardViewP
         </CardContent>
       </Card>
 
-      <div className="flex flex-col items-start gap-4 rounded-2xl border border-border/60 bg-muted/30 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <section aria-labelledby="account-security-notice" className="flex min-w-0 flex-col items-start gap-6 rounded-xl border border-border/60 bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-card text-primary ring-1 ring-border/60"><BadgeCheck className="size-5" aria-hidden="true" /></span>
           <div>
-          <p className="text-sm font-medium text-foreground">See something you don&apos;t recognise?</p>
-          <p className="text-sm leading-relaxed text-muted-foreground">Change your password and sign out of other devices, then let us know.</p>
+            <h3 id="account-security-notice" className="text-base font-semibold leading-snug tracking-tight text-foreground">See something you don&apos;t recognise?</h3>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">Change your password and sign out of other devices, then let us know.</p>
           </div>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-          <Button variant="outline" onClick={() => onNavigate("settings")}>Security settings</Button>
-          <Button className="btn-gold" onClick={() => onNavigate("support")}>Contact support</Button>
+          <Button variant="outline" className="min-h-11 px-4" onClick={() => onNavigate("settings")}>Security settings</Button>
+          <Button className="btn-gold min-h-11 px-4" onClick={() => onNavigate("support")}>Contact support</Button>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

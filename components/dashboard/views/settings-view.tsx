@@ -7,7 +7,7 @@ import { saveCommunicationPreferences } from "@/src/app/dashboard/actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Field, StatusMessage, ViewHeader } from "@/components/dashboard/dashboard-ui"
+import { Field, StatusMessage, ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import { EMAIL_PATTERN, relativeTime } from "@/lib/dashboard-data"
 import { Bell, LockKeyhole, LogOut, Mail, MonitorSmartphone } from "lucide-react"
 import type { DashboardMember, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
@@ -142,13 +142,13 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+    <ViewContainer>
       <ViewHeader kicker="Account settings" title="Your account, your way" description="Manage security, communication preferences, and the way you experience the TDD Network." />
       <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,0.8fr)]">
         <div className="flex flex-col gap-6">
-          <Card className="border border-border/60 bg-card shadow-sm">
-            <CardHeader><CardTitle>Communication</CardTitle><CardDescription>Choose what deserves your attention.</CardDescription></CardHeader>
-            <CardContent className="flex flex-col">
+          <Card className="gap-6 border border-border/60 bg-card p-6 shadow-sm">
+            <CardHeader className="p-0"><CardTitle className="font-semibold">Communication</CardTitle><CardDescription>Choose what deserves your attention.</CardDescription></CardHeader>
+            <CardContent className="flex flex-col p-0">
               <div className="divide-y divide-border">
                 <SettingRow icon={Mail} title="Email updates" description="Institute news, course announcements and member updates.">
                   <ToggleSwitch label="Email updates" checked={preferences.emailUpdates} onChange={(value) => { setPreferences({ ...preferences, emailUpdates: value }); setPreferencesStatus(null) }} />
@@ -167,9 +167,9 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
             </CardContent>
           </Card>
 
-          <Card className="border border-border/60 bg-card shadow-sm">
-            <CardHeader><CardTitle>Security</CardTitle><CardDescription>Keep your member account protected.</CardDescription></CardHeader>
-            <CardContent className="flex flex-col gap-4">
+          <Card className="gap-6 border border-border/60 bg-card p-6 shadow-sm">
+            <CardHeader className="p-0"><CardTitle className="font-semibold">Security</CardTitle><CardDescription>Keep your member account protected.</CardDescription></CardHeader>
+            <CardContent className="flex flex-col gap-4 p-0">
               <SettingRow icon={LockKeyhole} title="Password" description={member.passwordChangedAt ? `Last changed ${relativeTime(member.passwordChangedAt)}.` : "Use a strong password you don't use anywhere else."}>
                 <Button variant={passwordOpen ? "ghost" : "outline"} className="min-h-11 px-4" aria-expanded={passwordOpen} onClick={() => { setPasswordOpen(!passwordOpen); setPasswordErrors({}); setPasswordStatus(null) }}>{passwordOpen ? "Cancel" : "Change password"}</Button>
               </SettingRow>
@@ -190,9 +190,9 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
         </div>
 
         <div className="flex flex-col gap-6">
-          <Card className="border border-border/60 bg-card shadow-sm">
-            <CardHeader><CardTitle>Contact email</CardTitle><CardDescription>Used for sign-in and important notices. Never shown publicly.</CardDescription></CardHeader>
-            <CardContent>
+          <Card className="gap-6 border border-border/60 bg-card p-6 shadow-sm">
+            <CardHeader className="p-0"><CardTitle className="font-semibold">Contact email</CardTitle><CardDescription>Used for sign-in and important notices. Never shown publicly.</CardDescription></CardHeader>
+            <CardContent className="p-0">
               <form onSubmit={changeEmail} noValidate className="flex flex-col gap-3">
                 <Field id="contact-email" label="Email address" error={emailError}>
                   <div className="relative">
@@ -206,9 +206,9 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
             </CardContent>
           </Card>
 
-          <Card className="border border-border/60 bg-card shadow-sm">
-            <CardHeader><CardTitle>Sessions</CardTitle><CardDescription>Manage where you're signed in.</CardDescription></CardHeader>
-            <CardContent className="flex flex-col gap-4">
+          <Card className="gap-6 border border-border/60 bg-card p-6 shadow-sm">
+            <CardHeader className="p-0"><CardTitle className="font-semibold">Sessions</CardTitle><CardDescription>Manage where you're signed in.</CardDescription></CardHeader>
+            <CardContent className="flex flex-col gap-4 p-0">
               <div className="flex items-start gap-3">
                 <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"><MonitorSmartphone className="size-4 text-primary" /></div>
                 <div className="min-w-0">
@@ -224,8 +224,8 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
             </CardContent>
           </Card>
 
-          <Card size="sm" className="border border-border/60 bg-card shadow-sm">
-            <CardContent className="flex flex-col gap-2">
+          <Card size="sm" className="gap-4 border border-border/60 bg-card p-6 shadow-sm">
+            <CardContent className="flex flex-col gap-2 p-0">
               <p className="text-sm font-medium text-foreground">Need to close your account?</p>
               <p className="text-xs text-muted-foreground">Our team will help you export or remove your information.</p>
               <Button variant="link" size="sm" className="h-auto w-fit px-0 text-xs" onClick={() => onNavigate("support")}>Contact support</Button>
@@ -233,6 +233,6 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
           </Card>
         </div>
       </div>
-    </div>
+    </ViewContainer>
   )
 }
