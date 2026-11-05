@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, MotionConfig, motion } from "motion/react"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { AnnouncementBar } from "@/components/dashboard/announcement-bar"
@@ -207,7 +207,7 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
 
   const viewProps = useMemo(() => ({ member, data, onNavigate: navigate, onRequestCourseAccess: requestCourseAccess }), [member, data, navigate, requestCourseAccess])
 
-  if (accessState === null) return <main className="fixed inset-0 z-[100] grid place-items-center bg-[#071520] text-white" role="status" aria-live="polite"><div className="flex flex-col items-center gap-4"><div className="size-10 animate-spin rounded-full border-2 border-white/20 border-t-[#d8b865]" /><span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">Loading dashboard</span></div></main>
+  if (accessState === null) return <main className="fixed inset-0 z-[100] grid place-items-center bg-[#071520] text-white" role="status" aria-live="polite"><div className="flex flex-col items-center gap-4"><div className="motion-safe:animate-spin size-10 rounded-full border-2 border-white/20 border-t-[#d8b865]" /><span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">Loading dashboard</span></div></main>
   if (accessState !== "active") {
     const blocked = accessState === "blocked"
     const updates = accessState === "updates"
@@ -215,7 +215,10 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
   }
 
   return (
-    <div className={cn("tdd-dashboard flex h-svh flex-col overflow-hidden", playfair.variable)}>
+    <div className={cn("tdd-dashboard flex h-dvh flex-col overflow-hidden", playfair.variable)}>
+      <a href="#dashboard-main" className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[120] focus:rounded-lg focus:bg-background focus:px-4 focus:py-3 focus:text-foreground focus:shadow-xl">
+        Skip to dashboard content
+      </a>
       <AnnouncementBar />
       {isTimedOut && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-[#050f18]/90 p-6 backdrop-blur-sm" role="status">
@@ -232,29 +235,32 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
         <SidebarInset className={cn("min-h-0 min-w-0", LIGHT_VIEWS.includes(activeView) && "ddni-light")}>
           <DashboardHeader activeView={activeView} onNavigate={navigate} member={member} data={data} />
           <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeView}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="mx-auto w-full max-w-[1440px] p-4 sm:p-5 lg:p-6"
-              >
-                {activeView === "overview" && <OverviewView {...viewProps} />}
-                {activeView === "institute" && <InstituteView {...viewProps} />}
-                {activeView === "courses" && <MyCoursesView {...viewProps} />}
-                {activeView === "calendar" && <CalendarView {...viewProps} />}
-                {activeView === "library" && <LibraryView {...viewProps} />}
-                {activeView === "network" && <NetworkView {...viewProps} />}
-                {activeView === "opportunities" && <OpportunitiesView {...viewProps} />}
-                {activeView === "announcements" && <AnnouncementsView {...viewProps} />}
-                {activeView === "profile" && <ProfileView {...viewProps} onMemberChange={updateMember} onProfileChange={updateProfile} />}
-                {activeView === "history" && <HistoryView {...viewProps} />}
-                {activeView === "settings" && <SettingsView {...viewProps} onMemberChange={updateMember} />}
-                {activeView === "support" && <SupportView {...viewProps} />}
-              </motion.div>
-            </AnimatePresence>
+            <main id="dashboard-main" tabIndex={-1} className="mx-auto w-full max-w-[1440px] p-4 sm:p-5 lg:p-6">
+              <MotionConfig reducedMotion="user">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeView}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                  >
+                    {activeView === "overview" && <OverviewView {...viewProps} />}
+                    {activeView === "institute" && <InstituteView {...viewProps} />}
+                    {activeView === "courses" && <MyCoursesView {...viewProps} />}
+                    {activeView === "calendar" && <CalendarView {...viewProps} />}
+                    {activeView === "library" && <LibraryView {...viewProps} />}
+                    {activeView === "network" && <NetworkView {...viewProps} />}
+                    {activeView === "opportunities" && <OpportunitiesView {...viewProps} />}
+                    {activeView === "announcements" && <AnnouncementsView {...viewProps} />}
+                    {activeView === "profile" && <ProfileView {...viewProps} onMemberChange={updateMember} onProfileChange={updateProfile} />}
+                    {activeView === "history" && <HistoryView {...viewProps} />}
+                    {activeView === "settings" && <SettingsView {...viewProps} onMemberChange={updateMember} />}
+                    {activeView === "support" && <SupportView {...viewProps} />}
+                  </motion.div>
+                </AnimatePresence>
+              </MotionConfig>
+            </main>
           </div>
         </SidebarInset>
       </SidebarProvider>

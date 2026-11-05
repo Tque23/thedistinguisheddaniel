@@ -166,7 +166,7 @@ export function OpportunitiesView({ data, onNavigate }: DashboardViewProps) {
       </div>
 
       <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
-        <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+        <SheetContent className="w-full overflow-y-auto overscroll-contain sm:max-w-md">
           {selected && (
             <>
               <SheetHeader className="gap-2">

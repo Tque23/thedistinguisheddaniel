@@ -142,7 +142,7 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
           <span aria-hidden>/</span>
           <span aria-current="page" className="text-[#e4c276]">DDNI Network</span>
         </nav>
-        <h2 className="ddni-serif relative mt-3 text-4xl font-bold sm:text-5xl">DDNI <span className="text-[#e4c276]">Network</span></h2>
+        <h2 className="ddni-serif relative mt-3 text-3xl leading-tight font-bold tracking-tight sm:text-5xl">DDNI <span className="text-[#e4c276]">Network</span></h2>
         <p className="ddni-serif relative mt-1 max-w-2xl text-base text-white/90 sm:text-xl">Connect with distinguished people. Grow your <strong className="text-white">Kingdom influence.</strong></p>
       </header>
 
@@ -243,7 +243,7 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
       </div>
 
       <Sheet open={selected !== null} onOpenChange={(open) => { if (!open) setSelected(null) }}>
-        <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+        <SheetContent className="w-full overflow-y-auto overscroll-contain sm:max-w-md">
           {selected && (
             <>
               <SheetHeader className="gap-3">

@@ -125,15 +125,14 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div role="tablist" aria-label="Announcement filters" className="flex flex-wrap gap-2">
+            <div role="group" aria-label="Announcement filters" className="flex flex-wrap gap-2">
               {tabs.map((item) => {
                 const active = tab === item.id
                 return (
                   <button
                     key={item.id}
                     type="button"
-                    role="tab"
-                    aria-selected={active}
+                    aria-pressed={active}
                     onClick={() => setTab(item.id)}
                     className={cn("ddni-btn ddni-serif h-10 rounded-md border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c1d3a]", active ? "ddni-btn-gold" : "border-input bg-white text-foreground hover:bg-[#f7efdc]")}
                   >
@@ -242,7 +241,7 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
                 {upcoming.map((session) => (
                   <li key={session.id} className="flex items-center gap-3 rounded-lg border border-border bg-white p-2.5">
                     <span className="grid w-12 shrink-0 place-items-center rounded-md bg-[#eef0f5] py-1 text-center leading-none">
-                      <span className="text-[10px] font-semibold tracking-wide text-[#0c1d3a] uppercase">{session.start.toLocaleDateString("en-GB", { month: "short" })}</span>
+                      <span className="text-xs font-semibold tracking-wide text-[#0c1d3a] uppercase">{session.start.toLocaleDateString("en-GB", { month: "short" })}</span>
                       <span className="ddni-serif text-xl font-bold text-[#0c1d3a]">{String(session.start.getDate()).padStart(2, "0")}</span>
                     </span>
                     <span className="min-w-0">

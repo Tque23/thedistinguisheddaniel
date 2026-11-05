@@ -132,9 +132,9 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
                     </div>
                     <CardContent className="flex flex-1 flex-col gap-2">
                       <div className="flex flex-wrap gap-1.5">
-                        <Badge variant="outline" className="w-fit text-[10px]">{course.isFree ? "Free" : "Paid"}</Badge>
-                        {enrollment?.status === "enrolled" && <Badge className="w-fit text-[10px]">Access granted</Badge>}
-                        {enrollment?.status === "pending" && <Badge variant="secondary" className="w-fit text-[10px]">Awaiting access</Badge>}
+                        <Badge variant="outline" className="w-fit text-xs">{course.isFree ? "Free" : "Paid"}</Badge>
+                        {enrollment?.status === "enrolled" && <Badge className="w-fit text-xs">Access granted</Badge>}
+                        {enrollment?.status === "pending" && <Badge variant="secondary" className="w-fit text-xs">Awaiting access</Badge>}
                       </div>
                       <p className="text-sm leading-snug font-medium text-foreground">{course.title}</p>
                       <p className="text-xs text-muted-foreground">{[course.instructor, course.price || course.duration].filter(Boolean).join(" · ")}</p>
@@ -181,7 +181,7 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
                 {resources.map((resource) => (
                   <Card key={resource.id} size="sm">
                     <CardContent className="flex flex-col gap-2">
-                      <div className="flex items-start justify-between gap-2"><p className="text-sm font-medium text-foreground">{resource.title}</p><Badge variant="secondary" className="shrink-0 text-[10px]">{resource.type}</Badge></div>
+                      <div className="flex items-start justify-between gap-2"><p className="text-sm font-medium text-foreground">{resource.title}</p><Badge variant="secondary" className="shrink-0 text-xs">{resource.type}</Badge></div>
                       {resource.description && <p className="text-xs text-muted-foreground">{resource.description}</p>}
                       <div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">{formatDate(resource.createdAt)}</span><ResourceAction resource={resource} /></div>
                     </CardContent>
@@ -194,7 +194,7 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
       </Tabs>
 
       <Sheet open={selectedCourse !== null} onOpenChange={(open) => { if (!open) { setSelectedCourse(null); setSignupMessage("") } }}>
-        <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+        <SheetContent className="w-full overflow-y-auto overscroll-contain sm:max-w-md">
           {selectedCourse && (
             <>
               <div className="aspect-[16/9] w-full shrink-0 overflow-hidden bg-gradient-to-br from-[#132c40] to-[#0c1e2c]">
@@ -202,9 +202,9 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
               </div>
               <SheetHeader className="gap-2">
                 <div className="flex flex-wrap gap-1.5">
-                  <Badge variant="outline" className="w-fit text-[10px]">{selectedCourse.isFree ? "Free" : "Paid"}</Badge>
-                  {selectedEnrollment?.status === "enrolled" && <Badge className="w-fit text-[10px]">Access granted</Badge>}
-                  {selectedEnrollment?.status === "pending" && <Badge variant="secondary" className="w-fit text-[10px]">Awaiting access</Badge>}
+                  <Badge variant="outline" className="w-fit text-xs">{selectedCourse.isFree ? "Free" : "Paid"}</Badge>
+                  {selectedEnrollment?.status === "enrolled" && <Badge className="w-fit text-xs">Access granted</Badge>}
+                  {selectedEnrollment?.status === "pending" && <Badge variant="secondary" className="w-fit text-xs">Awaiting access</Badge>}
                 </div>
                 <SheetTitle className="font-display text-xl">{selectedCourse.title}</SheetTitle>
                 <SheetDescription className="whitespace-pre-line">{selectedCourse.description || "Full course details will be shared by the Institute team."}</SheetDescription>

@@ -47,10 +47,10 @@ export function HistoryView({ member, data, onNavigate }: DashboardViewProps) {
           {events.length === 0 ? (
             <EmptyState icon={History} title="No activity yet" description="Account activity will appear here." />
           ) : (
-            <ol className="relative flex flex-col gap-6 border-l border-border pl-6">
+            <ol className="relative flex flex-col gap-6 border-s border-border ps-6">
               {events.map((event) => (
                 <li key={event.id} className="relative">
-                  <span className="absolute top-0.5 -left-[2.1rem] flex size-7 items-center justify-center rounded-full border border-border bg-card text-[#f3d27a]"><event.icon className="size-3.5" /></span>
+                  <span className="absolute top-0.5 -start-[2.1rem] flex size-7 items-center justify-center rounded-full border border-border bg-card text-[#f3d27a]"><event.icon className="size-3.5" aria-hidden /></span>
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                     <div>
                       <p className="text-sm font-medium text-foreground">{event.title}</p>
@@ -83,8 +83,8 @@ export function HistoryView({ member, data, onNavigate }: DashboardViewProps) {
 
 function Summary({ label, value }: { label: string; value: string }) {
   return (
-    <Card size="sm">
-      <CardContent className="flex flex-col gap-1">
+    <Card size="sm" className="border-border/70">
+      <CardContent className="flex flex-col gap-2">
         <span className="text-xs text-muted-foreground">{label}</span>
         <Badge variant="outline" className="w-fit border-[#dcb567]/40 text-sm text-[#f3d27a]">{value}</Badge>
       </CardContent>

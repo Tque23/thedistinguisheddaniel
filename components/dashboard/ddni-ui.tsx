@@ -10,15 +10,15 @@ export function PageHeading({ title, subtitle, crumb, onHome, className }: { tit
   return (
     <header className={cn("flex flex-col", className)}>
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button type="button" onClick={onHome} className="inline-flex items-center gap-1.5 rounded-sm transition-colors hover:text-[#9a6b1c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c1d3a]">
+        <button type="button" onClick={onHome} className="inline-flex min-h-9 items-center gap-1.5 rounded-sm transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]">
           <House className="size-3.5" aria-hidden />
           Home
         </button>
         <span aria-hidden>/</span>
         <span aria-current="page">{crumb ?? title}</span>
       </nav>
-      <h2 className="ddni-serif mt-3 text-4xl font-bold leading-tight text-foreground sm:text-5xl">{title}</h2>
-      <p className="ddni-serif mt-1 text-base text-foreground/85 sm:text-lg">{subtitle}</p>
+      <h2 className="ddni-serif mt-3 text-3xl font-bold leading-snug tracking-tight text-foreground sm:text-4xl">{title}</h2>
+      <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">{subtitle}</p>
     </header>
   )
 }
@@ -34,14 +34,14 @@ type DdniButtonProps = Omit<ComponentProps<"button">, "type"> & {
 }
 
 const buttonSizes = {
-  sm: "h-9 px-3 text-sm",
-  md: "h-10 px-4 text-sm",
-  lg: "h-11 px-5 text-[15px]",
+  sm: "h-10 px-3 text-sm",
+  md: "h-11 px-4 text-sm",
+  lg: "h-12 px-5 text-base",
 }
 
 export function DdniButton({ variant = "gold", size = "md", href, target, rel, download, className, children, type = "button", ...rest }: DdniButtonProps) {
   const classes = cn(
-    "ddni-btn inline-flex items-center justify-center gap-2 rounded-md font-semibold whitespace-nowrap [&_svg]:size-4 [&_svg]:shrink-0",
+    "ddni-btn inline-flex max-w-full items-center justify-center gap-2 rounded-lg font-semibold whitespace-nowrap [&_svg]:size-4 [&_svg]:shrink-0",
     variant === "gold" ? "ddni-btn-gold" : "ddni-btn-outline",
     buttonSizes[size],
     className,
@@ -61,9 +61,9 @@ export function DdniButton({ variant = "gold", size = "md", href, target, rel, d
 }
 
 const pillTones = {
-  gold: "bg-[#f5ecd6] text-[#8a6420]",
-  blue: "bg-[#e6eefb] text-[#2f568f]",
-  green: "bg-[#e3f3e8] text-[#1f7a43]",
+  gold: "bg-[#f3ead4] text-[#634710]",
+  blue: "bg-[#e7eef6] text-[#274969]",
+  green: "bg-[#e7f2eb] text-[#23613b]",
   navy: "bg-[#0c1d3a] text-white",
   gray: "bg-[#eeebe3] text-[#4c566a]",
 }
@@ -82,15 +82,15 @@ export function SelectField({ id, label, value, onChange, options, icon: Icon, c
   className?: string
 }) {
   return (
-    <div className={cn("relative flex items-center gap-3 rounded-lg border border-input bg-card px-3 py-2 shadow-sm transition-colors focus-within:border-[#b8893a] focus-within:ring-2 focus-within:ring-[#c9a14f]/30", className)}>
-      {Icon && <Icon className="size-5 shrink-0 text-[#a9792a]" aria-hidden />}
+    <div className={cn("relative flex min-h-14 items-center gap-3 rounded-xl border border-border/80 bg-card px-3 py-2 transition-[border-color,box-shadow] duration-150 focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/15", className)}>
+      {Icon && <Icon className="size-5 shrink-0 text-primary" aria-hidden />}
       <div className="min-w-0 flex-1">
         <label htmlFor={id} className="block text-xs font-semibold leading-none text-foreground">{label}</label>
-        <select id={id} value={value} onChange={(event) => onChange(event.target.value)} className="mt-1 block w-full cursor-pointer appearance-none truncate bg-transparent pr-6 text-sm text-muted-foreground outline-none">
+        <select id={id} value={value} onChange={(event) => onChange(event.target.value)} className="mt-1 block min-h-6 w-full cursor-pointer appearance-none truncate bg-transparent pe-6 text-sm text-foreground outline-none">
           {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       </div>
-      <ChevronDown className="pointer-events-none absolute right-3 size-4 text-foreground/70" aria-hidden />
+      <ChevronDown className="pointer-events-none absolute end-3 size-4 text-muted-foreground" aria-hidden />
     </div>
   )
 }
@@ -98,14 +98,14 @@ export function SelectField({ id, label, value, onChange, options, icon: Icon, c
 export function SearchBox({ value, onChange, placeholder, label, className }: { value: string; onChange: (value: string) => void; placeholder: string; label: string; className?: string }) {
   return (
     <div className={cn("relative", className)}>
-      <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-foreground/70" aria-hidden />
+      <Search className="pointer-events-none absolute top-1/2 start-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
       <input
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         aria-label={label}
-        className="h-11 w-full rounded-lg border border-input bg-card pr-3 pl-10 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-[#b8893a] focus-visible:ring-2 focus-visible:ring-[#c9a14f]/30"
+        className="h-11 w-full rounded-xl border border-input bg-card pe-3 ps-10 text-base text-foreground outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 sm:text-sm"
       />
     </div>
   )
@@ -115,19 +115,18 @@ export type TabItem<T extends string> = { id: T; label: string; icon?: IconType;
 
 export function SegmentedTabs<T extends string>({ items, value, onChange, label }: { items: TabItem<T>[]; value: T; onChange: (value: T) => void; label: string }) {
   return (
-    <div role="tablist" aria-label={label} className="ddni-card flex gap-1 overflow-x-auto p-1.5">
+    <div role="group" aria-label={label} className="ddni-card flex max-w-full gap-1 overflow-x-auto p-1.5">
       {items.map((item) => {
         const active = item.id === value
         return (
           <button
             key={item.id}
             type="button"
-            role="tab"
-            aria-selected={active}
+            aria-pressed={active}
             onClick={() => onChange(item.id)}
             className={cn(
-              "flex min-h-11 flex-1 items-center justify-center gap-2.5 rounded-lg px-4 text-sm font-semibold whitespace-nowrap transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c1d3a] sm:text-base",
-              active ? "ddni-btn-gold shadow-sm" : "text-foreground hover:bg-[#f7efdc]",
+              "flex min-h-11 flex-1 items-center justify-center gap-2.5 rounded-lg px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]",
+              active ? "ddni-btn-gold shadow-sm" : "text-foreground hover:bg-accent",
             )}
           >
             {item.icon && <item.icon className="size-5 shrink-0" aria-hidden />}
@@ -142,22 +141,21 @@ export function SegmentedTabs<T extends string>({ items, value, onChange, label 
 export function UnderlineTabs<T extends string>({ items, value, onChange, label, trailing }: { items: TabItem<T>[]; value: T; onChange: (value: T) => void; label: string; trailing?: ReactNode }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-x-6 border-b border-border">
-      <div role="tablist" aria-label={label} className="-mb-px flex max-w-full gap-1 overflow-x-auto">
+      <div role="group" aria-label={label} className="-mb-px flex max-w-full gap-1 overflow-x-auto">
         {items.map((item) => {
           const active = item.id === value
           return (
             <button
               key={item.id}
               type="button"
-              role="tab"
-              aria-selected={active}
+              aria-pressed={active}
               onClick={() => onChange(item.id)}
               className={cn(
-                "flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#0c1d3a] sm:px-4",
-                active ? "border-[#b8893a] font-semibold text-[#8a6420]" : "border-transparent text-foreground/80 hover:text-foreground",
+                "flex min-h-11 items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--focus-ring)] sm:px-4",
+                active ? "border-primary font-semibold text-accent-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
-              {item.icon && <item.icon className={cn("size-5 shrink-0", active ? "text-[#a9792a]" : "text-foreground/70")} aria-hidden />}
+              {item.icon && <item.icon className={cn("size-5 shrink-0", active ? "text-primary" : "text-muted-foreground")} aria-hidden />}
               {item.label}{item.count !== undefined && ` (${item.count})`}
             </button>
           )
@@ -176,17 +174,17 @@ export function CourseCover({ title, code, image, className }: { title: string; 
     <div role="img" aria-label={`${title} course cover`} className={cn("flex aspect-[4/5] w-full flex-col items-center justify-between rounded-md bg-[linear-gradient(160deg,#10294d,#071428)] p-3 text-center shadow-md ring-1 ring-[#c9a14f]/30", className)}>
       <span />
       <span className="ddni-serif line-clamp-4 text-sm font-semibold uppercase leading-tight tracking-wide text-[#e4c276]">{title}</span>
-      <span className="text-[9px] font-semibold tracking-[0.2em] text-[#e4c276]/80 uppercase">{code ? `Course ${code}` : "DDNI"}</span>
+      <span className="text-xs font-semibold tracking-[0.2em] text-[#e4c276]/80 uppercase">{code ? `Course ${code}` : "DDNI"}</span>
     </div>
   )
 }
 
 export function Panel({ title, icon: Icon, action, children, className }: { title: string; icon?: IconType; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cn("ddni-card p-4 sm:p-5", className)}>
+    <section className={cn("ddni-card p-5 sm:p-6", className)}>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="ddni-serif flex min-w-0 items-center gap-2.5 text-xl font-bold text-foreground">
-          {Icon && <Icon className="size-6 shrink-0 text-[#a9792a]" aria-hidden />}
+        <h3 className="ddni-serif flex min-w-0 items-center gap-2.5 text-lg font-bold tracking-tight text-foreground sm:text-xl">
+          {Icon && <Icon className="size-5 shrink-0 text-primary" aria-hidden />}
           <span className="truncate">{title}</span>
         </h3>
         {action}
@@ -198,22 +196,24 @@ export function Panel({ title, icon: Icon, action, children, className }: { titl
 
 export function TextLink({ children, onClick, className }: { children: ReactNode; onClick: () => void; className?: string }) {
   return (
-    <button type="button" onClick={onClick} className={cn("inline-flex items-center gap-1 rounded-sm text-sm font-medium text-[#0c1d3a] transition-colors hover:text-[#9a6b1c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c1d3a]", className)}>
+    <button type="button" onClick={onClick} className={cn("inline-flex min-h-9 items-center gap-1 rounded-sm text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]", className)}>
       {children}
     </button>
   )
 }
 
 export function LoadingBlock({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-xl bg-[#ece7d9]", className)} aria-hidden />
+  return <div className={cn("motion-safe:animate-pulse rounded-2xl border border-border/60 bg-muted/70", className)} aria-hidden />
 }
 
 export function EmptyPanel({ icon: Icon, title, description, action }: { icon: IconType; title: string; description?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-[#d9cfb6] bg-white/60 px-6 py-12 text-center">
-      <span className="grid size-12 place-items-center rounded-full bg-[#f5ecd6] text-[#a9792a]"><Icon className="size-6" /></span>
-      <p className="ddni-serif text-lg font-semibold text-foreground">{title}</p>
-      {description && <p className="max-w-md text-sm leading-relaxed text-muted-foreground">{description}</p>}
+    <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border bg-card/70 px-6 py-12 text-center">
+      <span className="grid size-12 place-items-center rounded-xl bg-primary/10 text-primary"><Icon className="size-6" /></span>
+      <div className="max-w-md space-y-1">
+        <p className="ddni-serif text-lg font-semibold tracking-tight text-foreground">{title}</p>
+        {description && <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>}
+      </div>
       {action}
     </div>
   )

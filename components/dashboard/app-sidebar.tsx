@@ -59,7 +59,7 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border">
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-sidebar-border/70 px-2 py-3">
         <Link href="/" className="flex items-center gap-2 px-2 py-2" aria-label="The Distinguished Daniel home">
           <img
             src="/logos/TDD Network Logo Line Full.svg"
@@ -73,7 +73,7 @@ export function AppSidebar({
           />
         </Link>
       </SidebarHeader>
-      <SidebarContent className="px-2 py-5">
+      <SidebarContent className="px-2 py-4">
         <SidebarGroup className="p-0">
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
@@ -83,7 +83,7 @@ export function AppSidebar({
                     isActive={activeView === item.id}
                     tooltip={item.label}
                     onClick={() => navigate(item.id)}
-                    className="h-10 rounded-lg px-3 text-[15px] font-normal text-sidebar-foreground/90 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-[linear-gradient(180deg,#d1ab5c,#b08330)] data-[active=true]:font-semibold data-[active=true]:text-[#0a1b36] data-[active=true]:shadow-sm"
+                    className="h-10 rounded-lg px-3 text-sm font-medium text-sidebar-foreground/90 transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--sidebar-ring)] data-[active=true]:bg-sidebar-primary data-[active=true]:font-semibold data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-sm"
                   >
                     <item.icon />
                     <span>{item.label}</span>
@@ -97,13 +97,13 @@ export function AppSidebar({
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Back to website" render={<Link href="/" />} className="h-9 rounded-lg px-2.5 text-[15px] font-normal">
+                <SidebarMenuButton tooltip="Back to website" render={<Link href="/" />} className="h-10 rounded-lg px-2.5 text-sm font-medium transition-colors duration-150">
                   <House /><span>Back to website</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               {member.isAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Admin dashboard" onClick={() => void openAdminDashboard()} className="h-9 rounded-lg px-2.5 text-[15px] font-normal">
+                  <SidebarMenuButton tooltip="Admin dashboard" onClick={() => void openAdminDashboard()} className="h-10 rounded-lg px-2.5 text-sm font-medium transition-colors duration-150">
                     <ShieldCheck /><span>Admin dashboard</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -112,8 +112,8 @@ export function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="max-h-40 overflow-hidden border-t border-sidebar-border px-5 py-6 opacity-100 transition-[max-height,opacity,transform,padding] duration-200 ease-out group-data-[collapsible=icon]:max-h-0 group-data-[collapsible=icon]:translate-y-2 group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:px-5 group-data-[collapsible=icon]:py-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none">
-        <blockquote className={`${cormorantGaramond.className} text-[16px] leading-[1.45] text-sidebar-foreground`}>
+      <SidebarFooter className="max-h-40 overflow-hidden border-t border-sidebar-border/70 px-5 py-5 motion-safe:transition-[max-height,opacity,translate,padding] motion-safe:duration-200 motion-safe:ease-out motion-safe:group-data-[collapsible=icon]:translate-y-2 group-data-[collapsible=icon]:max-h-0 group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:px-5 group-data-[collapsible=icon]:py-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none">
+        <blockquote className={`${cormorantGaramond.className} text-base leading-relaxed text-sidebar-foreground`}>
           “But the people who know their God and carry out great exploits.”
           <cite className="mt-1 block text-sm not-italic text-[#d8b865]">Daniel 11:32 (NETV)</cite>
         </blockquote>

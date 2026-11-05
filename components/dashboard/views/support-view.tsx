@@ -60,16 +60,16 @@ export function SupportView({ member, onNavigate }: DashboardViewProps) {
           <CardContent>
             <form onSubmit={submit} noValidate className="flex flex-col gap-4">
               <Field id="support-topic" label="Topic" error={errors.topic}>
-                <select id="support-topic" className={selectClassName} value={form.topic} aria-invalid={Boolean(errors.topic)} onChange={(e) => setForm({ ...form, topic: e.target.value })}>
+                <select id="support-topic" name="topic" required className={selectClassName} value={form.topic} aria-invalid={Boolean(errors.topic)} aria-describedby={errors.topic ? "support-topic-error" : undefined} onChange={(e) => setForm({ ...form, topic: e.target.value })}>
                   <option value="">Select a topic</option>
                   {topics.map((topic) => <option key={topic} value={topic}>{topic}</option>)}
                 </select>
               </Field>
               <Field id="support-subject" label="Subject" error={errors.subject}>
-                <Input id="support-subject" value={form.subject} maxLength={120} aria-invalid={Boolean(errors.subject)} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="How can we help?" />
+                <Input id="support-subject" name="subject" required value={form.subject} maxLength={120} aria-invalid={Boolean(errors.subject)} aria-describedby={errors.subject ? "support-subject-error" : undefined} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="How can we help?" />
               </Field>
               <Field id="support-message" label="Message" error={errors.message} hint={`${form.message.length}/2000`}>
-                <Textarea id="support-message" value={form.message} maxLength={2000} rows={6} aria-invalid={Boolean(errors.message)} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Share as much detail as you can." />
+                <Textarea id="support-message" name="message" required value={form.message} maxLength={2000} rows={6} aria-invalid={Boolean(errors.message)} aria-describedby={errors.message ? "support-message-error" : "support-message-hint"} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Share as much detail as you can." />
               </Field>
               <div className="flex flex-wrap items-center gap-3">
                 <Button type="submit" className="btn-gold"><Send data-icon="inline-start" />Send message</Button>
@@ -96,9 +96,9 @@ export function SupportView({ member, onNavigate }: DashboardViewProps) {
         <CardContent className="flex flex-col divide-y divide-border">
           {faqs.map((faq) => (
             <details key={faq.q} className="group py-3">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-foreground marker:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] [&::-webkit-details-marker]:hidden">
                 {faq.q}
-                <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180 motion-reduce:transition-none" aria-hidden />
               </summary>
               <div className="flex flex-col items-start gap-2 pt-2">
                 <p className="text-sm leading-relaxed text-muted-foreground">{faq.a}</p>
@@ -114,9 +114,9 @@ export function SupportView({ member, onNavigate }: DashboardViewProps) {
 
 function ContactLink({ href, icon: Icon, label, external }: { href: string; icon: typeof Mail; label: string; external?: boolean }) {
   return (
-    <a href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm text-foreground transition-colors hover:border-[#dcb567]/40 hover:bg-accent/40">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#970024]/20 text-[#ef7182]"><Icon className="size-4" /></span>
-      <span className="min-w-0 truncate">{label}</span>
+    <a href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="flex min-h-12 items-center gap-3 rounded-xl border border-border/80 px-3 py-2.5 text-sm text-foreground transition-[border-color,background-color] duration-150 hover:border-primary/50 hover:bg-accent/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon className="size-4" aria-hidden /></span>
+      <span className="min-w-0 break-all">{label}</span>
     </a>
   )
 }

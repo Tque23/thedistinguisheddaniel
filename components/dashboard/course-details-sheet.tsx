@@ -42,7 +42,7 @@ export function CourseDetailsSheet({ course, enrollment, onClose, onRequestCours
 
   return (
     <Sheet open={course !== null} onOpenChange={(open) => { if (!open) close() }}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+      <SheetContent className="w-full overflow-y-auto overscroll-contain sm:max-w-md">
         {course && (
           <>
             <div className="aspect-[16/9] w-full shrink-0 overflow-hidden bg-gradient-to-br from-[#132c40] to-[#0c1e2c]">
@@ -50,9 +50,9 @@ export function CourseDetailsSheet({ course, enrollment, onClose, onRequestCours
             </div>
             <SheetHeader className="gap-2">
               <div className="flex flex-wrap gap-1.5">
-                <Badge variant="outline" className="w-fit text-[10px]">{course.isFree ? "Free" : "Paid"}</Badge>
-                {enrollment?.status === "enrolled" && <Badge className="w-fit text-[10px]">Access granted</Badge>}
-                {enrollment?.status === "pending" && <Badge variant="secondary" className="w-fit text-[10px]">Awaiting access</Badge>}
+                <Badge variant="outline" className="w-fit text-xs">{course.isFree ? "Free" : "Paid"}</Badge>
+                {enrollment?.status === "enrolled" && <Badge className="w-fit text-xs">Access granted</Badge>}
+                {enrollment?.status === "pending" && <Badge variant="secondary" className="w-fit text-xs">Awaiting access</Badge>}
               </div>
               <SheetTitle className="font-display text-xl">{course.title}</SheetTitle>
               <SheetDescription className="whitespace-pre-line">{course.description || catalog?.description || "Full course details will be shared by the Institute team."}</SheetDescription>

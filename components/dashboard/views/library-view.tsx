@@ -39,7 +39,7 @@ function ResourceCover({ resource, course }: { resource: Resource; course: Retur
       ) : (
         <Icon className="size-8 text-[#e4c276]" aria-hidden />
       )}
-      <span className="ddni-serif line-clamp-3 text-[11px] font-semibold uppercase leading-tight tracking-wide text-[#e4c276]">{media ? "Recording" : resource.type}</span>
+      <span className="ddni-serif line-clamp-3 text-xs font-semibold uppercase leading-tight tracking-wide text-[#e4c276]">{media ? "Recording" : resource.type}</span>
     </div>
   )
 }
@@ -61,11 +61,12 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
           {resource.description && <p className="line-clamp-3 text-sm leading-relaxed text-foreground/80">{resource.description}</p>}
         </div>
       </div>
-      <div className="mt-auto grid grid-cols-3 gap-2">
+      <div className="mt-auto grid grid-cols-2 gap-2 sm:grid-cols-3">
         <DdniButton variant="outline" size="sm" href={resource.url || undefined} target="_blank" rel="noopener noreferrer" disabled={!resource.url} title={resource.url ? undefined : "Link coming soon"}><Eye />Preview</DdniButton>
         <DdniButton size="sm" href={resource.url || undefined} target="_blank" rel="noopener noreferrer" download disabled={!resource.url} title={resource.url ? undefined : "Link coming soon"}><Download />Download</DdniButton>
         <DdniButton variant="outline" size="sm" onClick={onToggleSave} aria-pressed={saved} aria-label={saved ? `Remove ${resource.title} from saved` : `Save ${resource.title}`}><Bookmark className={saved ? "fill-current" : ""} />{saved ? "Saved" : "Save"}</DdniButton>
       </div>
+      {!resource.url && <p className="text-xs leading-relaxed text-muted-foreground">Preview and download links are not available yet.</p>}
     </article>
   )
 }

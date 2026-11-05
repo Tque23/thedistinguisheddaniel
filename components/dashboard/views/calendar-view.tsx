@@ -23,7 +23,7 @@ function SessionChip({ session, compact }: { session: Session; compact?: boolean
     <div
       title={`${sessionTitle(session)} · ${formatTimeRange(session)} · ${session.location}`}
       className={cn(
-        "flex min-w-0 gap-1.5 rounded-md px-1.5 py-1 text-left text-[11px] leading-tight",
+        "flex min-w-0 gap-1.5 rounded-md px-1.5 py-1 text-start text-xs leading-tight",
         online ? "bg-[#dbe6f5] text-[#10264a]" : "bg-gradient-to-b from-[#c4994a] to-[#a97b2b] text-white shadow-sm",
       )}
     >
@@ -40,7 +40,7 @@ function SessionChip({ session, compact }: { session: Session; compact?: boolean
 function DateTile({ date }: { date: Date }) {
   return (
     <span className="grid w-12 shrink-0 place-items-center rounded-md bg-[#eef0f5] py-1 text-center leading-none">
-      <span className="text-[10px] font-semibold tracking-wide text-[#0c1d3a] uppercase">{date.toLocaleDateString("en-GB", { month: "short" })}</span>
+      <span className="text-xs font-semibold tracking-wide text-[#0c1d3a] uppercase">{date.toLocaleDateString("en-GB", { month: "short" })}</span>
       <span className="ddni-serif text-xl font-bold text-[#0c1d3a]">{date.getDate()}</span>
     </span>
   )
@@ -112,7 +112,7 @@ export function CalendarView({ data, onNavigate }: DashboardViewProps) {
               <h3 className="ddni-serif min-w-40 px-1 text-center text-xl font-bold text-foreground sm:text-2xl" aria-live="polite">{monthLabel}</h3>
               <button type="button" onClick={() => shift(1)} aria-label={mode === "week" ? "Next week" : "Next month"} className="ddni-btn grid size-10 place-items-center rounded-lg border border-input bg-white text-foreground shadow-sm hover:bg-[#f7efdc]"><ChevronRight className="size-5" /></button>
             </div>
-            <div className="ml-auto flex items-center gap-3">
+            <div className="ms-auto flex items-center gap-3">
               <div role="group" aria-label="Calendar view" className="inline-flex overflow-hidden rounded-lg border border-input bg-white shadow-sm">
                 {(["month", "week", "list"] as const).map((option) => (
                   <button
@@ -132,21 +132,21 @@ export function CalendarView({ data, onNavigate }: DashboardViewProps) {
 
           {mode === "month" && (
             <div className="overflow-hidden rounded-lg border border-border">
-              <div className="grid grid-cols-7 bg-[#f4f1ea] text-center text-xs font-semibold text-foreground sm:text-sm" role="row">
-                {WEEKDAYS.map((day) => <div key={day} role="columnheader" className="border-r border-border py-2.5 last:border-r-0">{day}</div>)}
+              <div className="grid grid-cols-7 bg-muted/70 text-center text-xs font-semibold text-foreground sm:text-sm">
+                {WEEKDAYS.map((day) => <div key={day} className="border-r border-border py-2.5 last:border-r-0">{day}</div>)}
               </div>
-              <div className="grid grid-cols-7" role="grid" aria-label={monthLabel}>
+              <div className="grid grid-cols-7">
                 {monthDays.map((day) => {
                   const inMonth = day.getMonth() === cursor.getMonth()
                   const events = eventsOn(day)
                   const today = sameDay(day, now)
                   return (
-                    <div key={day.toISOString()} role="gridcell" className={cn("min-h-14 border-t border-r border-border p-1 sm:min-h-28 sm:p-1.5 [&:nth-child(7n)]:border-r-0", !inMonth && "bg-[#faf8f3]")}>
+                    <div key={day.toISOString()} className={cn("min-h-14 min-w-0 border-t border-r border-border p-1 sm:min-h-28 sm:p-1.5 [&:nth-child(7n)]:border-r-0", !inMonth && "bg-muted/40")}>
                       <span className={cn("ddni-serif inline-grid size-6 place-items-center rounded-full text-sm font-semibold sm:size-7 sm:text-base", inMonth ? "text-foreground" : "text-muted-foreground/50", today && "bg-[#0c1d3a] text-white")}>{day.getDate()}</span>
                       {inMonth && (
                         <>
                           <div className="mt-1 hidden flex-col gap-1 sm:flex">{events.map((session) => <SessionChip key={session.id} session={session} compact />)}</div>
-                          <div className="mt-1 flex flex-wrap gap-0.5 sm:hidden" aria-label={`${events.length} sessions`}>
+                          <div className="mt-1 flex flex-wrap gap-0.5 sm:hidden" aria-hidden="true">
                             {events.map((session) => <span key={session.id} className={cn("size-2 rounded-full", session.mode === "online" ? "bg-[#7ea3d6]" : "bg-[#b8893a]")} />)}
                           </div>
                         </>
@@ -156,6 +156,26 @@ export function CalendarView({ data, onNavigate }: DashboardViewProps) {
                 })}
               </div>
             </div>
+          )}
+
+          {mode === "month" && (
+            <ul className="mt-4 flex flex-col divide-y divide-border rounded-xl border border-border sm:hidden">
+              <li className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{monthLabel} sessions</li>
+              {monthEvents.length === 0 && <li className="p-4 text-center text-sm text-muted-foreground">No sessions scheduled for this month.</li>}
+              {monthEvents.map((session) => (
+                <li key={session.id} className="flex items-start gap-3 p-3">
+                  <DateTile date={session.start} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground">{sessionTitle(session)}</p>
+                    <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1"><Clock className="size-3.5" aria-hidden />{formatTimeRange(session)}</span>
+                      <span className="inline-flex items-center gap-1"><MapPin className="size-3.5" aria-hidden />{session.location}</span>
+                      <span>{session.mode === "online" ? "Online" : "In-person"}</span>
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
 
           {mode === "week" && (

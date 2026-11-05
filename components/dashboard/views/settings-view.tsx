@@ -15,7 +15,7 @@ import type { DashboardMember, DashboardViewProps } from "@/components/dashboard
 type Status = { tone: "success" | "error"; text: string } | null
 
 function SettingRow({ icon: Icon, title, description, children }: { icon: typeof Bell; title: string; description: string; children: ReactNode }) {
-  return <div className="flex flex-col gap-4 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 items-start gap-3"><div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#970024]/20 text-[#ef7182]"><Icon className="size-4" /></div><div><p className="text-sm font-medium text-foreground">{title}</p><p className="mt-1 max-w-lg text-xs leading-relaxed text-muted-foreground">{description}</p></div></div><div className="shrink-0">{children}</div></div>
+  return <div className="flex flex-col gap-4 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 items-start gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon className="size-4" aria-hidden /></div><div><p className="text-sm font-medium text-foreground">{title}</p><p className="mt-1 max-w-lg text-sm leading-relaxed text-muted-foreground">{description}</p></div></div><div className="shrink-0">{children}</div></div>
 }
 
 export function SettingsView({ member, onMemberChange, onNavigate }: DashboardViewProps & { onMemberChange: (updates: Partial<DashboardMember>) => void }) {
@@ -109,7 +109,7 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <ViewHeader kicker="Account settings" title="Your account, your way" description="Manage security, communication preferences, and the way you experience the TDD Network." />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,0.8fr)]">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,0.8fr)]">
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader><CardTitle>Communication</CardTitle><CardDescription>Choose what deserves your attention.</CardDescription></CardHeader>
@@ -138,10 +138,10 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
               {passwordOpen && (
                 <form onSubmit={changePassword} noValidate className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
                   <Field id="new-password" label="New password" error={passwordErrors.next} hint="At least 8 characters, with a letter and a number.">
-                    <Input id="new-password" type="password" autoComplete="new-password" value={password.next} aria-invalid={Boolean(passwordErrors.next)} onChange={(e) => setPassword({ ...password, next: e.target.value })} />
+                    <Input id="new-password" name="new-password" type="password" autoComplete="new-password" value={password.next} aria-invalid={Boolean(passwordErrors.next)} aria-describedby={passwordErrors.next ? "new-password-error" : "new-password-hint"} onChange={(e) => setPassword({ ...password, next: e.target.value })} />
                   </Field>
                   <Field id="confirm-password" label="Confirm new password" error={passwordErrors.confirm}>
-                    <Input id="confirm-password" type="password" autoComplete="new-password" value={password.confirm} aria-invalid={Boolean(passwordErrors.confirm)} onChange={(e) => setPassword({ ...password, confirm: e.target.value })} />
+                    <Input id="confirm-password" name="confirm-password" type="password" autoComplete="new-password" value={password.confirm} aria-invalid={Boolean(passwordErrors.confirm)} aria-describedby={passwordErrors.confirm ? "confirm-password-error" : undefined} onChange={(e) => setPassword({ ...password, confirm: e.target.value })} />
                   </Field>
                   <Button type="submit" size="sm" className="btn-gold w-fit sm:col-span-2" disabled={savingPassword}>{savingPassword ? "Updating…" : "Update password"}</Button>
                 </form>
@@ -159,7 +159,7 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
                 <Field id="contact-email" label="Email address" error={emailError}>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input id="contact-email" type="email" autoComplete="email" className="pl-9" value={email} aria-invalid={Boolean(emailError)} onChange={(e) => { setEmail(e.target.value); setEmailError(""); setEmailStatus(null) }} />
+                    <Input id="contact-email" name="email" type="email" autoComplete="email" className="ps-9" value={email} aria-invalid={Boolean(emailError)} aria-describedby={emailError ? "contact-email-error" : undefined} onChange={(e) => { setEmail(e.target.value); setEmailError(""); setEmailStatus(null) }} />
                   </div>
                 </Field>
                 <Button type="submit" variant="outline" className="w-full" disabled={savingEmail || email.trim().toLowerCase() === member.email.toLowerCase()}>{savingEmail ? "Sending confirmation…" : "Update email"}</Button>

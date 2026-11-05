@@ -80,15 +80,15 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
   }
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border px-4 sm:px-6">
-      <SidebarTrigger className="-ml-1" />
+    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border/80 bg-card/80 px-4 backdrop-blur-md sm:px-6">
+      <SidebarTrigger className="-ms-1" />
       <Separator orientation="vertical" className="h-5" />
       <div className="min-w-0 flex-1 md:hidden">
-        <h1 className="truncate text-sm font-semibold text-foreground">{activeView === "overview" ? `${copy.title}, ${firstName}` : copy.title}</h1>
+        <h1 className="truncate text-sm font-semibold tracking-tight text-foreground">{activeView === "overview" ? `${copy.title}, ${firstName}` : copy.title}</h1>
       </div>
 
       <div className="relative hidden min-w-0 max-w-[22rem] flex-1 md:block">
-        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
         <Input
           ref={inputRef}
           type="search"
@@ -102,33 +102,31 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
           }}
           placeholder="Search courses, resources, members…"
           aria-label="Search the dashboard"
-          className="h-8 bg-muted/40 pl-8 text-sm"
+          className="h-10 rounded-xl border-border/80 bg-muted/50 ps-9 text-sm shadow-none"
         />
         {searchOpen && query.trim().length >= 2 && (
-          <div className="absolute top-full right-0 left-0 z-50 mt-1 overflow-hidden rounded-lg border border-border bg-popover shadow-xl" role="listbox">
+          <div className="absolute top-full inset-x-0 z-50 mt-2 overflow-hidden rounded-xl border border-border/80 bg-popover p-1.5 shadow-xl">
             {results.length === 0 ? (
               <p className="px-3 py-4 text-center text-xs text-muted-foreground">No matches for “{query.trim()}”.</p>
             ) : results.map((result) => (
               <button
                 key={result.id}
                 type="button"
-                role="option"
-                aria-selected={false}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => choose(result)}
-                className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                className="flex min-h-10 w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 hover:bg-accent focus-visible:bg-accent focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--focus-ring)]"
               >
-                <result.icon className="size-3.5 shrink-0 text-[#f3d27a]" />
+                <result.icon className="size-4 shrink-0 text-primary" aria-hidden />
                 <span className="min-w-0 flex-1 truncate text-foreground">{result.label}</span>
-                <span className="shrink-0 text-[10px] uppercase tracking-wider text-muted-foreground">{result.detail}</span>
+                <span className="shrink-0 text-xs uppercase tracking-wider text-muted-foreground">{result.detail}</span>
               </button>
             ))}
           </div>
         )}
       </div>
 
-      <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-        <Link href="/" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground sm:inline-flex">
+      <div className="ms-auto flex shrink-0 items-center gap-2">
+        <Link href="/" className="hidden min-h-9 items-center gap-1.5 rounded-full border border-border/80 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors duration-150 hover:border-primary/50 hover:text-foreground sm:inline-flex">
           Home
         </Link>
 
@@ -138,7 +136,7 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
         <DropdownMenuTrigger
           render={
             <Button type="button" variant="ghost" size="sm" className="h-9 gap-2 pl-1.5 pr-2.5" aria-label={`Open profile menu for ${member.name}`}>
-              <div className="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold" style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}>
+              <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold" style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}>
                 <MemberAvatarContent member={member} />
               </div>
               <span className="hidden text-sm font-medium sm:inline">{firstName}</span>
@@ -150,7 +148,7 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
             <DropdownMenuLabel className="flex flex-col gap-0.5 px-1.5 py-1.5">
               <span className="truncate text-sm font-medium text-foreground">{member.name}</span>
               <span className="truncate text-xs text-muted-foreground">{member.email || member.title}</span>
-              <Badge variant="outline" className="mt-1 w-fit text-[10px]">{member.isAdmin ? "Administrator" : "DDNI Member"}</Badge>
+              <Badge variant="outline" className="mt-1 w-fit text-xs">{member.isAdmin ? "Administrator" : "DDNI Member"}</Badge>
             </DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />

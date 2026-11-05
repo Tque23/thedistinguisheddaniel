@@ -129,7 +129,7 @@ export function ProfileView({ member, data, onMemberChange, onProfileChange }: D
 
   const input = (key: keyof FormState, label: string, props: React.ComponentProps<typeof Input> = {}, hint?: string) => (
     <Field id={`profile-${key}`} label={label} error={errors[key]} hint={hint}>
-      <Input id={`profile-${key}`} value={form[key]} onChange={(e) => update(key, e.target.value)} aria-invalid={Boolean(errors[key])} aria-describedby={errors[key] ? `profile-${key}-error` : undefined} {...props} />
+      <Input id={`profile-${key}`} name={key} value={form[key]} onChange={(e) => update(key, e.target.value)} aria-invalid={Boolean(errors[key])} aria-describedby={errors[key] ? `profile-${key}-error` : hint ? `profile-${key}-hint` : undefined} {...props} />
     </Field>
   )
 
@@ -148,7 +148,7 @@ export function ProfileView({ member, data, onMemberChange, onProfileChange }: D
       {data.errors.profile && <StatusMessage tone="error">{data.errors.profile}</StatusMessage>}
       {member.profileStatus === "rejected" && <StatusMessage tone="error">{`The DDNI team requested changes${member.profileReviewNote ? `: ${member.profileReviewNote}` : "."} Update your profile and save to resubmit.`}</StatusMessage>}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(260px,0.8fr)]">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(16rem,0.8fr)]">
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader><CardTitle>About you</CardTitle><CardDescription>Your name, title and photo appear across the dashboard.</CardDescription></CardHeader>
@@ -173,7 +173,7 @@ export function ProfileView({ member, data, onMemberChange, onProfileChange }: D
               {input("linkedinUrl", "LinkedIn", { type: "url", placeholder: "https://linkedin.com/in/…" })}
               <div className="sm:col-span-2">{input("skills", "Areas of expertise", { placeholder: "Leadership, Finance, Teaching" }, "Separate each with a comma.")}</div>
               <Field id="profile-bio" label="Personal introduction" error={errors.bio} hint={`${form.bio.length}/${BIO_LIMIT}`} className="sm:col-span-2">
-                <Textarea id="profile-bio" rows={5} value={form.bio} onChange={(e) => update("bio", e.target.value)} aria-invalid={Boolean(errors.bio)} placeholder="A short introduction for other members." />
+                <Textarea id="profile-bio" name="bio" rows={5} value={form.bio} onChange={(e) => update("bio", e.target.value)} aria-invalid={Boolean(errors.bio)} aria-describedby={errors.bio ? "profile-bio-error" : "profile-bio-hint"} placeholder="A short introduction for other members." />
               </Field>
             </CardContent>
           </Card>
