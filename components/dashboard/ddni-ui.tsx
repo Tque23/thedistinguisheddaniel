@@ -1,28 +1,11 @@
 "use client"
 
 import type { ComponentProps, ComponentType, ReactNode } from "react"
-import { ChevronDown, House, Search } from "lucide-react"
+import { ChevronDown, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
 type IconType = ComponentType<{ className?: string }>
-
-export function PageHeading({ title, subtitle, crumb, onHome, className }: { title: string; subtitle: string; crumb?: string; onHome: () => void; className?: string }) {
-  return (
-    <header className={cn("flex flex-col", className)}>
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button type="button" onClick={onHome} className="inline-flex min-h-11 items-center gap-1.5 rounded-sm px-1 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]">
-          <House className="size-3.5" aria-hidden />
-          Home
-        </button>
-        <span aria-hidden>/</span>
-        <span aria-current="page">{crumb ?? title}</span>
-      </nav>
-      <h2 className="font-display mt-3 text-2xl font-semibold leading-snug tracking-tight text-foreground sm:text-3xl">{title}</h2>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{subtitle}</p>
-    </header>
-  )
-}
 
 type DdniButtonProps = Omit<ComponentProps<"button">, "type"> & {
   variant?: "gold" | "outline"
@@ -35,9 +18,9 @@ type DdniButtonProps = Omit<ComponentProps<"button">, "type"> & {
 }
 
 const buttonSizes = {
-  sm: "min-h-11 px-4 text-sm",
-  md: "min-h-11 px-4 text-sm",
-  lg: "min-h-11 px-4 text-sm",
+  sm: "min-h-11 gap-2 px-4 text-sm",
+  md: "min-h-11 gap-2 px-4 text-sm",
+  lg: "min-h-11 gap-2 px-4 text-sm",
 }
 
 export function DdniButton({ variant = "gold", size = "md", href, target, rel, download, className, children, type = "button", ...rest }: DdniButtonProps) {
@@ -112,9 +95,12 @@ export function SearchBox({ value, onChange, placeholder, label, className }: { 
 
 export type TabItem<T extends string> = { id: T; label: string; icon?: IconType; count?: number }
 
+export const underlineTabClassName =
+  "flex h-12 min-h-11 items-center gap-2 border-x-0 border-t-0 border-b-2 px-3 py-0 text-sm font-medium whitespace-nowrap transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--focus-ring)] sm:px-4"
+
 export function SegmentedTabs<T extends string>({ items, value, onChange, label }: { items: TabItem<T>[]; value: T; onChange: (value: T) => void; label: string }) {
   return (
-    <div role="group" aria-label={label} className="ddni-card flex max-w-full gap-1 overflow-x-auto p-1.5">
+    <div role="group" aria-label={label} className="flex max-w-full gap-2 overflow-x-auto rounded-xl border border-border/60 bg-card p-1.5 shadow-sm">
       {items.map((item) => {
         const active = item.id === value
         return (
@@ -124,12 +110,15 @@ export function SegmentedTabs<T extends string>({ items, value, onChange, label 
             aria-pressed={active}
             onClick={() => onChange(item.id)}
             className={cn(
-              "flex min-h-11 flex-1 items-center justify-center gap-2.5 rounded-lg px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]",
-              active ? "ddni-btn-gold shadow-sm" : "text-foreground hover:bg-accent",
+              buttonVariants({
+                variant: active ? "default" : "outline",
+                className: cn("h-auto min-h-11 flex-1 gap-2.5 px-4", active && "btn-gold"),
+              }),
+              "rounded-lg text-sm font-medium transition-colors duration-150",
             )}
           >
-            {item.icon && <item.icon className="size-5 shrink-0" aria-hidden />}
-            <span className="ddni-serif">{item.label}{item.count !== undefined && ` (${item.count})`}</span>
+            {item.icon && <item.icon className="size-4 shrink-0" aria-hidden />}
+            <span>{item.label}{item.count !== undefined && ` (${item.count})`}</span>
           </button>
         )
       })}
@@ -137,10 +126,10 @@ export function SegmentedTabs<T extends string>({ items, value, onChange, label 
   )
 }
 
-export function UnderlineTabs<T extends string>({ items, value, onChange, label, trailing }: { items: TabItem<T>[]; value: T; onChange: (value: T) => void; label: string; trailing?: ReactNode }) {
+export function UnderlineTabs<T extends string>({ items, value, onChange, label }: { items: TabItem<T>[]; value: T; onChange: (value: T) => void; label: string }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-x-6 border-b border-border">
-      <div role="group" aria-label={label} className="-mb-px flex max-w-full gap-1 overflow-x-auto">
+    <div className="w-full min-w-0 border-b border-border/60">
+      <div role="group" aria-label={label} className="-mb-px flex w-fit max-w-full gap-1 overflow-x-auto">
         {items.map((item) => {
           const active = item.id === value
           return (
@@ -150,17 +139,16 @@ export function UnderlineTabs<T extends string>({ items, value, onChange, label,
               aria-pressed={active}
               onClick={() => onChange(item.id)}
               className={cn(
-                "flex min-h-11 items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--focus-ring)] sm:px-4",
+                underlineTabClassName,
                 active ? "border-primary font-semibold text-accent-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
-              {item.icon && <item.icon className={cn("size-5 shrink-0", active ? "text-primary" : "text-muted-foreground")} aria-hidden />}
+              {item.icon && <item.icon className={cn("size-4 shrink-0", active ? "text-primary" : "text-muted-foreground")} aria-hidden />}
               {item.label}{item.count !== undefined && ` (${item.count})`}
             </button>
           )
         })}
       </div>
-      {trailing && <div className="pb-3 text-xs text-muted-foreground">{trailing}</div>}
     </div>
   )
 }

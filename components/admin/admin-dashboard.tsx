@@ -8,6 +8,7 @@ import {
   saveContentItem,
   setContentPublished,
   setCourseAccess as setCourseAccessAction,
+  issueCourseCertificate,
 } from "@/src/app/admin/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Field, StatusMessage } from "@/components/dashboard/dashboard-ui"
 import { formatDate, isValidUrl, normalizeSkills, relativeTime } from "@/lib/dashboard-data"
-import { Pencil, Plus, Trash2, X, Users, ShieldCheck, Settings2, ChevronDown, Check, MessageSquareWarning, LayoutDashboard, FileText, Megaphone, GraduationCap } from "lucide-react"
+import { Pencil, Plus, Trash2, X, Users, ShieldCheck, Settings2, ChevronDown, Check, MessageSquareWarning, LayoutDashboard, FileText, Megaphone, GraduationCap, Award } from "lucide-react"
 import { ClassManagement } from "@/components/admin/class-management"
 
 type FieldKind = "text" | "textarea" | "url" | "select"
@@ -64,6 +65,7 @@ type Profile = { headline?: string; company?: string; role?: string; bio?: strin
 type User = { id: string; email?: string; created_at: string; last_sign_in_at?: string; email_confirmed_at?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown>; profile?: Profile | null }
 type Enrollment = { id: string; user_id: string; course_id: string; status: "pending" | "enrolled" | "revoked"; source: string; created_at: string }
 type CourseOption = { id: string; title: string; is_free: boolean }
+type AdminCertificate = { id: string; user_id: string; course_id: string | null; certificate_code: string; issued_at: string }
 
 const accessOptions = ["prepared", "updates", "active", "blocked"] as const
 const accessLabels: Record<string, string> = { prepared: "Dashboard is being prepared", updates: "Updates to the dashboard are being made", active: "Active", blocked: "Blocked" }
@@ -84,6 +86,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([])
   const [courseCatalog, setCourseCatalog] = useState<CourseOption[]>([])
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
+  const [certificates, setCertificates] = useState<AdminCertificate[]>([])
   const [userSearch, setUserSearch] = useState("")
   const [userSort, setUserSort] = useState<"name" | "email" | "created_at" | "verified">("created_at")
   const [reviewFilter, setReviewFilter] = useState<"all" | "pending_review" | "approved" | "rejected" | "none">("all")
@@ -101,46 +104,103 @@ export default function AdminDashboard() {
   const landingAnnouncementKey = "__landing_announcement__"
 
   async function loadAnnouncementSettings() {
-    const { data, error } = await createClient().from("announcements").select("title, body, published").in("title", [dashboardAnnouncementKey, landingAnnouncementKey]).eq("published", true)
-    if (error) { setAnnouncementStatus("Unable to load current announcements."); return }
-    const dashboard = data?.find((item) => item.title === dashboardAnnouncementKey)
-    const landing = data?.find((item) => item.title === landingAnnouncementKey)
-    if (dashboard?.body) setDashboardAnnouncement(dashboard.body)
-    if (landing?.body) setLandingAnnouncement(landing.body)
+    try {
+      const { data, error } = await createClient().from("announcements").select("title, body, published").in("title", [dashboardAnnouncementKey, landingAnnouncementKey]).eq("published", true)
+      if (error) { setAnnouncementStatus("Unable to load current announcements."); return }
+      const dashboard = data?.find((item) => item.title === dashboardAnnouncementKey)
+      const landing = data?.find((item) => item.title === landingAnnouncementKey)
+      if (dashboard?.body) setDashboardAnnouncement(dashboard.body)
+      if (landing?.body) setLandingAnnouncement(landing.body)
+    } catch (error) {
+      console.error("[admin] loadAnnouncementSettings failed", error)
+      setAnnouncementStatus("Unable to load current announcements.")
+    }
   }
   async function saveAnnouncementSetting(title: "__dashboard_announcement__" | "__landing_announcement__", body: string) {
     if (!body.trim()) { setAnnouncementStatus("Announcements can't be empty."); return }
     setAnnouncementStatus("Saving announcement...")
-    const result = await saveAnnouncementSettingAction(title, body)
-    setAnnouncementStatus(result.error ?? "Announcement saved and live.")
+    try {
+      const result = await saveAnnouncementSettingAction(title, body)
+      setAnnouncementStatus(result.error ?? "Announcement saved and live.")
+    } catch (error) {
+      console.error("[admin] saveAnnouncementSetting failed", error)
+      setAnnouncementStatus("Unable to save this announcement. Please try again.")
+    }
   }
-  async function loadItems(currentSection = section) { const query = createClient().from(currentSection).select("*").order("created_at", { ascending: false }); const { data, error } = currentSection === "announcements" ? await query.not("title", "in", `("__dashboard_announcement__","__landing_announcement__")`) : await query; if (error) { setStatus("Unable to load content."); return } setItems((data as Item[]) || []) }
+  async function loadItems(currentSection = section) {
+    try {
+      const query = createClient().from(currentSection).select("*").order("created_at", { ascending: false })
+      const { data, error } = currentSection === "announcements" ? await query.not("title", "in", `("__dashboard_announcement__","__landing_announcement__")`) : await query
+      if (error) { setStatus("Unable to load content."); return }
+      setItems((data as Item[]) || [])
+    } catch (error) {
+      console.error("[admin] loadItems failed", error)
+      setStatus("Unable to load content.")
+    }
+  }
   async function loadCourseAccess() {
-    const client = createClient()
-    const [{ data: catalog, error: catalogError }, { data: rows, error: rowsError }] = await Promise.all([
-      client.from("courses").select("id, title, is_free").order("title"),
-      client.from("course_enrollments").select("id, user_id, course_id, status, source, created_at").order("created_at", { ascending: false }),
-    ])
-    if (catalogError || rowsError) { setUserStatus("Unable to load course access data."); return }
-    setCourseCatalog((catalog as CourseOption[]) || [])
-    setEnrollments((rows as Enrollment[]) || [])
+    try {
+      const client = createClient()
+      const [{ data: catalog, error: catalogError }, { data: rows, error: rowsError }, { data: issued, error: certificatesError }] = await Promise.all([
+        client.from("courses").select("id, title, is_free").order("title"),
+        client.from("course_enrollments").select("id, user_id, course_id, status, source, created_at").order("created_at", { ascending: false }),
+        client.from("course_certificates").select("id, user_id, course_id, certificate_code, issued_at").order("issued_at", { ascending: false }),
+      ])
+      if (catalogError || rowsError || certificatesError) { setUserStatus("Unable to load course access data."); return }
+      setCourseCatalog((catalog as CourseOption[]) || [])
+      setEnrollments((rows as Enrollment[]) || [])
+      setCertificates((issued as AdminCertificate[]) || [])
+    } catch (error) {
+      console.error("[admin] loadCourseAccess failed", error)
+      setUserStatus("Unable to load course access data.")
+    }
   }
-  async function loadUsers() { const response = await fetch("/api/admin/users"); if (!response.ok) { setUserStatus("Unable to load member accounts."); return } const result = await response.json() as { users: User[] }; setUsers(result.users) }
-  async function updateUser(id: string, updates: Record<string, unknown>, successMessage = "User access updated.") { const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...updates }) }); setUserStatus(response.ok ? successMessage : "Unable to update user."); if (response.ok) await loadUsers(); return response.ok }
+  async function loadUsers() {
+    try {
+      const response = await fetch("/api/admin/users")
+      if (!response.ok) { setUserStatus("Unable to load member accounts."); return }
+      const result = await response.json() as { users?: User[] }
+      if (!Array.isArray(result.users)) { setUserStatus("Unable to load member accounts."); return }
+      setUsers(result.users)
+    } catch (error) {
+      console.error("[admin] loadUsers failed", error)
+      setUserStatus("Unable to load member accounts.")
+    }
+  }
+  async function updateUser(id: string, updates: Record<string, unknown>, successMessage = "User access updated.") {
+    try {
+      const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...updates }) })
+      setUserStatus(response.ok ? successMessage : "Unable to update user.")
+      if (response.ok) await loadUsers()
+      return response.ok
+    } catch (error) {
+      console.error("[admin] updateUser failed", error)
+      setUserStatus("Unable to update user.")
+      return false
+    }
+  }
   async function toggleAdmin(user: User) { await updateUser(user.id, { is_admin: user.app_metadata?.is_admin !== true }, user.app_metadata?.is_admin === true ? "Admin role removed." : "Admin role assigned.") }
   async function updateContact(user: User) { const email = window.prompt("Contact email", user.email || ""); if (email && email !== user.email) await updateUser(user.id, { email }, "Contact email updated.") }
   async function reviewProfile(user: User, profileStatus: "approved" | "rejected") {
     const ok = await updateUser(user.id, { profile_status: profileStatus, profile_review_note: profileStatus === "rejected" ? reviewNote : "" }, profileStatus === "approved" ? "Profile approved." : "Changes requested. The member will see your note on their dashboard.")
     if (ok) setReviewNote("")
   }
-  async function resendVerification(user: User) { const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true }) }); setVerificationStatus(response.ok ? `Verification email sent to ${user.email || "member"}.` : "Unable to send verification email.") }
+  async function resendVerification(user: User) {
+    try {
+      const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true }) })
+      setVerificationStatus(response.ok ? `Verification email sent to ${user.email || "member"}.` : "Unable to send verification email.")
+    } catch (error) {
+      console.error("[admin] resendVerification failed", error)
+      setVerificationStatus("Unable to send verification email.")
+    }
+  }
   async function resendUnverifiedInBulk() {
     const unverified = users.filter((user) => !user.email_confirmed_at && user.email)
     if (!unverified.length) { setVerificationStatus("There are no unverified users to contact."); return }
     if (!window.confirm(`Send verification emails to ${unverified.length} unverified members?`)) return
     setVerificationStatus(`Sending ${unverified.length} verification email${unverified.length === 1 ? "" : "s"}...`)
-    const results = await Promise.all(unverified.map((user) => fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true }) })))
-    const sent = results.filter((response) => response.ok).length
+    const results = await Promise.allSettled(unverified.map((user) => fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true }) })))
+    const sent = results.filter((result) => result.status === "fulfilled" && result.value.ok).length
     setVerificationStatus(`Sent ${sent} of ${unverified.length} verification emails.`)
   }
   async function updateAllMemberAccess(dashboard_status: "prepared" | "active" | "updates", label: string) {
@@ -148,17 +208,45 @@ export default function AdminDashboard() {
     if (!members.length) { setUserStatus("There are no members to update."); return }
     if (!window.confirm(`${label} for all ${members.length} members?`)) return
     setUserStatus(`Updating access for ${members.length} members...`)
-    const results = await Promise.all(members.map((user) => fetch("/api/admin/users", {
+    const results = await Promise.allSettled(members.map((user) => fetch("/api/admin/users", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: user.id, dashboard_status }),
     })))
-    const updated = results.filter((response) => response.ok).length
+    const updated = results.filter((result) => result.status === "fulfilled" && result.value.ok).length
     setUserStatus(`Updated access for ${updated} of ${members.length} members.`)
     if (updated > 0) await loadUsers()
   }
-  async function deleteUser(user: User) { if (!window.confirm(`Delete the account for ${user.email || "this user"}?`)) return; const response = await fetch("/api/admin/users", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id }) }); setUserStatus(response.ok ? "User account deleted." : "Unable to delete user."); if (response.ok) await loadUsers() }
-  useEffect(() => { void (async () => { const client = createClient(); let { data: { user } } = await client.auth.getUser(); if (user?.app_metadata?.is_admin !== true) { const { data: refreshed } = await client.auth.refreshSession(); user = refreshed.session?.user || user } const isAdmin = user?.app_metadata?.is_admin === true; setAllowed(isAdmin); if (isAdmin) { await loadItems(); await loadUsers(); await loadAnnouncementSettings(); await loadCourseAccess() } })() }, [])
+  async function deleteUser(user: User) {
+    if (!window.confirm(`Delete the account for ${user.email || "this user"}?`)) return
+    try {
+      const response = await fetch("/api/admin/users", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id }) })
+      setUserStatus(response.ok ? "User account deleted." : "Unable to delete user.")
+      if (response.ok) await loadUsers()
+    } catch (error) {
+      console.error("[admin] deleteUser failed", error)
+      setUserStatus("Unable to delete user.")
+    }
+  }
+  useEffect(() => {
+    void (async () => {
+      try {
+        const client = createClient()
+        let { data: { user } } = await client.auth.getUser()
+        if (user?.app_metadata?.is_admin !== true) {
+          const { data: refreshed } = await client.auth.refreshSession()
+          user = refreshed.session?.user || user
+        }
+        const isAdmin = user?.app_metadata?.is_admin === true
+        setAllowed(isAdmin)
+        if (isAdmin) { await loadItems(); await loadUsers(); await loadAnnouncementSettings(); await loadCourseAccess() }
+      } catch (error) {
+        console.error("[admin] initialization failed", error)
+        setAllowed(false)
+        setUserStatus("Unable to load the administrator dashboard.")
+      }
+    })()
+  }, [])
   function resetForm() { setEditingId(null); setForm({}); setFormErrors({}); setStatus("") }
   function startEdit(item: Item) { setEditingId(item.id); setForm(Object.fromEntries(config.fields.map((field) => [field.name, field.name === "is_free" ? (item.is_free ? "Free" : "Paid") : String(item[field.name] ?? "")]))); setFormErrors({}); setStatus("") }
   async function setCourseAccess(userId: string, courseId: string, status: "enrolled" | "revoked") {
@@ -167,6 +255,25 @@ export default function AdminDashboard() {
       const result = await setCourseAccessAction(userId, courseId, status)
       setUserStatus(result.error ?? (status === "enrolled" ? "Course access granted." : "Course access revoked."))
       if (!("error" in result)) await loadCourseAccess()
+    } catch (error) {
+      console.error("[admin] setCourseAccess failed", error)
+      setUserStatus("Unable to update course access. Please try again.")
+    } finally {
+      setAccessBusy("")
+    }
+  }
+  async function issueCertificate(userId: string, courseId: string, courseTitle: string) {
+    const busyKey = `${userId}:${courseId}`
+    if (!window.confirm(`Confirm this member completed "${courseTitle}" and issue their certificate?`)) return
+    setAccessBusy(busyKey)
+    setUserStatus("")
+    try {
+      const result = await issueCourseCertificate(userId, courseId)
+      setUserStatus(result.error ?? "Course completion recorded and certificate issued.")
+      if (!result.error) await loadCourseAccess()
+    } catch (error) {
+      console.error("[admin] issueCertificate failed", error)
+      setUserStatus("Unable to issue this certificate. Please try again.")
     } finally {
       setAccessBusy("")
     }
@@ -188,14 +295,38 @@ export default function AdminDashboard() {
     if (!allowed) return
     setStatus(editingId ? "Saving..." : "Publishing...")
     const values: Record<string, string | null> = Object.fromEntries(config.fields.map((field) => [field.name, (form[field.name] || "").trim() || null]))
-    const result = await saveContentItem(section, values, editingId || undefined)
-    if (result.error) { setStatus(result.error); return }
-    resetForm()
-    setStatus(editingId ? "Changes saved." : "Published successfully.")
-    await loadItems()
+    try {
+      const result = await saveContentItem(section, values, editingId || undefined)
+      if (result.error) { setStatus(result.error); return }
+      resetForm()
+      setStatus(editingId ? "Changes saved." : "Published successfully.")
+      await loadItems()
+    } catch (error) {
+      console.error("[admin] submit content failed", error)
+      setStatus("Unable to save this item. Please try again.")
+    }
   }
-  async function remove(item: Item) { if (!window.confirm(`Remove “${String(item.title)}”?`)) return; const result = await deleteContentItem(section, item.id); setStatus(result.error ?? "Item removed."); if (!result.error) await loadItems() }
-  async function togglePublished(item: Item) { const result = await setContentPublished(section, item.id, !item.published); setStatus(result.error ?? (item.published ? "Hidden from members." : "Published to members.")); await loadItems() }
+  async function remove(item: Item) {
+    if (!window.confirm(`Remove “${String(item.title)}”?`)) return
+    try {
+      const result = await deleteContentItem(section, item.id)
+      setStatus(result.error ?? "Item removed.")
+      if (!result.error) await loadItems()
+    } catch (error) {
+      console.error("[admin] remove content failed", error)
+      setStatus("Unable to remove this item. Please try again.")
+    }
+  }
+  async function togglePublished(item: Item) {
+    try {
+      const result = await setContentPublished(section, item.id, !item.published)
+      setStatus(result.error ?? (item.published ? "Hidden from members." : "Published to members."))
+      await loadItems()
+    } catch (error) {
+      console.error("[admin] toggle content visibility failed", error)
+      setStatus("Unable to change visibility. Please try again.")
+    }
+  }
 
   const reviewCounts = useMemo(() => ({ pending_review: users.filter((user) => profileStatusOf(user) === "pending_review").length }), [users])
   const visibleUsers = useMemo(() => users.filter((user) => `${user.email || ""} ${String(user.user_metadata?.full_name || "")} ${user.profile?.company || ""}`.toLowerCase().includes(userSearch.toLowerCase())).filter((user) => reviewFilter === "all" || (reviewFilter === "none" ? !profileStatusOf(user) : profileStatusOf(user) === reviewFilter)).sort((a, b) => {
@@ -220,7 +351,7 @@ export default function AdminDashboard() {
   return <main className="tdd-dashboard min-h-dvh"><div className="ddni-light mx-auto min-h-dvh max-w-[1440px] p-4 sm:p-6 lg:p-8">
     <div className="mb-8 flex flex-col gap-5 border-b border-border/80 pb-7 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">The Distinguished Daniel</p><h1 className="mt-2 font-display text-3xl leading-snug tracking-tight text-foreground sm:text-4xl">Admin dashboard</h1><p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">A central workspace for site content and member operations.</p></div>
-      <Button variant="outline" className="min-h-10 shrink-0" render={<a href="/dashboard" />}>Open member dashboard</Button>
+      <Button variant="outline" className="min-h-10 shrink-0" nativeButton={false} render={<a href="/dashboard" />}>Open member dashboard</Button>
     </div>
     <div className="grid min-w-0 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
       <nav aria-label="Admin sections" className="h-fit rounded-2xl border border-border/80 bg-card p-2.5 shadow-sm lg:sticky lg:top-6">
@@ -255,7 +386,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </>}
-        {activeArea === "classes" && <ClassManagement />}
+        {activeArea === "classes" && <ClassManagement courses={courseCatalog} members={users} />}
         {activeArea === "announcements" && <Card>
           <CardHeader><CardTitle>Live announcements</CardTitle><p className="text-sm text-muted-foreground">These messages appear immediately on the public landing page and member dashboard. Network opportunities are managed separately under Content.</p></CardHeader>
           <CardContent className="grid gap-6 lg:grid-cols-2">
@@ -289,7 +420,7 @@ export default function AdminDashboard() {
       {userStatus && <p role="status" className="text-sm text-muted-foreground">{userStatus}</p>}
       <div className="flex flex-col gap-3 sm:flex-row"><Input aria-label="Search users" placeholder="Search by name, email or company" value={userSearch} onChange={(event) => setUserSearch(event.target.value)} className="h-11" /><select aria-label="Filter by profile review" className={selectClass} value={reviewFilter} onChange={(event) => setReviewFilter(event.target.value as typeof reviewFilter)}><option value="all">All profiles</option><option value="pending_review">Pending review ({reviewCounts.pending_review})</option><option value="approved">Approved</option><option value="rejected">Changes requested</option><option value="none">Not submitted</option></select><select aria-label="Sort users" className={selectClass} value={userSort} onChange={(event) => setUserSort(event.target.value as typeof userSort)}><option value="created_at">Newest first</option><option value="name">Name</option><option value="email">Email</option><option value="verified">Unverified first</option></select></div>
       <div className="flex flex-col gap-4">{visibleUsers.map((user) => { const expanded = expandedUserId === user.id; const profileStatus = profileStatusOf(user); return <div key={user.id} className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm"><div className="flex flex-col gap-4 lg:flex-row lg:items-center"><div className="min-w-0 flex-1"><p className="font-medium tracking-tight">{String(user.user_metadata?.full_name || "Member")}</p><p className="break-words text-sm text-muted-foreground">{user.email || "No email"}{user.user_metadata?.title ? ` · ${String(user.user_metadata.title)}` : ""}</p><div className="mt-3 flex flex-wrap gap-2"><Badge variant={user.app_metadata?.is_admin === true ? "default" : "secondary"}>{user.app_metadata?.is_admin === true ? "Admin" : "Member"}</Badge><Badge variant={user.email_confirmed_at ? "outline" : "destructive"}>{user.email_confirmed_at ? "Verified" : "Unverified"}</Badge><Badge variant="outline">{accessLabels[String(user.user_metadata?.dashboard_status || "prepared")]}</Badge>{profileStatus && <Badge variant={profileStatus === "pending_review" ? "default" : "outline"} className={profileStatus === "pending_review" ? "btn-gold" : ""}>{reviewLabels[profileStatus] || profileStatus}</Badge>}</div></div><div className="flex flex-wrap items-center gap-2.5"><select aria-label={`Dashboard access for ${user.email}`} className={selectClass} value={String(user.user_metadata?.dashboard_status || "prepared")} onChange={(e) => void updateUser(user.id, { dashboard_status: e.target.value })}>{accessOptions.map((option) => <option key={option} value={option}>{accessLabels[option]}</option>)}</select><Button variant="outline" size="sm" onClick={() => void toggleAdmin(user)}><ShieldCheck data-icon="inline-start" />{user.app_metadata?.is_admin === true ? "Remove admin" : "Assign admin"}</Button><Button variant="outline" size="sm" onClick={() => void updateContact(user)}><Pencil data-icon="inline-start" />Contact</Button>{!user.email_confirmed_at && user.email && <Button variant="outline" size="sm" onClick={() => void resendVerification(user)}>Resend verification</Button>}<Button variant="ghost" size="sm" aria-expanded={expanded} onClick={() => { setExpandedUserId(expanded ? null : user.id); setReviewNote("") }}><ChevronDown data-icon="inline-start" className={expanded ? "rotate-180 transition-transform motion-reduce:transition-none" : "transition-transform motion-reduce:transition-none"} />Profile</Button>{user.email !== "admin@distinguisheddaniel.com" && <Button variant="outline" size="sm" className="text-destructive" aria-label={`Delete ${user.email || "user"}`} onClick={() => void deleteUser(user)}><Trash2 /></Button>}</div></div>
-        {expanded && <MemberDetails user={user} reviewNote={reviewNote} onReviewNoteChange={setReviewNote} onReview={(next) => void reviewProfile(user, next)} courses={courseCatalog} enrollments={enrollments.filter((enrollment) => enrollment.user_id === user.id)} busy={accessBusy} onGrant={(courseId) => void setCourseAccess(user.id, courseId, "enrolled")} onRevoke={(courseId) => void setCourseAccess(user.id, courseId, "revoked")} />}
+        {expanded && <MemberDetails user={user} reviewNote={reviewNote} onReviewNoteChange={setReviewNote} onReview={(next) => void reviewProfile(user, next)} courses={courseCatalog} enrollments={enrollments.filter((enrollment) => enrollment.user_id === user.id)} certificates={certificates.filter((certificate) => certificate.user_id === user.id)} busy={accessBusy} onGrant={(courseId) => void setCourseAccess(user.id, courseId, "enrolled")} onRevoke={(courseId) => void setCourseAccess(user.id, courseId, "revoked")} onIssueCertificate={(courseId, courseTitle) => void issueCertificate(user.id, courseId, courseTitle)} />}
       </div> })}{visibleUsers.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No users match this search.</p>}</div>
           </CardContent>
         </Card>}
@@ -326,7 +457,7 @@ function PendingCourseRequests({ users, courses, enrollments, busy, onGrant }: {
   </section>
 }
 
-function MemberDetails({ user, reviewNote, onReviewNoteChange, onReview, courses, enrollments, busy, onGrant, onRevoke }: { user: User; reviewNote: string; onReviewNoteChange: (value: string) => void; onReview: (status: "approved" | "rejected") => void; courses: CourseOption[]; enrollments: Enrollment[]; busy: string; onGrant: (courseId: string) => void; onRevoke: (courseId: string) => void }) {
+function MemberDetails({ user, reviewNote, onReviewNoteChange, onReview, courses, enrollments, certificates, busy, onGrant, onRevoke, onIssueCertificate }: { user: User; reviewNote: string; onReviewNoteChange: (value: string) => void; onReview: (status: "approved" | "rejected") => void; courses: CourseOption[]; enrollments: Enrollment[]; certificates: AdminCertificate[]; busy: string; onGrant: (courseId: string) => void; onRevoke: (courseId: string) => void; onIssueCertificate: (courseId: string, courseTitle: string) => void }) {
   const profile = user.profile
   const preferences = (user.user_metadata?.preferences || {}) as Record<string, unknown>
   const skills = normalizeSkills(profile?.skills)
@@ -343,6 +474,30 @@ function MemberDetails({ user, reviewNote, onReviewNoteChange, onReview, courses
         {profile.updated_at && <p className="text-xs text-muted-foreground">Last saved {relativeTime(profile.updated_at)}</p>}
       </>}
       <dl className="grid gap-x-6 gap-y-2 border-t border-border pt-3 text-xs sm:grid-cols-3"><div><dt className="text-muted-foreground">Joined</dt><dd className="text-foreground">{formatDate(user.created_at)}</dd></div><div><dt className="text-muted-foreground">Last sign-in</dt><dd className="text-foreground">{user.last_sign_in_at ? relativeTime(user.last_sign_in_at) : "Never"}</dd></div><div><dt className="text-muted-foreground">Email preferences</dt><dd className="text-foreground">Updates {preferences.email_updates === false ? "off" : "on"} · Network {preferences.network_alerts === false ? "off" : "on"}</dd></div></dl>
+      <section aria-labelledby={`certificates-${user.id}`} className="border-t border-border pt-4">
+        <h3 id={`certificates-${user.id}`} className="font-medium tracking-tight">Course completion &amp; certificates</h3>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Confirm completion to issue a certificate to this member.</p>
+        <ul className="mt-3 flex flex-col gap-2">
+          {enrollments.filter((enrollment) => enrollment.status === "enrolled").map((enrollment) => {
+            const course = courses.find((item) => item.id === enrollment.course_id)
+            const certificate = certificates.find((item) => item.course_id === enrollment.course_id)
+            const isBusy = busy === `${user.id}:${enrollment.course_id}`
+            return <li key={enrollment.id} className="flex flex-col gap-3 rounded-xl border border-border/70 bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-start gap-2.5">
+                <Award className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-medium">{course?.title || "Course"}</p>
+                  {certificate && <p className="mt-1 text-xs text-muted-foreground">Issued {formatDate(certificate.issued_at)} · {certificate.certificate_code}</p>}
+                </div>
+              </div>
+              {certificate
+                ? <Badge variant="outline" className="w-fit border-primary/30 text-primary"><Check className="me-1 size-3.5" />Issued</Badge>
+                : <Button size="sm" className="btn-gold shrink-0" disabled={!course || isBusy} onClick={() => course && onIssueCertificate(course.id, course.title)}><Award data-icon="inline-start" />{isBusy ? "Issuing…" : "Mark complete & issue"}</Button>}
+            </li>
+          })}
+        </ul>
+        {enrollments.every((enrollment) => enrollment.status !== "enrolled") && <p className="mt-3 text-sm text-muted-foreground">No active course enrollments to complete.</p>}
+      </section>
     </div>
     <div className="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/30 p-4">
       <p className="text-sm font-medium text-foreground">Profile review</p>

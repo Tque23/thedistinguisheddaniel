@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
-  const body: unknown = await request.json()
+  const body: unknown = await request.json().catch(() => null)
   if (!body || typeof body !== "object" || !("email" in body) || !("password" in body)
     || typeof body.email !== "string" || typeof body.password !== "string") {
     return NextResponse.json({ error: "Email and password are required" }, { status: 400 })

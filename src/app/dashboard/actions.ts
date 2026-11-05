@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import type { Json } from "@/lib/supabase/database.types"
+import type { AssessmentSubmissionResult } from "@/lib/dashboard-data"
 
 export type MemberProfileSubmission = {
   name: string
@@ -17,7 +19,7 @@ export type MemberProfileSubmission = {
   bio: string
 }
 
-export async function saveMemberProfile(input: MemberProfileSubmission) {
+async function saveMemberProfileInternal(input: MemberProfileSubmission) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return { error: "Please sign in again before saving your profile." }
@@ -74,7 +76,7 @@ export async function saveMemberProfile(input: MemberProfileSubmission) {
   return { savedAt: now }
 }
 
-export async function saveCommunicationPreferences(preferences: { emailUpdates: boolean; networkAlerts: boolean }) {
+async function saveCommunicationPreferencesInternal(preferences: { emailUpdates: boolean; networkAlerts: boolean }) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return { error: "Please sign in again before saving your preferences." }
@@ -95,7 +97,7 @@ export async function saveCommunicationPreferences(preferences: { emailUpdates: 
   return { saved: true }
 }
 
-export async function requestCourseAccess(courseId: string) {
+async function requestCourseAccessInternal(courseId: string) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return { error: "Please sign in again to sign up for this course." }
@@ -135,4 +137,121 @@ function isHttpUrl(value: string) {
   } catch {
     return false
   }
+}
+
+  export async function saveMemberProfile(input: MemberProfileSubmission) {
+    try {
+      return await saveMemberProfileInternal(input)
+    } catch (error) {
+      console.error("[dashboard] saveMemberProfile failed", error)
+      return { error: "We couldn't save your profile. Please try again." }
+    }
+  }
+
+  export async function saveCommunicationPreferences(preferences: { emailUpdates: boolean; networkAlerts: boolean }) {
+    try {
+      return await saveCommunicationPreferencesInternal(preferences)
+    } catch (error) {
+      console.error("[dashboard] saveCommunicationPreferences failed", error)
+      return { error: "We couldn't save your preferences. Please try again." }
+    }
+  }
+
+  export async function requestCourseAccess(courseId: string) {
+    try {
+      return await requestCourseAccessInternal(courseId)
+    } catch (error) {
+      console.error("[dashboard] requestCourseAccess failed", error)
+      return { error: "Unable to send your course sign-up. Please try again." }
+    }
+  }
+
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+  export async function setCourseSessionCompletion(sessionId: string, complete: boolean) {
+    try {
+      const supabase = await createClient()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) return { error: "Please sign in again to update your course progress." }
+      if (!uuidPattern.test(sessionId) || typeof complete !== "boolean") return { error: "The selected session is invalid." }
+
+      const { data: session, error: sessionError } = await supabase
+        .from("course_sessions")
+        .select("id")
+        .eq("id", sessionId)
+        .maybeSingle()
+      if (sessionError || !session) return { error: "This session is unavailable or you do not have course access." }
+
+      const result = complete
+        ? await supabase.from("course_session_completions").upsert(
+          { user_id: user.id, session_id: session.id },
+          { onConflict: "user_id,session_id", ignoreDuplicates: true },
+        )
+        : await supabase.from("course_session_completions").delete().eq("user_id", user.id).eq("session_id", session.id)
+      if (result.error) return { error: "Unable to update your course progress. Please try again." }
+      revalidatePath("/dashboard")
+      return { saved: true }
+    } catch (error) {
+      console.error("[dashboard] setCourseSessionCompletion failed", error)
+      return { error: "Unable to update your course progress. Please try again." }
+    }
+  }
+
+  type AssessmentAnswerInput = { questionId: string; answer: string }
+
+  function isJsonObject(value: Json): value is { [key: string]: Json | undefined } {
+    return typeof value === "object" && value !== null && !Array.isArray(value)
+  }
+
+  export async function submitCourseAssessment(assessmentId: string, answers: AssessmentAnswerInput[]) {
+    try {
+      const supabase = await createClient()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) return { error: "Please sign in again to submit your assessment." }
+      if (!uuidPattern.test(assessmentId) || !Array.isArray(answers) || answers.length < 1 || answers.length > 100
+        || answers.some((answer) => !answer || !uuidPattern.test(answer.questionId) || typeof answer.answer !== "string" || answer.answer.length > 5000)
+        || new Set(answers.map((answer) => answer.questionId)).size !== answers.length) {
+        return { error: "The assessment answers are invalid. Review them and try again." }
+      }
+
+      const { data, error } = await supabase.rpc("submit_course_assessment", {
+        p_assessment_id: assessmentId,
+        p_answers: answers.map((answer) => ({ question_id: answer.questionId, answer: answer.answer })) as Json,
+      })
+      if (error) {
+        const message = /attempt limit reached/i.test(error.message)
+          ? "You have used all allowed attempts for this assessment."
+          : /answer every assessment question|select one of the available answers/i.test(error.message)
+            ? "Answer each question and select an available option."
+            : "Unable to submit your assessment. Check your answers and try again."
+        return { error: message }
+      }
+      if (!isJsonObject(data)) {
+        console.error("[dashboard] submit_course_assessment returned an invalid response")
+        return { error: "Your assessment could not be confirmed. Refresh and check your results." }
+      }
+
+      const { attempt_id: attemptId, score, max_score: maxScore, needs_review: needsReview, attempts_used: attemptsUsed, attempts_allowed: attemptsAllowed } = data
+      if (typeof attemptId !== "string" || typeof score !== "number" || typeof maxScore !== "number"
+        || typeof needsReview !== "boolean" || typeof attemptsUsed !== "number" || typeof attemptsAllowed !== "number") {
+        console.error("[dashboard] submit_course_assessment returned incomplete result data")
+        return { error: "Your assessment could not be confirmed. Refresh and check your results." }
+      }
+
+      revalidatePath("/dashboard")
+      return {
+        submitted: true,
+        result: {
+          attemptId,
+          score,
+          maxScore,
+          needsReview,
+          attemptsUsed,
+          attemptsAllowed,
+        } satisfies AssessmentSubmissionResult,
+      }
+    } catch (error) {
+      console.error("[dashboard] submitCourseAssessment failed", error)
+      return { error: "Unable to submit your assessment. Please try again." }
+    }
 }

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { NotificationsMenu } from "@/components/dashboard/notifications-menu"
-import { BookOpen, FileText, LifeBuoy, LogOut, Search, Settings, UserRound, Users2 } from "lucide-react"
+import { Award, BookOpen, FileText, LifeBuoy, LogOut, Search, Settings, UserRound, Users2 } from "lucide-react"
 import type { DashboardData, DashboardMember, DashboardView } from "@/components/dashboard/dashboard-shell"
 import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
 
@@ -29,6 +29,7 @@ const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
   courses: { title: "My Courses", subtitle: "Continue your journey of growth and distinction." },
   calendar: { title: "My Calendar", subtitle: "Stay up to date with your courses, sessions and events." },
   library: { title: "Resource Library", subtitle: "Resources to support your learning and growth." },
+  certificates: { title: "Certificates", subtitle: "Your completed courses and earned certificates." },
   network: { title: "DDNI Network", subtitle: "Connect with distinguished people." },
   opportunities: { title: "Opportunities", subtitle: "Put your gifts, skills and learning into action." },
   announcements: { title: "Announcements", subtitle: "Stay informed. Stay connected." },
@@ -56,6 +57,7 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
     return [
       ...data.courses.filter((c) => matches(c.title, c.instructor, c.category)).map((c) => ({ id: `c-${c.id}`, label: c.title, detail: "Course", view: "courses" as const, icon: BookOpen })),
       ...data.resources.filter((r) => matches(r.title, r.type, r.description)).map((r) => ({ id: `r-${r.id}`, label: r.title, detail: "Resource", view: "library" as const, icon: FileText })),
+      ...data.certificates.filter((certificate) => matches(certificate.courseTitle, certificate.certificateCode)).map((certificate) => ({ id: `certificate-${certificate.id}`, label: certificate.courseTitle, detail: "Certificate", view: "certificates" as const, icon: Award })),
       ...data.opportunities.filter((o) => matches(o.title, o.description)).map((o) => ({ id: `o-${o.id}`, label: o.title, detail: "Opportunity", view: "opportunities" as const, icon: Users2 })),
       ...data.directory.filter((m) => matches(m.name, m.company, m.headline, ...m.skills)).map((m) => ({ id: `m-${m.id}`, label: m.name, detail: "Member", view: "network" as const, icon: UserRound })),
     ].slice(0, 8)

@@ -5,7 +5,7 @@ import { ArrowRight, Briefcase, Building2, ExternalLink, GraduationCap, Lightbul
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { SUPPORT_EMAIL, initialsFor, isValidUrl, profileCompletion, type DirectoryMember } from "@/lib/dashboard-data"
 import { DdniButton, EmptyPanel, LoadingBlock, Panel, SelectField, TextLink, UnderlineTabs, type TabItem } from "@/components/dashboard/ddni-ui"
-import { ViewContainer } from "@/components/dashboard/dashboard-ui"
+import { ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 type TabId = "discover" | "connections" | "groups"
@@ -134,18 +134,7 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
 
   return (
     <ViewContainer>
-      <header className="relative overflow-hidden rounded-2xl bg-[linear-gradient(110deg,#081a36,#0c2347_60%,#0a1d3b)] px-5 py-6 text-white shadow-[0_18px_40px_-20px_rgba(8,26,54,0.7)] sm:px-8 sm:py-7">
-        <div aria-hidden className="pointer-events-none absolute -top-24 -right-16 size-72 rounded-full border border-[#c9a14f]/40" />
-        <div aria-hidden className="pointer-events-none absolute -top-16 -right-8 size-72 rounded-full border border-[#c9a14f]/25" />
-        <div aria-hidden className="pointer-events-none absolute -right-24 -bottom-32 size-80 rounded-full border border-[#c9a14f]/30" />
-        <nav aria-label="Breadcrumb" className="relative flex items-center gap-2 text-sm text-white/85">
-          <button type="button" onClick={() => onNavigate("overview")} className="rounded-sm transition-colors hover:text-[#e4c276] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e4c276]">Home</button>
-          <span aria-hidden>/</span>
-          <span aria-current="page" className="text-[#e4c276]">DDNI Network</span>
-        </nav>
-        <h2 className="font-display relative mt-3 text-2xl leading-snug font-semibold tracking-tight text-white sm:text-3xl">DDNI <span className="text-[#e4c276]">Network</span></h2>
-        <p className="relative mt-2 max-w-2xl text-sm leading-relaxed text-white/90">Connect with distinguished people. Grow your <strong className="text-white">Kingdom influence.</strong></p>
-      </header>
+      <ViewHeader kicker="Member network" title="DDNI Network" description="Connect with distinguished people. Grow your Kingdom influence." />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="flex min-w-0 flex-col gap-6">
@@ -175,13 +164,13 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
             items={tabs}
             value={tab}
             onChange={setTab}
-            trailing={tab === "discover" && !data.loading ? (
-              <span className="flex items-center gap-3">
-                {members.length} {members.length === 1 ? "member" : "members"}
-                {filtering && <button type="button" onClick={clear} className="font-medium text-[#8a6420] underline underline-offset-4">Clear filters</button>}
-              </span>
-            ) : undefined}
           />
+          {tab === "discover" && !data.loading && (
+            <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground" aria-live="polite">
+              <span>{members.length} {members.length === 1 ? "member" : "members"}</span>
+              {filtering && <button type="button" onClick={clear} className="font-medium text-primary underline underline-offset-4">Clear filters</button>}
+            </div>
+          )}
 
           {data.errors.directory && <p role="alert" className="text-sm text-[#b3261e]">{data.errors.directory}</p>}
 

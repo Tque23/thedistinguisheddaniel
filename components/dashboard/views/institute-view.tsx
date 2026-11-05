@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -43,9 +43,9 @@ function ResourceAction({ resource }: { resource: Resource }) {
   if (!resource.url) return <span className="text-xs text-muted-foreground">Link coming soon</span>
   const Icon = isMedia(resource.type) ? PlayCircle : ExternalLink
   return (
-    <Button variant="outline" className="min-h-11 px-4" render={<a href={resource.url} target="_blank" rel="noopener noreferrer" />}>
+    <a href={resource.url} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "outline", className: "min-h-11 px-4" })}>
       <Icon data-icon="inline-start" />{isMedia(resource.type) ? "Watch" : "Open"}
-    </Button>
+    </a>
   )
 }
 
@@ -245,7 +245,7 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
                   </Button>
                 )}
                 {!selectedCourse.isFree && selectedEnrollment?.status !== "enrolled" && (
-                  <Button variant="outline" className="min-h-11 px-4" render={<a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Proof of payment: ${selectedCourse.title}`)}`} />}>Send proof of payment</Button>
+                  <a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Proof of payment: ${selectedCourse.title}`)}`} className={buttonVariants({ variant: "outline", className: "min-h-11 px-4" })}>Send proof of payment</a>
                 )}
                 <Button variant="outline" className="min-h-11 px-4" onClick={() => setSelectedCourse(null)}>Close</Button>
               </SheetFooter>

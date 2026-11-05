@@ -3,7 +3,6 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { DashboardShell, type DashboardMember } from "@/components/dashboard/dashboard-shell"
 import { initialsFor } from "@/lib/dashboard-data"
-import "./dashboard.css"
 
 export const dynamic = "force-dynamic"
 

@@ -66,6 +66,13 @@
   transition-timing-function: ease-out;
 }
 
+:is(.tdd-dashboard, .tdd-dashboard-theme) [data-slot="button"][data-size="default"] {
+  min-height: 2.75rem;
+  height: auto;
+  gap: 0.5rem;
+  padding-inline: 1rem;
+}
+
 :is(.tdd-dashboard, .tdd-dashboard-theme) textarea {
   min-height: 7rem;
   border-radius: 0.75rem;
@@ -259,6 +266,48 @@
   .tdd-dashboard .dashboard-card-hover:hover {
     border-color: rgb(184 137 58 / 55%);
     box-shadow: 0 2px 6px rgb(12 29 58 / 6%), 0 14px 28px -20px rgb(12 29 58 / 30%);
+  }
+}
+
+.ddni-certificate-document {
+  min-height: min(680px, calc(100dvh - 8rem));
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+
+  html:has(.ddni-certificate-print-page),
+  body:has(.ddni-certificate-print-page) {
+    background: #fff !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  body:has(.ddni-certificate-print-page) {
+    overflow: visible !important;
+  }
+
+  body:has(.ddni-certificate-print-page) .ddni-certificate-print-chrome {
+    display: none !important;
+  }
+
+  body:has(.ddni-certificate-print-page) .ddni-certificate-print-page {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    padding: 1.25rem !important;
+  }
+
+  body:has(.ddni-certificate-print-page) .ddni-certificate-document {
+    width: 100%;
+    max-width: none;
+    min-height: calc(100vh - 2.5rem);
+    border-color: #795719;
+    box-shadow: none;
+    break-inside: avoid;
   }
 }
 

@@ -7,8 +7,8 @@ import type { Opportunity } from "@/lib/dashboard-data"
 import { ANNOUNCEMENT_CATEGORIES, announcementCategory, longDate, type AnnouncementCategory } from "@/lib/ddni-content"
 import { SESSIONS, formatTimeRange, sessionTitle } from "@/lib/ddni-schedule"
 import { cn } from "@/lib/utils"
-import { DdniButton, EmptyPanel, LoadingBlock, PageHeading, Panel, TextLink } from "@/components/dashboard/ddni-ui"
-import { ViewContainer } from "@/components/dashboard/dashboard-ui"
+import { DdniButton, EmptyPanel, LoadingBlock, Panel, TextLink, UnderlineTabs, type TabItem } from "@/components/dashboard/ddni-ui"
+import { ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import type { DashboardView, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 const SEEN_KEY = "ddni-notifications-seen-at"
@@ -74,7 +74,7 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
   }, [items])
 
   const courseCount = categoryCounts["My Courses"]
-  const tabs: { id: TabId; label: string }[] = [
+  const tabs: TabItem<TabId>[] = [
     { id: "all", label: `All (${items.length})` },
     { id: "unread", label: `Unread (${unreadCount})` },
     { id: "courses", label: `My Courses (${courseCount})` },
@@ -121,31 +121,16 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
 
   return (
     <ViewContainer>
-      <PageHeading title="Announcements" subtitle="Stay informed. Stay connected." onHome={() => onNavigate("overview")} />
+      <ViewHeader
+        kicker="Network updates"
+        title="Announcements"
+        description="Stay informed. Stay connected."
+        actions={<DdniButton variant="outline" onClick={markAllRead} disabled={unreadCount === 0}><Mail />Mark all as read</DdniButton>}
+      />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="flex min-w-0 flex-col gap-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div role="group" aria-label="Announcement filters" className="flex flex-wrap gap-2">
-              {tabs.map((item) => {
-                const active = tab === item.id
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => setTab(item.id)}
-                    className={cn("min-h-11 rounded-lg border px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]", active ? "btn-gold border-transparent" : "border-border bg-card text-foreground hover:bg-muted")}
-                  >
-                    {item.label}
-                  </button>
-                )
-              })}
-            </div>
-            <button type="button" onClick={markAllRead} disabled={unreadCount === 0} className="inline-flex min-h-11 items-center gap-2 rounded-sm px-1 text-sm font-medium text-primary underline underline-offset-4 transition-colors hover:text-primary/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50">
-              <Mail className="size-4" aria-hidden />Mark All as Read
-            </button>
-          </div>
+          <UnderlineTabs label="Announcement filters" items={tabs} value={tab} onChange={setTab} />
 
           {category && (
             <p className="text-sm text-muted-foreground">Showing <strong className="text-foreground">{category}</strong>. <button type="button" onClick={() => setCategory(null)} className="font-medium text-[#8a6420] underline underline-offset-4">Clear</button></p>

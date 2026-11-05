@@ -18,13 +18,27 @@ import { OpportunitiesView } from "@/components/dashboard/views/opportunities-vi
 import { AnnouncementsView } from "@/components/dashboard/views/announcements-view"
 import { playfair } from "@/src/app/fonts"
 import { cn } from "@/lib/utils"
-import { requestCourseAccess as requestCourseAccessAction } from "@/src/app/dashboard/actions"
+import {
+  requestCourseAccess as requestCourseAccessAction,
+  setCourseSessionCompletion as setCourseSessionCompletionAction,
+  submitCourseAssessment as submitCourseAssessmentAction,
+} from "@/src/app/dashboard/actions"
 import { ProfileView } from "@/components/dashboard/views/profile-view"
 import { SettingsView } from "@/components/dashboard/views/settings-view"
 import { SupportView } from "@/components/dashboard/views/support-view"
+import { CertificatesView } from "@/components/dashboard/views/certificates-view"
 import {
   emptyProfile,
   toCourse,
+  toCourseAssessment,
+  toCourseAssessmentAnswer,
+  toCourseAssessmentAttempt,
+  toCourseAssessmentQuestion,
+  toCourseCertificate,
+  toCourseLearningPath,
+  toCourseMaterial,
+  toCourseSession,
+  toCourseSessionCompletion,
   toDirectoryMember,
   toEnrollment,
   toOpportunity,
@@ -32,16 +46,26 @@ import {
   toResource,
   type Course,
   type CourseEnrollment,
+  type CourseAssessment,
+  type CourseAssessmentAnswer,
+  type CourseAssessmentAttempt,
+  type CourseAssessmentQuestion,
+  type CourseCertificate,
+  type CourseLearningPath,
+  type CourseMaterial,
+  type CourseSession,
+  type CourseSessionCompletion,
+  type AssessmentSubmissionResult,
   type DirectoryMember,
   type MemberProfile,
   type Opportunity,
   type Resource,
 } from "@/lib/dashboard-data"
 
-export const DASHBOARD_VIEWS = ["overview", "institute", "courses", "calendar", "library", "network", "opportunities", "announcements", "profile", "history", "settings", "support"] as const
+export const DASHBOARD_VIEWS = ["overview", "institute", "courses", "calendar", "library", "certificates", "network", "opportunities", "announcements", "profile", "history", "settings", "support"] as const
 export type DashboardView = (typeof DASHBOARD_VIEWS)[number]
 
-const LIGHT_VIEWS: readonly DashboardView[] = ["courses", "calendar", "library", "network", "opportunities", "announcements", "profile", "settings"]
+const LIGHT_VIEWS: readonly DashboardView[] = ["overview", "courses", "calendar", "library", "certificates", "network", "opportunities", "announcements", "profile", "settings"]
 
 const SESSION_TIMEOUT_MS = 5 * 60 * 1000
 const RESERVED_ANNOUNCEMENTS = `("__dashboard_announcement__","__landing_announcement__")`
@@ -77,9 +101,18 @@ export type DashboardData = {
   courses: Course[]
   enrollments: CourseEnrollment[]
   resources: Resource[]
+  certificates: CourseCertificate[]
+  learningPaths: CourseLearningPath[]
+  sessions: CourseSession[]
+  materials: CourseMaterial[]
+  assessments: CourseAssessment[]
+  assessmentQuestions: CourseAssessmentQuestion[]
+  assessmentAttempts: CourseAssessmentAttempt[]
+  assessmentAnswers: CourseAssessmentAnswer[]
+  sessionCompletions: CourseSessionCompletion[]
   profile: MemberProfile
   directory: DirectoryMember[]
-  errors: Partial<Record<"opportunities" | "courses" | "enrollments" | "resources" | "profile" | "directory", string>>
+  errors: Partial<Record<"opportunities" | "courses" | "enrollments" | "resources" | "certificates" | "learning" | "profile" | "directory", string>>
 }
 
 const initialData: DashboardData = {
@@ -88,6 +121,15 @@ const initialData: DashboardData = {
   courses: [],
   enrollments: [],
   resources: [],
+  certificates: [],
+  learningPaths: [],
+  sessions: [],
+  materials: [],
+  assessments: [],
+  assessmentQuestions: [],
+  assessmentAttempts: [],
+  assessmentAnswers: [],
+  sessionCompletions: [],
   profile: emptyProfile,
   directory: [],
   errors: {},
@@ -120,8 +162,11 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
     const url = new URL(window.location.href)
     if (destination === "overview") url.searchParams.delete("view")
     else url.searchParams.set("view", destination)
-    if (url.href !== window.location.href) window.history.pushState({ view }, "", url)
-  }, [])
+    const nextUrl = `${url.pathname}${url.search}`
+    if (nextUrl !== `${window.location.pathname}${window.location.search}`) {
+      router.push(nextUrl, { scroll: false })
+    }
+  }, [router])
 
   useEffect(() => {
     const syncFromUrl = () => {
@@ -141,31 +186,61 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
 
   const loadData = useCallback(async (userId: string) => {
     const client = createClient()
-    const [opportunities, courses, enrollments, resources, profile, directory] = await Promise.all([
+    try {
+      const [opportunities, courses, enrollments, resources, certificates, learningPaths, sessions, materials, assessments, assessmentQuestions, assessmentAttempts, sessionCompletions, profile, directory] = await Promise.all([
       client.from("announcements").select("id, title, body, created_at").eq("published", true).not("title", "in", RESERVED_ANNOUNCEMENTS).order("created_at", { ascending: false }).limit(50),
       client.from("courses").select("*").eq("published", true).order("created_at", { ascending: false }),
       client.from("course_enrollments").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
       client.from("resources").select("*").eq("published", true).order("created_at", { ascending: false }),
+      client.from("course_certificates").select("id, user_id, course_id, member_name, course_title, instructor, certificate_code, issued_at").eq("user_id", userId).order("issued_at", { ascending: false }),
+      client.from("course_learning_paths").select("*").eq("published", true).order("created_at", { ascending: true }),
+      client.from("course_sessions").select("*").eq("published", true).order("position", { ascending: true }),
+      client.from("course_materials").select("*").eq("published", true).order("position", { ascending: true }),
+      client.from("course_assessments").select("*").eq("published", true).order("created_at", { ascending: true }),
+      client.from("course_assessment_questions").select("*").order("position", { ascending: true }),
+      client.from("course_assessment_attempts").select("*").eq("user_id", userId).order("submitted_at", { ascending: false }),
+      client.from("course_session_completions").select("session_id, completed_at").eq("user_id", userId),
       client.from("member_profiles").select("*").eq("id", userId).maybeSingle(),
       client.from("member_profiles").select("*").neq("id", userId).limit(60),
-    ])
-    setData({
-      loading: false,
-      opportunities: (opportunities.data || []).map(toOpportunity),
-      courses: (courses.data || []).map(toCourse),
-      enrollments: (enrollments.data || []).map(toEnrollment),
-      resources: (resources.data || []).map(toResource),
-      profile: toProfile(profile.data),
-      directory: (directory.data || []).map(toDirectoryMember),
-      errors: {
-        opportunities: opportunities.error ? "We couldn't load opportunities." : undefined,
-        courses: courses.error ? "We couldn't load courses." : undefined,
-        enrollments: enrollments.error ? "We couldn't load your course sign-ups." : undefined,
-        resources: resources.error ? "We couldn't load resources." : undefined,
-        profile: profile.error ? "We couldn't load your professional profile." : undefined,
-        directory: directory.error ? "We couldn't load the member directory." : undefined,
-      },
-    })
+      ])
+      const attemptIds = (assessmentAttempts.data || []).map((attempt) => attempt.id)
+      const assessmentAnswers = attemptIds.length
+        ? await client.from("course_assessment_answers").select("*").in("attempt_id", attemptIds)
+        : { data: [], error: null }
+      const learningError = learningPaths.error || sessions.error || materials.error || assessments.error
+        || assessmentQuestions.error || assessmentAttempts.error || assessmentAnswers.error || sessionCompletions.error
+      setData({
+        loading: false,
+        opportunities: (opportunities.data || []).map(toOpportunity),
+        courses: (courses.data || []).map(toCourse),
+        enrollments: (enrollments.data || []).map(toEnrollment),
+        resources: (resources.data || []).map(toResource),
+        certificates: (certificates.data || []).map(toCourseCertificate),
+        learningPaths: (learningPaths.data || []).map(toCourseLearningPath),
+        sessions: (sessions.data || []).map(toCourseSession),
+        materials: (materials.data || []).map(toCourseMaterial),
+        assessments: (assessments.data || []).map(toCourseAssessment),
+        assessmentQuestions: (assessmentQuestions.data || []).map(toCourseAssessmentQuestion),
+        assessmentAttempts: (assessmentAttempts.data || []).map(toCourseAssessmentAttempt),
+        assessmentAnswers: (assessmentAnswers.data || []).map(toCourseAssessmentAnswer),
+        sessionCompletions: (sessionCompletions.data || []).map(toCourseSessionCompletion),
+        profile: toProfile(profile.data),
+        directory: (directory.data || []).map(toDirectoryMember),
+        errors: {
+          opportunities: opportunities.error ? "We couldn't load opportunities." : undefined,
+          courses: courses.error ? "We couldn't load courses." : undefined,
+          enrollments: enrollments.error ? "We couldn't load your course sign-ups." : undefined,
+          resources: resources.error ? "We couldn't load resources." : undefined,
+          certificates: certificates.error ? "We couldn't load your certificates." : undefined,
+          learning: learningError ? "We couldn't load course lessons or assessments." : undefined,
+          profile: profile.error ? "We couldn't load your professional profile." : undefined,
+          directory: directory.error ? "We couldn't load the member directory." : undefined,
+        },
+      })
+    } catch (error) {
+      console.error("[dashboard] loadData failed", error)
+      setData({ ...initialData, loading: false, errors: { learning: "Unable to load dashboard data. Refresh the page and try again." } })
+    }
   }, [])
 
   useEffect(() => {
@@ -199,14 +274,52 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
   const updateMember = useCallback((updates: Partial<DashboardMember>) => setMember((current) => ({ ...current, ...updates })), [])
   const updateProfile = useCallback((profile: MemberProfile) => setData((current) => ({ ...current, profile, errors: { ...current.errors, profile: undefined } })), [])
   const requestCourseAccess = useCallback(async (course: Course) => {
-    const result = await requestCourseAccessAction(course.id)
-    if (result.error) return result.error
-    const { data: { user } } = await createClient().auth.getUser()
-    if (user) await loadData(user.id)
-    return null
+    try {
+      const result = await requestCourseAccessAction(course.id)
+      if (result.error) return result.error
+      const { data: { user } } = await createClient().auth.getUser()
+      if (user) await loadData(user.id)
+      return null
+    } catch (error) {
+      console.error("[dashboard] requestCourseAccess callback failed", error)
+      return "Unable to send your course sign-up. Please try again."
+    }
   }, [loadData])
 
-  const viewProps = useMemo(() => ({ member, data, onNavigate: navigate, onRequestCourseAccess: requestCourseAccess }), [member, data, navigate, requestCourseAccess])
+  const setSessionCompletion = useCallback(async (sessionId: string, complete: boolean) => {
+    try {
+      const result = await setCourseSessionCompletionAction(sessionId, complete)
+      if (result.error) return result.error
+      const { data: { user } } = await createClient().auth.getUser()
+      if (user) await loadData(user.id)
+      return null
+    } catch (error) {
+      console.error("[dashboard] setSessionCompletion callback failed", error)
+      return "Unable to update your course progress. Please try again."
+    }
+  }, [loadData])
+
+  const submitAssessment = useCallback(async (assessmentId: string, answers: { questionId: string; answer: string }[]) => {
+    try {
+      const result = await submitCourseAssessmentAction(assessmentId, answers)
+      if ("error" in result) return result
+      const { data: { user } } = await createClient().auth.getUser()
+      if (user) await loadData(user.id)
+      return { result: result.result }
+    } catch (error) {
+      console.error("[dashboard] submitAssessment callback failed", error)
+      return { error: "Unable to submit your assessment. Please try again." }
+    }
+  }, [loadData])
+
+  const viewProps = useMemo(() => ({
+    member,
+    data,
+    onNavigate: navigate,
+    onRequestCourseAccess: requestCourseAccess,
+    onSetSessionCompletion: setSessionCompletion,
+    onSubmitCourseAssessment: submitAssessment,
+  }), [member, data, navigate, requestCourseAccess, setSessionCompletion, submitAssessment])
 
   if (accessState === null) return <main className="fixed inset-0 z-[100] grid place-items-center bg-[#071520] text-white" role="status" aria-live="polite"><div className="flex flex-col items-center gap-4"><div className="motion-safe:animate-spin size-10 rounded-full border-2 border-white/20 border-t-[#d8b865]" /><span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">Loading dashboard</span></div></main>
   if (accessState !== "active") {
@@ -251,6 +364,7 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
                     {activeView === "courses" && <MyCoursesView {...viewProps} />}
                     {activeView === "calendar" && <CalendarView {...viewProps} />}
                     {activeView === "library" && <LibraryView {...viewProps} />}
+                    {activeView === "certificates" && <CertificatesView {...viewProps} />}
                     {activeView === "network" && <NetworkView {...viewProps} />}
                     {activeView === "opportunities" && <OpportunitiesView {...viewProps} />}
                     {activeView === "announcements" && <AnnouncementsView {...viewProps} />}
@@ -273,4 +387,9 @@ export type DashboardViewProps = {
   data: DashboardData
   onNavigate: (view: DashboardView) => void
   onRequestCourseAccess: (course: Course) => Promise<string | null>
+  onSetSessionCompletion: (sessionId: string, complete: boolean) => Promise<string | null>
+  onSubmitCourseAssessment: (
+    assessmentId: string,
+    answers: { questionId: string; answer: string }[],
+  ) => Promise<{ result: AssessmentSubmissionResult } | { error: string }>
 }

@@ -6,8 +6,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { SUPPORT_EMAIL, type Opportunity } from "@/lib/dashboard-data"
 import { OPPORTUNITY_KIND_LABEL, longDate, opportunityKind, type OpportunityKind } from "@/lib/ddni-content"
 import { cn } from "@/lib/utils"
-import { DdniButton, EmptyPanel, LoadingBlock, PageHeading, Pill, SearchBox, SelectField, UnderlineTabs, type TabItem } from "@/components/dashboard/ddni-ui"
-import { ViewContainer } from "@/components/dashboard/dashboard-ui"
+import { DdniButton, EmptyPanel, LoadingBlock, Pill, SearchBox, SelectField, UnderlineTabs, type TabItem } from "@/components/dashboard/ddni-ui"
+import { ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 type TabId = "all" | OpportunityKind | "saved"
@@ -25,7 +25,7 @@ function Thumb({ kind }: { kind: OpportunityKind }) {
   )
 }
 
-export function OpportunitiesView({ data, onNavigate }: DashboardViewProps) {
+export function OpportunitiesView({ data }: DashboardViewProps) {
   const [query, setQuery] = useState("")
   const [posted, setPosted] = useState("any")
   const [sort, setSort] = useState("newest")
@@ -80,7 +80,7 @@ export function OpportunitiesView({ data, onNavigate }: DashboardViewProps) {
 
   return (
     <ViewContainer>
-      <PageHeading title="Opportunities" subtitle="Put your gifts, skills and learning into action." onHome={() => onNavigate("overview")} />
+      <ViewHeader kicker="Member opportunities" title="Opportunities" description="Put your gifts, skills and learning into action." />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="flex min-w-0 flex-col gap-4">
@@ -90,7 +90,8 @@ export function OpportunitiesView({ data, onNavigate }: DashboardViewProps) {
             <SelectField id="opp-sort" label="Sort by" value={sort} onChange={setSort} options={[{ value: "newest", label: "Newest first" }, { value: "oldest", label: "Oldest first" }]} />
           </div>
 
-          <UnderlineTabs label="Opportunity categories" items={tabs} value={tab} onChange={setTab} trailing={data.loading ? undefined : `${visible.length} ${visible.length === 1 ? "opportunity" : "opportunities"}`} />
+          <UnderlineTabs label="Opportunity categories" items={tabs} value={tab} onChange={setTab} />
+          {!data.loading && <p className="text-xs text-muted-foreground" aria-live="polite">{visible.length} {visible.length === 1 ? "opportunity" : "opportunities"}</p>}
 
           {data.errors.opportunities && <p role="alert" className="text-sm text-[#b3261e]">{data.errors.opportunities}</p>}
 
@@ -117,7 +118,7 @@ export function OpportunitiesView({ data, onNavigate }: DashboardViewProps) {
                         <div className="flex flex-wrap gap-2"><Pill tone="gold">DDNI Opportunity</Pill><Pill tone="gray">{OPPORTUNITY_KIND_LABEL[kind]}</Pill></div>
                         <p className="line-clamp-3 text-sm leading-relaxed text-foreground/80">{item.description || "Open the opportunity for more details."}</p>
                       </div>
-                      <div className="flex shrink-0 flex-row items-end gap-3 border-t border-border pt-3 sm:w-52 sm:flex-col sm:items-stretch sm:border-t-0 sm:border-l sm:pt-0 sm:pl-4">
+                      <div className="flex min-w-0 shrink-0 flex-col items-stretch gap-3 border-t border-border pt-3 sm:w-52 sm:flex-col sm:border-t-0 sm:border-l sm:pt-0 sm:pl-4">
                         <div className="flex flex-1 items-start justify-between gap-2">
                           <p className="flex items-start gap-2 text-sm text-foreground/85"><CalendarDays className="mt-0.5 size-5 shrink-0" aria-hidden /><span><span className="block text-xs text-muted-foreground">Posted</span>{longDate(item.createdAt)}</span></p>
                           <button
@@ -130,7 +131,7 @@ export function OpportunitiesView({ data, onNavigate }: DashboardViewProps) {
                             <Bookmark className={cn("size-5", isSaved && "fill-current")} />
                           </button>
                         </div>
-                        <DdniButton size="lg" onClick={() => setSelected(item)}>View Opportunity<ArrowRight /></DdniButton>
+                        <DdniButton size="lg" className="w-full" onClick={() => setSelected(item)}>View Opportunity<ArrowRight /></DdniButton>
                       </div>
                     </article>
                   </li>

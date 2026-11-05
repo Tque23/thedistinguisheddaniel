@@ -5,8 +5,8 @@ import { BookOpen, CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, Users
 import { catalogCourse } from "@/lib/courses"
 import { cn } from "@/lib/utils"
 import { SESSIONS, downloadIcs, formatSessionDate, formatTimeRange, sameDay, sessionTitle, type Session } from "@/lib/ddni-schedule"
-import { CourseCover, DdniButton, PageHeading, Panel, TextLink } from "@/components/dashboard/ddni-ui"
-import { ViewContainer } from "@/components/dashboard/dashboard-ui"
+import { CourseCover, DdniButton, Panel, TextLink } from "@/components/dashboard/ddni-ui"
+import { ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 type Mode = "month" | "week" | "list"
@@ -103,31 +103,31 @@ export function CalendarView({ data, onNavigate }: DashboardViewProps) {
 
   return (
     <ViewContainer>
-      <PageHeading title="My Calendar" subtitle="Stay up to date with your courses, sessions and events." onHome={() => onNavigate("overview")} />
+      <ViewHeader kicker="Member schedule" title="My Calendar" description="Stay up to date with your courses, sessions and events." />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
         <section className="ddni-card min-w-0 p-6" aria-label="Calendar">
-          <div className="mb-4 flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <button type="button" onClick={() => shift(-1)} aria-label={mode === "week" ? "Previous week" : "Previous month"} className="ddni-btn grid size-11 place-items-center rounded-lg border border-input bg-card text-foreground shadow-sm hover:bg-muted"><ChevronLeft className="size-5" /></button>
-              <h3 className="ddni-serif min-w-40 px-1 text-center text-xl font-bold text-foreground sm:text-2xl" aria-live="polite">{monthLabel}</h3>
-              <button type="button" onClick={() => shift(1)} aria-label={mode === "week" ? "Next week" : "Next month"} className="ddni-btn grid size-11 place-items-center rounded-lg border border-input bg-card text-foreground shadow-sm hover:bg-muted"><ChevronRight className="size-5" /></button>
+          <div className="mb-4 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <button type="button" onClick={() => shift(-1)} aria-label={mode === "week" ? "Previous week" : "Previous month"} className="ddni-btn grid size-10 shrink-0 place-items-center rounded-lg border border-input bg-card text-foreground shadow-sm hover:bg-muted sm:size-11"><ChevronLeft className="size-5" /></button>
+              <h3 className="ddni-serif min-w-0 flex-1 text-center text-base font-bold text-foreground sm:min-w-40 sm:px-1 sm:text-2xl" aria-live="polite">{monthLabel}</h3>
+              <button type="button" onClick={() => shift(1)} aria-label={mode === "week" ? "Next week" : "Next month"} className="ddni-btn grid size-10 shrink-0 place-items-center rounded-lg border border-input bg-card text-foreground shadow-sm hover:bg-muted sm:size-11"><ChevronRight className="size-5" /></button>
             </div>
-            <div className="ms-auto flex items-center gap-3">
-              <div role="group" aria-label="Calendar view" className="inline-flex overflow-hidden rounded-lg border border-input bg-white shadow-sm">
+            <div className="flex flex-wrap items-center gap-2 sm:ms-auto sm:gap-3">
+              <div role="group" aria-label="Calendar view" className="inline-flex overflow-hidden rounded-lg border border-input bg-card shadow-sm">
                 {(["month", "week", "list"] as const).map((option) => (
                   <button
                     key={option}
                     type="button"
                     aria-pressed={mode === option}
                     onClick={() => setMode(option)}
-                    className={cn("min-h-11 px-4 text-sm font-medium capitalize transition-colors", mode === option ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted")}
+                    className={cn("min-h-11 px-2 text-sm font-medium capitalize transition-colors sm:px-4", mode === option ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted")}
                   >
                     {option}
                   </button>
                 ))}
               </div>
-              <button type="button" onClick={goToday} className="ddni-btn min-h-11 rounded-lg border border-input bg-card px-4 text-sm font-medium text-foreground hover:bg-muted">Today</button>
+              <button type="button" onClick={goToday} className="ddni-btn min-h-11 rounded-lg border border-input bg-card px-3 text-sm font-medium text-foreground hover:bg-muted sm:px-4">Today</button>
             </div>
           </div>
 

@@ -47,6 +47,104 @@ export type Resource = {
   createdAt: string
 }
 
+export type CourseCertificate = {
+  id: string
+  courseId: string | null
+  memberName: string
+  courseTitle: string
+  instructor: string
+  certificateCode: string
+  issuedAt: string
+}
+
+export type CourseLearningPath = {
+  id: string
+  courseId: string
+  title: string
+  description: string
+  published: boolean
+  createdAt: string
+}
+
+export type CourseSession = {
+  id: string
+  courseId: string
+  pathId: string | null
+  title: string
+  description: string
+  videoUrl: string
+  durationMinutes: number
+  position: number
+  published: boolean
+}
+
+export type CourseMaterial = {
+  id: string
+  courseId: string
+  sessionId: string | null
+  title: string
+  description: string
+  resourceType: string
+  url: string
+  position: number
+}
+
+export type CourseQuestionType = "multiple_choice" | "true_false" | "written"
+
+export type CourseAssessment = {
+  id: string
+  courseId: string
+  sessionId: string | null
+  title: string
+  instructions: string
+  maxAttempts: number
+}
+
+export type CourseAssessmentQuestion = {
+  id: string
+  assessmentId: string
+  prompt: string
+  questionType: CourseQuestionType
+  options: string[]
+  points: number
+  position: number
+}
+
+export type CourseAssessmentAttempt = {
+  id: string
+  assessmentId: string
+  userId: string
+  status: "pending_review" | "graded"
+  score: number
+  maxScore: number
+  submittedAt: string
+  gradedAt: string
+}
+
+export type CourseAssessmentAnswer = {
+  id: string
+  attemptId: string
+  questionId: string
+  answer: string
+  isCorrect: boolean | null
+  pointsAwarded: number | null
+  feedback: string
+}
+
+export type CourseSessionCompletion = {
+  sessionId: string
+  completedAt: string
+}
+
+export type AssessmentSubmissionResult = {
+  attemptId: string
+  score: number
+  maxScore: number
+  needsReview: boolean
+  attemptsUsed: number
+  attemptsAllowed: number
+}
+
 export type MemberProfile = {
   headline: string
   company: string
@@ -136,6 +234,110 @@ export function toResource(row: Row): Resource {
     type: text(row.resource_type) || "Resource",
     createdAt: text(row.created_at),
   }
+}
+
+export function toCourseCertificate(row: Row): CourseCertificate {
+  return {
+    id: text(row.id),
+    courseId: row.course_id == null ? null : text(row.course_id),
+    memberName: text(row.member_name),
+    courseTitle: text(row.course_title),
+    instructor: text(row.instructor),
+    certificateCode: text(row.certificate_code),
+    issuedAt: text(row.issued_at),
+  }
+}
+
+export function toCourseLearningPath(row: Row): CourseLearningPath {
+  return {
+    id: text(row.id),
+    courseId: text(row.course_id),
+    title: text(row.title),
+    description: text(row.description),
+    published: row.published === true,
+    createdAt: text(row.created_at),
+  }
+}
+
+export function toCourseSession(row: Row): CourseSession {
+  return {
+    id: text(row.id),
+    courseId: text(row.course_id),
+    pathId: row.path_id == null ? null : text(row.path_id),
+    title: text(row.title),
+    description: text(row.description),
+    videoUrl: text(row.video_url),
+    durationMinutes: Number.isFinite(Number(row.duration_minutes)) ? Number(row.duration_minutes) : 0,
+    position: Number.isFinite(Number(row.position)) ? Number(row.position) : 0,
+    published: row.published === true,
+  }
+}
+
+export function toCourseMaterial(row: Row): CourseMaterial {
+  return {
+    id: text(row.id),
+    courseId: text(row.course_id),
+    sessionId: row.session_id == null ? null : text(row.session_id),
+    title: text(row.title),
+    description: text(row.description),
+    resourceType: text(row.resource_type),
+    url: text(row.url),
+    position: Number.isFinite(Number(row.position)) ? Number(row.position) : 0,
+  }
+}
+
+export function toCourseAssessment(row: Row): CourseAssessment {
+  return {
+    id: text(row.id),
+    courseId: text(row.course_id),
+    sessionId: row.session_id == null ? null : text(row.session_id),
+    title: text(row.title),
+    instructions: text(row.instructions),
+    maxAttempts: Number.isFinite(Number(row.max_attempts)) ? Number(row.max_attempts) : 1,
+  }
+}
+
+export function toCourseAssessmentQuestion(row: Row): CourseAssessmentQuestion {
+  const rawType = text(row.question_type)
+  const questionType: CourseQuestionType = rawType === "multiple_choice" || rawType === "true_false" ? rawType : "written"
+  return {
+    id: text(row.id),
+    assessmentId: text(row.assessment_id),
+    prompt: text(row.prompt),
+    questionType,
+    options: Array.isArray(row.options) ? row.options.filter((option): option is string => typeof option === "string") : [],
+    points: Number.isFinite(Number(row.points)) ? Number(row.points) : 1,
+    position: Number.isFinite(Number(row.position)) ? Number(row.position) : 0,
+  }
+}
+
+export function toCourseAssessmentAttempt(row: Row): CourseAssessmentAttempt {
+  return {
+    id: text(row.id),
+    assessmentId: text(row.assessment_id),
+    userId: text(row.user_id),
+    status: row.status === "graded" ? "graded" : "pending_review",
+    score: Number.isFinite(Number(row.score)) ? Number(row.score) : 0,
+    maxScore: Number.isFinite(Number(row.max_score)) ? Number(row.max_score) : 0,
+    submittedAt: text(row.submitted_at),
+    gradedAt: text(row.graded_at),
+  }
+}
+
+export function toCourseAssessmentAnswer(row: Row): CourseAssessmentAnswer {
+  return {
+    id: text(row.id),
+    attemptId: text(row.attempt_id),
+    questionId: text(row.question_id),
+    answer: text(row.answer),
+    isCorrect: typeof row.is_correct === "boolean" ? row.is_correct : null,
+    pointsAwarded: typeof row.points_awarded === "number" ? row.points_awarded : null,
+    feedback: text(row.feedback),
+  }
+}
+
+export function toCourseSessionCompletion(row: Row): CourseSessionCompletion {
+  return { sessionId: text(row.session_id), completedAt: text(row.completed_at) }
 }
 
 export function toProfile(row: Row | null | undefined): MemberProfile {

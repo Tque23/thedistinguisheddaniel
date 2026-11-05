@@ -5,8 +5,8 @@ import { ArrowRight, BookOpen, Bookmark, CalendarDays, Download, Eye, FileText, 
 import { COURSES } from "@/lib/courses"
 import { cn } from "@/lib/utils"
 import { formatDate, type Resource } from "@/lib/dashboard-data"
-import { CourseCover, DdniButton, EmptyPanel, LoadingBlock, PageHeading, Pill, SearchBox, SelectField, UnderlineTabs, type TabItem } from "@/components/dashboard/ddni-ui"
-import { ViewContainer } from "@/components/dashboard/dashboard-ui"
+import { CourseCover, DdniButton, EmptyPanel, LoadingBlock, Pill, SearchBox, SelectField, UnderlineTabs, type TabItem } from "@/components/dashboard/ddni-ui"
+import { ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 type TabId = "all" | "manuals" | "recordings" | "presentations" | "saved"
@@ -72,7 +72,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
   )
 }
 
-export function LibraryView({ data, onNavigate }: DashboardViewProps) {
+export function LibraryView({ data }: DashboardViewProps) {
   const [query, setQuery] = useState("")
   const [course, setCourse] = useState("all")
   const [topic, setTopic] = useState("all")
@@ -115,6 +115,7 @@ export function LibraryView({ data, onNavigate }: DashboardViewProps) {
   })
 
   const filtering = query !== "" || course !== "all" || topic !== "all" || fileType !== "all" || tab !== "all"
+  const noSavedResources = tab === "saved" && saved.size === 0 && query === "" && course === "all" && topic === "all" && fileType === "all"
 
   function reset() {
     setQuery("")
@@ -135,7 +136,7 @@ export function LibraryView({ data, onNavigate }: DashboardViewProps) {
 
   return (
     <ViewContainer>
-      <PageHeading title="Resource Library" subtitle="Resources to support your learning and growth." onHome={() => onNavigate("overview")} />
+      <ViewHeader kicker="Member resources" title="Resource Library" description="Resources to support your learning and growth." />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
         <SearchBox value={query} onChange={setQuery} placeholder="Search resources by title, keyword or author..." label="Search resources" className="self-center" />
@@ -164,7 +165,7 @@ export function LibraryView({ data, onNavigate }: DashboardViewProps) {
       ) : visible.length === 0 ? (
         <EmptyPanel
           icon={Library}
-          title={data.resources.length ? (tab === "saved" && !filtering ? "Nothing saved yet" : "No resources match your filters") : "The library is being curated"}
+          title={data.resources.length ? (noSavedResources ? "Nothing saved yet" : "No resources match your filters") : "The library is being curated"}
           description={data.resources.length ? "Try a different search, filter or category." : "Manuals, recordings and presentations will appear here once they are published."}
           action={filtering ? <DdniButton variant="outline" onClick={reset}>Clear filters</DdniButton> : undefined}
         />

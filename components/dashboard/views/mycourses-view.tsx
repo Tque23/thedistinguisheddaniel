@@ -5,9 +5,9 @@ import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Clock, FileText, MapP
 import { catalogCourse } from "@/lib/courses"
 import { enrollmentFor, type Course, type CourseEnrollment } from "@/lib/dashboard-data"
 import { courseCodeFor, formatSessionDate, formatTimeRange, primarySessions, type Session } from "@/lib/ddni-schedule"
-import { CourseCover, DdniButton, EmptyPanel, LoadingBlock, PageHeading, Panel, Pill, SegmentedTabs, TextLink, type TabItem } from "@/components/dashboard/ddni-ui"
+import { CourseCover, DdniButton, EmptyPanel, LoadingBlock, Panel, Pill, SegmentedTabs, TextLink, type TabItem } from "@/components/dashboard/ddni-ui"
 import { CourseDetailsSheet } from "@/components/dashboard/course-details-sheet"
-import { ViewContainer } from "@/components/dashboard/dashboard-ui"
+import { ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 type Status = "in-progress" | "registered" | "pending" | "completed" | "available"
@@ -20,20 +20,20 @@ type CourseItem = {
   code: string
   sessions: Session[]
   completedSessions: number
+  lessonCount: number
   status: Status
   upcoming: Session | undefined
   tagline: string
 }
 
-function buildItem(course: Course, enrollment: CourseEnrollment | undefined, now: Date): CourseItem {
+function buildItem(course: Course, enrollment: CourseEnrollment | undefined, now: Date, lessonCount: number, completedSessions: number): CourseItem {
   const catalog = catalogCourse(course.slug)
   const sessions = primarySessions(course.slug)
-  const completedSessions = sessions.filter((session) => session.end.getTime() < now.getTime()).length
   const started = sessions.length > 0 && sessions[0].start.getTime() <= now.getTime()
   let status: Status = "available"
   if (enrollment?.status === "enrolled") {
-    if (sessions.length > 0 && completedSessions === sessions.length) status = "completed"
-    else status = started ? "in-progress" : "registered"
+    if (lessonCount > 0 && completedSessions === lessonCount) status = "completed"
+    else status = started || completedSessions > 0 ? "in-progress" : "registered"
   } else if (enrollment?.status === "pending") status = "pending"
   return {
     course,
@@ -42,6 +42,7 @@ function buildItem(course: Course, enrollment: CourseEnrollment | undefined, now
     code: courseCodeFor(course.slug),
     sessions,
     completedSessions,
+    lessonCount,
     status,
     upcoming: sessions.find((session) => session.end.getTime() >= now.getTime()),
     tagline: catalog?.tagline ?? "",
@@ -66,17 +67,19 @@ function InfoRow({ icon: Icon, children }: { icon: typeof UserRound; children: R
 }
 
 function CourseCard({ item, now, onOpen, onContinue }: { item: CourseItem; now: Date; onOpen: () => void; onContinue: () => void }) {
-  const { course, sessions, status, completedSessions } = item
+  const { course, sessions, status, completedSessions, lessonCount } = item
   const pill = statusPill[status]
   const first = sessions[0]
   const modeLabel = first ? (first.mode === "online" ? "Online" : "In-person") : "In-person"
   const startsLabel = first
     ? `${first.start.getTime() <= now.getTime() ? "Started" : "Starts"} ${formatSessionDate(first.start)}`
     : course.eventDate ? `Starts ${new Date(course.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}` : "Starts TBA"
-  const sessionsLabel = sessions.length
-    ? status === "in-progress" || status === "completed" ? `${completedSessions} of ${sessions.length} sessions completed` : `${sessions.length} sessions`
+  const sessionsLabel = lessonCount
+    ? status === "in-progress" || status === "completed" ? `${completedSessions} of ${lessonCount} lessons completed` : `${lessonCount} lessons`
+    : sessions.length
+      ? `${sessions.length} scheduled sessions`
     : course.duration || "Sessions TBA"
-  const progress = sessions.length ? Math.round((completedSessions / sessions.length) * 100) : 0
+  const progress = lessonCount ? Math.round((completedSessions / lessonCount) * 100) : 0
   const joined = status === "in-progress" || status === "registered" || status === "completed"
 
   return (
@@ -127,14 +130,20 @@ function InfoLine({ icon: Icon, children }: { icon: typeof UserRound; children: 
   return <li className="flex items-center gap-2 text-sm text-foreground/85"><Icon className="size-4 shrink-0 text-[#0c1d3a]" aria-hidden />{children}</li>
 }
 
-export function MyCoursesView({ data, onNavigate, onRequestCourseAccess }: DashboardViewProps) {
+export function MyCoursesView({ data, onNavigate, onRequestCourseAccess, onSetSessionCompletion, onSubmitCourseAssessment }: DashboardViewProps) {
   const [tab, setTab] = useState<TabId>("all")
   const [selected, setSelected] = useState<Course | null>(null)
   const now = useMemo(() => new Date(), [])
 
   const items = useMemo(
-    () => data.courses.map((course) => buildItem(course, enrollmentFor(data.enrollments, course.id), now)),
-    [data.courses, data.enrollments, now],
+    () => data.courses.map((course) => buildItem(
+      course,
+      enrollmentFor(data.enrollments, course.id),
+      now,
+      data.sessions.filter((session) => session.courseId === course.id).length,
+      data.sessions.filter((session) => session.courseId === course.id && data.sessionCompletions.some((completion) => completion.sessionId === session.id)).length,
+    )),
+    [data.courses, data.enrollments, data.sessions, data.sessionCompletions, now],
   )
 
   const counts = {
@@ -167,7 +176,7 @@ export function MyCoursesView({ data, onNavigate, onRequestCourseAccess }: Dashb
 
   return (
     <ViewContainer>
-      <PageHeading title="My Courses" subtitle="Continue your journey of growth and distinction." onHome={() => onNavigate("overview")} />
+      <ViewHeader kicker="Member learning" title="My Courses" description="Continue your journey of growth and distinction." />
 
       <SegmentedTabs label="Course filters" items={tabs} value={tab} onChange={setTab} />
 
@@ -186,7 +195,7 @@ export function MyCoursesView({ data, onNavigate, onRequestCourseAccess }: Dashb
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visible.map((item) => (
-            <CourseCard key={item.course.id} item={item} now={now} onOpen={() => setSelected(item.course)} onContinue={() => onNavigate("library")} />
+            <CourseCard key={item.course.id} item={item} now={now} onOpen={() => setSelected(item.course)} onContinue={() => setSelected(item.course)} />
           ))}
         </div>
       )}
@@ -238,7 +247,23 @@ export function MyCoursesView({ data, onNavigate, onRequestCourseAccess }: Dashb
         </div>
       )}
 
-      <CourseDetailsSheet course={selected} enrollment={selectedEnrollment} onClose={() => setSelected(null)} onRequestCourseAccess={onRequestCourseAccess} />
+      <CourseDetailsSheet
+        course={selected}
+        enrollment={selectedEnrollment}
+        learningPaths={data.learningPaths}
+        sessions={data.sessions}
+        materials={data.materials}
+        assessments={data.assessments}
+        assessmentQuestions={data.assessmentQuestions}
+        assessmentAttempts={data.assessmentAttempts}
+        assessmentAnswers={data.assessmentAnswers}
+        sessionCompletions={data.sessionCompletions}
+        learningError={data.errors.learning}
+        onClose={() => setSelected(null)}
+        onRequestCourseAccess={onRequestCourseAccess}
+        onSetSessionCompletion={onSetSessionCompletion}
+        onSubmitCourseAssessment={onSubmitCourseAssessment}
+      />
     </ViewContainer>
   )
 }

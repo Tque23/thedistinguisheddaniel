@@ -10,23 +10,29 @@ async function requireAdmin() {
   return user
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
 export async function GET() {
   if (!await requireAdmin()) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const adminClient = createAdminClient()
   const { data, error } = await adminClient.auth.admin.listUsers({ perPage: 1000 })
   if (error) return NextResponse.json({ error: "Unable to load users" }, { status: 500 })
-  const { data: profiles } = await adminClient.from("member_profiles").select("*")
-  const profileById = new Map(((profiles || []) as { id: string }[]).map((profile) => [profile.id, profile]))
+  const { data: profiles, error: profileError } = await adminClient.from("member_profiles").select("*")
+  if (profileError) return NextResponse.json({ error: "Unable to load member profiles" }, { status: 500 })
+  const profileById = new Map((profiles || []).map((profile) => [profile.id, profile]))
   return NextResponse.json({ users: data.users.map((user) => ({ id: user.id, email: user.email, created_at: user.created_at, last_sign_in_at: user.last_sign_in_at, email_confirmed_at: user.email_confirmed_at, user_metadata: user.user_metadata, app_metadata: user.app_metadata, profile: profileById.get(user.id) || null })) })
 }
 
 export async function PATCH(request: Request) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-  const body = await request.json()
+  const body: unknown = await request.json().catch(() => null)
+  if (!isRecord(body)) return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   if (typeof body.id !== "string") return NextResponse.json({ error: "Invalid user" }, { status: 400 })
   const updates: { email?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown>; ban_duration?: string } = {}
   if (typeof body.email === "string" && body.email.trim()) updates.email = body.email.trim().toLowerCase()
-  if (body.user_metadata && typeof body.user_metadata === "object") updates.user_metadata = body.user_metadata
+  if (isRecord(body.user_metadata)) updates.user_metadata = body.user_metadata
   const adminClient = createAdminClient()
   const current = await adminClient.auth.admin.getUserById(body.id)
   if (current.error || !current.data.user) return NextResponse.json({ error: "User not found" }, { status: 404 })
@@ -53,7 +59,7 @@ export async function PATCH(request: Request) {
   }
   const { data, error } = await adminClient.auth.admin.updateUserById(body.id, updates)
   if (error) return NextResponse.json({ error: "Unable to update user" }, { status: 400 })
-  if (["pending_review", "approved", "rejected"].includes(body.profile_status)) {
+  if (typeof body.profile_status === "string" && ["pending_review", "approved", "rejected"].includes(body.profile_status)) {
     const { data: profile, error: profileError } = await adminClient
       .from("member_profiles")
       .update({ directory_visible: body.profile_status === "approved" })
@@ -73,7 +79,8 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
   const admin = await requireAdmin()
   if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-  const body = await request.json()
+  const body: unknown = await request.json().catch(() => null)
+  if (!isRecord(body)) return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   if (typeof body.id !== "string" || body.id === admin.id) return NextResponse.json({ error: "Invalid user" }, { status: 400 })
   const { error } = await createAdminClient().auth.admin.deleteUser(body.id)
   if (error) return NextResponse.json({ error: "Unable to delete user" }, { status: 400 })

@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { AccountHistory } from "@/components/dashboard/views/history-view"
 import { Field, StatusMessage, ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
+import { underlineTabClassName } from "@/components/dashboard/ddni-ui"
 import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
 import { initialsFor, isValidUrl, normalizeSkills, profileCompletion, type MemberProfile } from "@/lib/dashboard-data"
 import { Check, Circle, History, ShieldCheck, UserRound, Pencil, Save } from "lucide-react"
@@ -241,13 +242,13 @@ export function ProfileView({
 
       <Tabs defaultValue="details" className="w-full min-w-0 gap-6">
         <div className="w-full border-b border-border/60">
-          <TabsList variant="line" aria-label="Profile sections" className="h-auto w-full justify-start gap-2 px-0 pb-0">
-            <TabsTrigger value="details" className="min-h-11 flex-none gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground">
-              <UserRound className="size-4" aria-hidden="true" />
+          <TabsList variant="line" aria-label="Profile sections" className="-mb-px h-auto w-fit max-w-full justify-start gap-1 overflow-x-auto rounded-none bg-transparent p-0">
+            <TabsTrigger value="details" className={`${underlineTabClassName} flex-none justify-start rounded-none after:hidden aria-[selected=false]:text-muted-foreground data-active:border-primary data-active:font-semibold data-active:text-accent-foreground [&[aria-selected=true]_svg]:text-primary`}>
+              <UserRound className="size-4 text-muted-foreground" aria-hidden="true" />
               Profile details
             </TabsTrigger>
-            <TabsTrigger value="activity" className="min-h-11 flex-none gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground">
-              <History className="size-4" aria-hidden="true" />
+            <TabsTrigger value="activity" className={`${underlineTabClassName} flex-none justify-start rounded-none after:hidden aria-[selected=false]:text-muted-foreground data-active:border-primary data-active:font-semibold data-active:text-accent-foreground [&[aria-selected=true]_svg]:text-primary`}>
+              <History className="size-4 text-muted-foreground" aria-hidden="true" />
               Account history
             </TabsTrigger>
           </TabsList>

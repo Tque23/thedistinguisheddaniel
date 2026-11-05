@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import "./dashboard.css"
 
 export const metadata: Metadata = {
   robots: {

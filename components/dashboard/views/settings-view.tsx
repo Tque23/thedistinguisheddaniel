@@ -78,11 +78,20 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
   async function savePreferences() {
     setSavingPreferences(true)
     setPreferencesStatus(null)
-    const result = await saveCommunicationPreferences(preferences)
-    setSavingPreferences(false)
-    if (result.error) return setPreferencesStatus({ tone: "error", text: result.error ?? "We couldn't save your preferences. Please try again." })
-    onMemberChange({ preferences })
-    setPreferencesStatus({ tone: "success", text: "Preferences saved." })
+    try {
+      const result = await saveCommunicationPreferences(preferences)
+      if (result.error) {
+        setPreferencesStatus({ tone: "error", text: result.error })
+        return
+      }
+      onMemberChange({ preferences })
+      setPreferencesStatus({ tone: "success", text: "Preferences saved." })
+    } catch (error) {
+      console.error("[dashboard] save preferences failed", error)
+      setPreferencesStatus({ tone: "error", text: "We couldn't save your preferences. Please try again." })
+    } finally {
+      setSavingPreferences(false)
+    }
   }
 
   async function changePassword(event: FormEvent) {
@@ -96,16 +105,22 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
     setSavingPassword(true)
     setPasswordStatus(null)
     const now = new Date().toISOString()
-    const { error } = await createClient().auth.updateUser({ password: password.next, data: { password_changed_at: now } })
-    setSavingPassword(false)
-    if (error) {
-      const message = /reauth|recent/i.test(error.message) ? "For security, please sign out and back in, then try again." : /different|same/i.test(error.message) ? "Choose a password you haven't used for this account." : "We couldn't update your password. Please try again."
-      return setPasswordStatus({ tone: "error", text: message })
+    try {
+      const { error } = await createClient().auth.updateUser({ password: password.next, data: { password_changed_at: now } })
+      if (error) {
+        const message = /reauth|recent/i.test(error.message) ? "For security, sign out and back in, then try again." : /different|same/i.test(error.message) ? "Choose a password you haven't used for this account." : "We couldn't update your password. Please try again."
+        return setPasswordStatus({ tone: "error", text: message })
+      }
+      onMemberChange({ passwordChangedAt: now })
+      setPassword({ next: "", confirm: "" })
+      setPasswordOpen(false)
+      setPasswordStatus({ tone: "success", text: "Your password has been updated." })
+    } catch (error) {
+      console.error("[dashboard] password update failed", error)
+      setPasswordStatus({ tone: "error", text: "We couldn't update your password. Please try again." })
+    } finally {
+      setSavingPassword(false)
     }
-    onMemberChange({ passwordChangedAt: now })
-    setPassword({ next: "", confirm: "" })
-    setPasswordOpen(false)
-    setPasswordStatus({ tone: "success", text: "Your password has been updated." })
   }
 
   async function changeEmail(event: FormEvent) {
@@ -117,28 +132,40 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
     setEmailError("")
     setSavingEmail(true)
     const now = new Date().toISOString()
-    const { error } = await createClient().auth.updateUser(
-      { email: next, data: { email_change_requested_at: now } },
-      { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/dashboard?view=settings")}` },
-    )
-    setSavingEmail(false)
-    if (error) return setEmailStatus({ tone: "error", text: /already|registered|exists/i.test(error.message) ? "That email is already used by another account." : "We couldn't start the email change. Please try again." })
-    onMemberChange({ pendingEmail: next, emailChangeRequestedAt: now })
-    setEmailStatus({ tone: "success", text: `Confirmation sent. Follow the link sent to ${next} (and your current inbox, if asked) to finish.` })
+    try {
+      const { error } = await createClient().auth.updateUser(
+        { email: next, data: { email_change_requested_at: now } },
+        { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/dashboard?view=settings")}` },
+      )
+      if (error) return setEmailStatus({ tone: "error", text: /already|registered|exists/i.test(error.message) ? "That email is already used by another account." : "We couldn't start the email change. Please try again." })
+      onMemberChange({ pendingEmail: next, emailChangeRequestedAt: now })
+      setEmailStatus({ tone: "success", text: `Confirmation sent. Follow the link sent to ${next} (and your current inbox, if asked) to finish.` })
+    } catch (error) {
+      console.error("[dashboard] email update failed", error)
+      setEmailStatus({ tone: "error", text: "We couldn't start the email change. Please try again." })
+    } finally {
+      setSavingEmail(false)
+    }
   }
 
   async function signOut(scope: "others" | "global") {
     setSigningOut(scope)
     setSessionStatus(null)
-    const { error } = await createClient().auth.signOut({ scope })
-    setSigningOut(null)
-    if (error) return setSessionStatus({ tone: "error", text: "We couldn't sign out those sessions. Please try again." })
-    if (scope === "global") {
-      router.replace("/auth")
-      router.refresh()
-      return
+    try {
+      const { error } = await createClient().auth.signOut({ scope })
+      if (error) return setSessionStatus({ tone: "error", text: "We couldn't sign out those sessions. Please try again." })
+      if (scope === "global") {
+        router.replace("/auth")
+        router.refresh()
+        return
+      }
+      setSessionStatus({ tone: "success", text: "You've been signed out on all other devices." })
+    } catch (error) {
+      console.error("[dashboard] sign out failed", error)
+      setSessionStatus({ tone: "error", text: "We couldn't sign out those sessions. Please try again." })
+    } finally {
+      setSigningOut(null)
     }
-    setSessionStatus({ tone: "success", text: "You've been signed out on all other devices." })
   }
 
   return (
@@ -181,7 +208,7 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
                   <Field id="confirm-password" label="Confirm new password" error={passwordErrors.confirm}>
                     <Input id="confirm-password" name="confirm-password" type="password" autoComplete="new-password" value={password.confirm} aria-invalid={Boolean(passwordErrors.confirm)} aria-describedby={passwordErrors.confirm ? "confirm-password-error" : undefined} onChange={(e) => setPassword({ ...password, confirm: e.target.value })} />
                   </Field>
-                  <Button type="submit" className="min-h-11 w-fit px-4 sm:col-span-2" disabled={savingPassword}>{savingPassword ? "Updating…" : "Update password"}</Button>
+                  <Button type="submit" className="btn-gold min-h-11 w-fit px-4 sm:col-span-2" disabled={savingPassword}>{savingPassword ? "Updating…" : "Update password"}</Button>
                 </form>
               )}
               {passwordStatus && <StatusMessage tone={passwordStatus.tone}>{passwordStatus.text}</StatusMessage>}
