@@ -14,7 +14,7 @@ import { AccountHistory } from "@/components/dashboard/views/history-view"
 import { Field, StatusMessage, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
 import { initialsFor, isValidUrl, normalizeSkills, profileCompletion, type MemberProfile } from "@/lib/dashboard-data"
-import { Check, Circle, History, ShieldCheck, UserRound, Pencil, X, Save } from "lucide-react"
+import { Check, Circle, History, ShieldCheck, UserRound, Pencil, Save } from "lucide-react"
 import type { DashboardMember, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
 type FormState = {
@@ -288,26 +288,25 @@ export function ProfileView({
         </CardContent>
       </Card>
 
-      {/* Main Tabs Navigation */}
-      <Tabs defaultValue="activity" className="space-y-6">
-        <TabsList variant="line" aria-label="Profile sections" className="h-auto w-full justify-start gap-2 border-b border-border/60 px-1 pb-1">
-          <TabsTrigger value="activity" className="min-h-11 gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground">
-            <History className="size-4" aria-hidden="true" />
-            Account history
-          </TabsTrigger>
-          <TabsTrigger value="details" className="min-h-11 gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground">
-            <UserRound className="size-4" aria-hidden="true" />
-            Profile details
-          </TabsTrigger>
-        </TabsList>
+      {/* Tabs Root */}
+      <Tabs defaultValue="details" className="w-full space-y-6">
+        {/* Full-width Tab Navigation positioned directly at the top of the view body */}
+        <div className="border-b border-border/60">
+          <TabsList variant="line" aria-label="Profile sections" className="h-auto w-full justify-start gap-2 px-0 pb-0">
+            <TabsTrigger value="details" className="min-h-11 gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground border-b-2 border-transparent data-active:border-primary">
+              <UserRound className="size-4" aria-hidden="true" />
+              Profile details
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="min-h-11 gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground border-b-2 border-transparent data-active:border-primary">
+              <History className="size-4" aria-hidden="true" />
+              Account history
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="activity">
-          <AccountHistory member={member} data={data} onNavigate={onNavigate} />
-        </TabsContent>
-
+        {/* Tab 1: Profile details */}
         <TabsContent value="details">
           <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[1fr_320px]">
-            {/* Main Form / Details Card */}
             <form onSubmit={requestSave} noValidate className="min-w-0">
               <Card className="border border-border/60 bg-card p-6 shadow-sm">
                 <CardHeader className="flex flex-col gap-4 p-0 pb-6 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 mb-6">
@@ -464,7 +463,7 @@ export function ProfileView({
               </Card>
             </form>
 
-            {/* Profile Strength Sidebar Card */}
+            {/* Profile Strength Sidebar */}
             <Card className="sticky top-6 border border-border/60 bg-card p-6 shadow-sm">
               <CardHeader className="p-0 pb-4">
                 <CardTitle className="text-base tracking-tight">Profile strength</CardTitle>
@@ -494,6 +493,11 @@ export function ProfileView({
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Tab 2: Account history */}
+        <TabsContent value="activity">
+          <AccountHistory member={member} data={data} onNavigate={onNavigate} />
         </TabsContent>
       </Tabs>
 
