@@ -195,7 +195,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
   const profileLocation = data.profile.location || member.location
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+    <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col gap-6">
       <ViewHeader kicker="Member account" title="Your DDNI account" description="Review your account activity and keep your professional profile current." />
 
       {status && <StatusMessage tone={status.tone}>{status.text}</StatusMessage>}
@@ -206,9 +206,9 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
         </StatusMessage>
       )}
 
-      <Card className="border border-border/60 bg-card p-6 shadow-sm">
+      <Card className="min-w-0 border border-border/60 bg-card p-6 shadow-sm">
         <CardContent className="p-0">
-          <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between" aria-label="Member identity">
+          <section className="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center sm:justify-between" aria-label="Member identity">
             <div className="flex min-w-0 items-center gap-4">
               <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl text-lg font-semibold ring-1 ring-border/60" style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}>
                 <MemberAvatarContent member={member} imageClassName="rounded-2xl" />
@@ -220,7 +220,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                 {member.email && <p className="mt-1 break-all text-sm text-muted-foreground">{member.email}</p>}
               </div>
             </div>
-            <div className="flex flex-col gap-3 sm:items-end">
+            <div className="flex min-w-0 flex-col gap-3 sm:items-end">
               <div className="flex flex-wrap items-center gap-2">
                 {member.emailConfirmedAt && (
                   <Badge variant="outline" className="gap-1.5 border-primary/20 bg-primary/10 text-foreground">
@@ -239,7 +239,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="activity" className="gap-6">
+      <Tabs defaultValue="activity" className="min-w-0 gap-6">
         <TabsList variant="line" aria-label="Profile sections" className="h-auto w-full justify-start gap-2 border-b border-border/60 px-1 pb-1">
           <TabsTrigger value="activity" className="min-h-11 flex-none gap-2 rounded-none px-3 text-sm data-active:text-foreground">
             <History className="size-4" aria-hidden="true" />Account history
@@ -249,13 +249,13 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="activity" className="flex flex-col gap-6">
+        <TabsContent value="activity" className="flex min-w-0 flex-col gap-6">
           <AccountHistory member={member} data={data} onNavigate={onNavigate} />
         </TabsContent>
 
-        <TabsContent value="details" className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(16rem,0.75fr)]">
+        <TabsContent value="details" className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(16rem,0.75fr)]">
           <form onSubmit={requestSave} noValidate className="min-w-0">
-            <Card className="gap-6 border border-border/60 bg-card p-6 shadow-sm">
+            <Card className="min-w-0 gap-6 border border-border/60 bg-card p-6 shadow-sm">
               <CardHeader className="flex flex-col gap-4 p-0 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 space-y-1">
                   <CardTitle className="text-lg tracking-tight">Personal and professional details</CardTitle>
@@ -318,13 +318,13 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                     </section>
                   </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="min-w-0 space-y-6">
                     <section className="space-y-4" aria-labelledby="profile-account-heading">
                       <div>
                         <h3 id="profile-account-heading" className="text-sm font-semibold tracking-tight text-foreground">Account details</h3>
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">How your DDNI member account is identified.</p>
                       </div>
-                      <dl className="grid gap-x-6 gap-y-5 rounded-xl bg-muted/30 p-4 sm:grid-cols-2 sm:p-5">
+                      <dl className="grid min-w-0 gap-x-6 gap-y-5 rounded-xl bg-muted/30 p-4 sm:grid-cols-2 sm:p-5">
                         <ProfileDetail label="Full name">{member.name}</ProfileDetail>
                         <ProfileDetail label="Email address">{accountEmail}</ProfileDetail>
                         <ProfileDetail label="Location">{profileLocation}</ProfileDetail>
@@ -336,7 +336,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                         <h3 id="profile-professional-heading" className="text-sm font-semibold tracking-tight text-foreground">Professional presence</h3>
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">The details members see after your profile is reviewed.</p>
                       </div>
-                      <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                      <dl className="grid min-w-0 gap-x-6 gap-y-5 sm:grid-cols-2">
                         <ProfileDetail label="Headline">{data.profile.headline}</ProfileDetail>
                         <ProfileDetail label="Role">{data.profile.role}</ProfileDetail>
                         <ProfileDetail label="Company or ministry">{data.profile.company}</ProfileDetail>
@@ -374,7 +374,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
             </Card>
           </form>
 
-          <Card className="h-fit gap-6 border border-border/60 bg-card p-6 shadow-sm">
+          <Card className="h-fit min-w-0 gap-6 border border-border/60 bg-card p-6 shadow-sm">
             <CardHeader className="p-0">
               <CardTitle className="text-base tracking-tight">Profile strength</CardTitle>
               <CardDescription className="leading-relaxed">Complete your profile to improve discovery.</CardDescription>
