@@ -43,8 +43,9 @@ Use the dashboard semantic CSS variables in `src/app/dashboard/dashboard.css`; d
 
 1. Page title and short purpose statement.
 2. Two keyboard-accessible tabs: Activity first, Details second.
-3. Activity view leads with tenure, sign-in and review status, then the event timeline and account-safety actions.
-4. Details view leads with identity and one edit affordance, then read-only personal/professional data. Profile strength is supporting context, not a competing hero.
+3. Keep a single DDNI identity banner above both tabs; it identifies whose account is being viewed without repeating the profile card inside the details form.
+4. Activity view uses one compact account-summary band, a dated event list, and a quiet account-safety callout. Avoid separate mini-cards for every statistic.
+5. Details view groups read-only values into Account details and Professional presence; profile strength is supporting context, not a competing hero.
 
 ## Verification checklist
 

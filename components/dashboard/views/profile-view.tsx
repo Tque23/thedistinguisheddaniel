@@ -91,7 +91,9 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => { setForm(saved) }, [saved])
+  useEffect(() => {
+    if (!isEditing) setForm(saved)
+  }, [saved, isEditing])
 
   const dirty = (Object.keys(form) as (keyof FormState)[]).some((key) => form[key] !== saved[key])
   const preview = { ...member, name: form.name.trim() || member.name, title: form.title.trim() || "DDNI Member", avatarUrl: isValidUrl(form.avatarUrl) ? form.avatarUrl : "", initials: initialsFor(form.name.trim() || member.name) }
@@ -194,7 +196,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <ViewHeader kicker="Member account" title="Profile" description="Review your account activity and keep your professional profile current." />
+      <ViewHeader kicker="Member account" title="Your DDNI account" description="Review your account activity and keep your professional profile current." />
 
       {status && <StatusMessage tone={status.tone}>{status.text}</StatusMessage>}
       {data.errors.profile && <StatusMessage tone="error">{data.errors.profile}</StatusMessage>}
@@ -203,6 +205,28 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
           {`The DDNI team requested changes${member.profileReviewNote ? `: ${member.profileReviewNote}` : "."} Update your profile and save to resubmit.`}
         </StatusMessage>
       )}
+
+      <section className="flex flex-col gap-5 rounded-2xl bg-sidebar p-5 text-sidebar-foreground shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6" aria-label="Member identity">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl text-lg font-semibold ring-1 ring-white/15" style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}>
+            <MemberAvatarContent member={member} imageClassName="rounded-2xl" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold tracking-[0.14em] text-[#e4c276] uppercase">DDNI member</p>
+            <h2 className="mt-1 truncate font-display text-2xl leading-snug font-semibold tracking-tight text-white">{member.name}</h2>
+            <p className="mt-0.5 truncate text-sm text-white/75">{[member.title !== "DDNI Member" ? member.title : "", member.email].filter(Boolean).join(" · ") || "Member account"}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          {member.emailConfirmedAt && (
+            <Badge variant="outline" className="gap-1.5 border-white/20 bg-white/5 text-white">
+              <ShieldCheck className="size-3.5 text-[#e4c276]" aria-hidden="true" />Verified email
+            </Badge>
+          )}
+          {member.profileStatus && <Badge variant="outline" className="border-white/20 bg-white/5 text-white">{statusLabels[member.profileStatus] || member.profileStatus}</Badge>}
+          {member.memberSince && <span className="w-full text-xs text-white/65 sm:w-auto sm:ps-2">Member since {member.memberSince}</span>}
+        </div>
+      </section>
 
       <Tabs defaultValue="activity" className="gap-6">
         <TabsList variant="line" aria-label="Profile sections" className="h-auto w-full justify-start gap-2 border-b border-border/60 px-1 pb-1">
@@ -229,74 +253,90 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                 <div className="flex shrink-0 flex-wrap gap-2">
                   {isEditing ? (
                     <>
-                      <Button type="button" variant="ghost" onClick={cancelEditing} disabled={saving}>Cancel</Button>
-                      <Button type="submit" className="btn-gold" disabled={!dirty || saving}>{saving ? "Saving…" : "Save Changes"}</Button>
+                      <Button type="button" variant="ghost" className="min-h-10 px-4" onClick={cancelEditing} disabled={saving}>Cancel</Button>
+                      <Button type="submit" className="btn-gold min-h-10 px-4" disabled={!dirty || saving}>{saving ? "Saving…" : "Save Changes"}</Button>
                     </>
                   ) : (
-                    <Button type="button" variant="outline" onClick={beginEditing}>Edit Profile</Button>
+                    <Button type="button" variant="outline" className="min-h-10 px-4" onClick={beginEditing}>Edit Profile</Button>
                   )}
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col gap-6">
-                <div className="flex min-w-0 items-center gap-4 rounded-xl border border-border/60 bg-muted/30 p-4">
-                  <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl text-lg font-semibold ring-1 ring-foreground/10" style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}>
-                    <MemberAvatarContent key={preview.avatarUrl} member={preview} imageClassName="rounded-xl" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-display text-xl leading-snug tracking-tight text-foreground">{preview.name}</p>
-                    <p className="mt-0.5 truncate text-sm text-muted-foreground">{preview.title}</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {member.emailConfirmedAt && <Badge variant="outline" className="gap-1.5"><ShieldCheck className="size-3.5" aria-hidden="true" />Verified member</Badge>}
-                      {member.profileStatus && <Badge variant="secondary">{statusLabels[member.profileStatus] || member.profileStatus}</Badge>}
-                    </div>
-                  </div>
-                </div>
-
                 {isEditing ? (
-                  <div className="grid min-w-0 gap-x-5 gap-y-4 sm:grid-cols-2">
-                    {input("name", "Full name", { autoComplete: "name", required: true })}
-                    {input("title", "Professional title", { placeholder: "e.g. Founder, Whitfield Capital" })}
-                    <Field id="profile-email" label="Email address" hint="Change your email in Settings.">
-                      <p className="flex min-h-11 items-center rounded-lg border border-border/60 bg-muted/50 px-3 text-sm text-muted-foreground">{accountEmail}</p>
-                    </Field>
-                    {input("location", "Location", { autoComplete: "address-level2", placeholder: "City, Country" })}
-                    {input("headline", "Headline", { placeholder: "What you do, in a sentence" })}
-                    {input("role", "Role", { placeholder: "e.g. Managing Partner" })}
-                    {input("company", "Company or ministry")}
-                    {input("avatarUrl", "Profile photo link", { type: "url", placeholder: "https://…" }, "Link to a square image (JPG or PNG).")}
-                    {input("website", "Website", { type: "url", placeholder: "https://…" })}
-                    {input("linkedinUrl", "LinkedIn", { type: "url", placeholder: "https://linkedin.com/in/…" })}
-                    <div className="sm:col-span-2">{input("skills", "Areas of expertise", { placeholder: "Leadership, Finance, Teaching" }, "Separate each with a comma.")}</div>
-                    <Field id="profile-bio" label="Personal introduction" error={errors.bio} hint={`${form.bio.length}/${BIO_LIMIT}`} className="sm:col-span-2">
-                      <Textarea
-                        id="profile-bio"
-                        name="bio"
-                        rows={5}
-                        value={form.bio}
-                        onChange={(event) => update("bio", event.target.value)}
-                        aria-invalid={Boolean(errors.bio)}
-                        aria-describedby={errors.bio ? "profile-bio-error" : "profile-bio-hint"}
-                        placeholder="A short introduction for other members."
-                      />
-                    </Field>
+                  <div className="flex flex-col gap-6">
+                    <section className="space-y-4" aria-labelledby="profile-account-heading">
+                      <div className="border-b border-border/60 pb-3">
+                        <h3 id="profile-account-heading" className="text-sm font-semibold tracking-tight text-foreground">Account details</h3>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">The details DDNI uses to identify your member account.</p>
+                      </div>
+                      <div className="grid min-w-0 gap-x-5 gap-y-4 sm:grid-cols-2">
+                        {input("name", "Full name", { autoComplete: "name", required: true })}
+                        {input("title", "Professional title", { placeholder: "e.g. Founder, Whitfield Capital" })}
+                        <Field id="profile-email" label="Email address" hint="Change your email in Settings.">
+                          <p className="flex min-h-11 items-center rounded-lg border border-border/60 bg-muted/50 px-3 text-sm text-muted-foreground">{accountEmail}</p>
+                        </Field>
+                        {input("location", "Location", { autoComplete: "address-level2", placeholder: "City, Country" })}
+                        {input("avatarUrl", "Profile photo link", { type: "url", placeholder: "https://…" }, "Link to a square image (JPG or PNG).")}
+                      </div>
+                    </section>
+                    <section className="space-y-4" aria-labelledby="profile-professional-heading">
+                      <div className="border-b border-border/60 pb-3">
+                        <h3 id="profile-professional-heading" className="text-sm font-semibold tracking-tight text-foreground">Professional presence</h3>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">The information members can use to understand and connect with you.</p>
+                      </div>
+                      <div className="grid min-w-0 gap-x-5 gap-y-4 sm:grid-cols-2">
+                        {input("headline", "Headline", { placeholder: "What you do, in a sentence" })}
+                        {input("role", "Role", { placeholder: "e.g. Managing Partner" })}
+                        {input("company", "Company or ministry")}
+                        {input("website", "Website", { type: "url", placeholder: "https://…" })}
+                        {input("linkedinUrl", "LinkedIn", { type: "url", placeholder: "https://linkedin.com/in/…" })}
+                        <div className="sm:col-span-2">{input("skills", "Areas of expertise", { placeholder: "Leadership, Finance, Teaching" }, "Separate each with a comma.")}</div>
+                        <Field id="profile-bio" label="Personal introduction" error={errors.bio} hint={`${form.bio.length}/${BIO_LIMIT}`} className="sm:col-span-2">
+                          <Textarea
+                            id="profile-bio"
+                            name="bio"
+                            rows={5}
+                            value={form.bio}
+                            onChange={(event) => update("bio", event.target.value)}
+                            aria-invalid={Boolean(errors.bio)}
+                            aria-describedby={errors.bio ? "profile-bio-error" : "profile-bio-hint"}
+                            placeholder="A short introduction for other members."
+                          />
+                        </Field>
+                      </div>
+                    </section>
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
-                      <ProfileDetail label="Full name">{member.name}</ProfileDetail>
-                      <ProfileDetail label="Email address">{accountEmail}</ProfileDetail>
-                      <ProfileDetail label="Location">{profileLocation}</ProfileDetail>
-                      <ProfileDetail label="Headline">{data.profile.headline}</ProfileDetail>
-                      <ProfileDetail label="Role">{data.profile.role}</ProfileDetail>
-                      <ProfileDetail label="Company or ministry">{data.profile.company}</ProfileDetail>
-                      <ProfileDetail label="Professional title">{member.title === "DDNI Member" ? "" : member.title}</ProfileDetail>
-                      <ProfileDetail label="Website">
-                        {data.profile.website && isValidUrl(data.profile.website) ? <a href={data.profile.website} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline-offset-4 hover:underline">{data.profile.website}</a> : data.profile.website}
-                      </ProfileDetail>
-                      <ProfileDetail label="LinkedIn">
-                        {data.profile.linkedinUrl && isValidUrl(data.profile.linkedinUrl) ? <a href={data.profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline-offset-4 hover:underline">{data.profile.linkedinUrl}</a> : data.profile.linkedinUrl}
-                      </ProfileDetail>
-                    </dl>
+                    <section className="space-y-4" aria-labelledby="profile-account-heading">
+                      <div>
+                        <h3 id="profile-account-heading" className="text-sm font-semibold tracking-tight text-foreground">Account details</h3>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">How your DDNI member account is identified.</p>
+                      </div>
+                      <dl className="grid gap-x-6 gap-y-5 rounded-xl bg-muted/30 p-4 sm:grid-cols-2 sm:p-5">
+                        <ProfileDetail label="Full name">{member.name}</ProfileDetail>
+                        <ProfileDetail label="Email address">{accountEmail}</ProfileDetail>
+                        <ProfileDetail label="Location">{profileLocation}</ProfileDetail>
+                        <ProfileDetail label="Professional title">{member.title === "DDNI Member" ? "" : member.title}</ProfileDetail>
+                      </dl>
+                    </section>
+                    <section className="space-y-4 border-t border-border/60 pt-5" aria-labelledby="profile-professional-heading">
+                      <div>
+                        <h3 id="profile-professional-heading" className="text-sm font-semibold tracking-tight text-foreground">Professional presence</h3>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">The details members see after your profile is reviewed.</p>
+                      </div>
+                      <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                        <ProfileDetail label="Headline">{data.profile.headline}</ProfileDetail>
+                        <ProfileDetail label="Role">{data.profile.role}</ProfileDetail>
+                        <ProfileDetail label="Company or ministry">{data.profile.company}</ProfileDetail>
+                        <ProfileDetail label="Website">
+                          {data.profile.website && isValidUrl(data.profile.website) ? <a href={data.profile.website} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline-offset-4 hover:underline">{data.profile.website}</a> : data.profile.website}
+                        </ProfileDetail>
+                        <ProfileDetail label="LinkedIn">
+                          {data.profile.linkedinUrl && isValidUrl(data.profile.linkedinUrl) ? <a href={data.profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline-offset-4 hover:underline">{data.profile.linkedinUrl}</a> : data.profile.linkedinUrl}
+                        </ProfileDetail>
+                      </dl>
+                    </section>
                     <section className="space-y-2 border-t border-border/60 pt-5" aria-labelledby="profile-skills-title">
                       <h3 id="profile-skills-title" className="text-xs font-medium text-muted-foreground">Areas of expertise</h3>
                       {data.profile.skills.length > 0 ? (
