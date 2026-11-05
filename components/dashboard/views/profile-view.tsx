@@ -206,27 +206,38 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
         </StatusMessage>
       )}
 
-      <section className="flex flex-col gap-5 rounded-2xl bg-sidebar p-5 text-sidebar-foreground shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6" aria-label="Member identity">
-        <div className="flex min-w-0 items-center gap-4">
-          <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl text-lg font-semibold ring-1 ring-white/15" style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}>
-            <MemberAvatarContent member={member} imageClassName="rounded-2xl" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-semibold tracking-[0.14em] text-[#e4c276] uppercase">DDNI member</p>
-            <h2 className="mt-1 truncate font-display text-2xl leading-snug font-semibold tracking-tight text-white">{member.name}</h2>
-            <p className="mt-0.5 truncate text-sm text-white/75">{[member.title !== "DDNI Member" ? member.title : "", member.email].filter(Boolean).join(" · ") || "Member account"}</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          {member.emailConfirmedAt && (
-            <Badge variant="outline" className="gap-1.5 border-white/20 bg-white/5 text-white">
-              <ShieldCheck className="size-3.5 text-[#e4c276]" aria-hidden="true" />Verified email
-            </Badge>
-          )}
-          {member.profileStatus && <Badge variant="outline" className="border-white/20 bg-white/5 text-white">{statusLabels[member.profileStatus] || member.profileStatus}</Badge>}
-          {member.memberSince && <span className="w-full text-xs text-white/65 sm:w-auto sm:ps-2">Member since {member.memberSince}</span>}
-        </div>
-      </section>
+      <Card className="border border-border/60 bg-card p-6 shadow-sm">
+        <CardContent className="p-0">
+          <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between" aria-label="Member identity">
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl text-lg font-semibold ring-1 ring-border/60" style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}>
+                <MemberAvatarContent member={member} imageClassName="rounded-2xl" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold tracking-[0.14em] text-primary uppercase">DDNI member</p>
+                <h2 className="mt-1 break-words font-display text-2xl leading-snug font-semibold tracking-tight text-foreground">{member.name}</h2>
+                <p className="mt-0.5 break-words text-sm text-muted-foreground">{member.title !== "DDNI Member" ? member.title : "Member account"}</p>
+                {member.email && <p className="mt-1 break-all text-sm text-muted-foreground">{member.email}</p>}
+              </div>
+            </div>
+            <div className="flex flex-col gap-3 sm:items-end">
+              <div className="flex flex-wrap items-center gap-2">
+                {member.emailConfirmedAt && (
+                  <Badge variant="outline" className="gap-1.5 border-primary/20 bg-primary/10 text-foreground">
+                    <ShieldCheck className="size-3.5 text-primary" aria-hidden="true" />Verified email
+                  </Badge>
+                )}
+                {member.profileStatus && <Badge variant="outline" className="border-border/60 bg-muted/50 text-foreground">{statusLabels[member.profileStatus] || member.profileStatus}</Badge>}
+              </div>
+              {member.memberSince && (
+                <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                  Member since <span className="font-medium text-foreground">{member.memberSince}</span>
+                </p>
+              )}
+            </div>
+          </section>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="activity" className="gap-6">
         <TabsList variant="line" aria-label="Profile sections" className="h-auto w-full justify-start gap-2 border-b border-border/60 px-1 pb-1">
@@ -244,8 +255,8 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
 
         <TabsContent value="details" className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(16rem,0.75fr)]">
           <form onSubmit={requestSave} noValidate className="min-w-0">
-            <Card className="border-border/60 shadow-sm">
-              <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <Card className="gap-6 border border-border/60 bg-card p-6 shadow-sm">
+              <CardHeader className="flex flex-col gap-4 p-0 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 space-y-1">
                   <CardTitle className="text-lg tracking-tight">Personal and professional details</CardTitle>
                   <CardDescription className="leading-relaxed">Your profile is shared with Network members after DDNI review.</CardDescription>
@@ -253,15 +264,15 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                 <div className="flex shrink-0 flex-wrap gap-2">
                   {isEditing ? (
                     <>
-                      <Button type="button" variant="ghost" className="min-h-10 px-4" onClick={cancelEditing} disabled={saving}>Cancel</Button>
-                      <Button type="submit" className="btn-gold min-h-10 px-4" disabled={!dirty || saving}>{saving ? "Saving…" : "Save Changes"}</Button>
+                      <Button type="button" variant="ghost" className="min-h-11 px-4" onClick={cancelEditing} disabled={saving}>Cancel</Button>
+                      <Button type="submit" className="btn-gold min-h-11 px-4" disabled={!dirty || saving}>{saving ? "Saving…" : "Save Changes"}</Button>
                     </>
                   ) : (
-                    <Button type="button" variant="outline" className="min-h-10 px-4" onClick={beginEditing}>Edit Profile</Button>
+                    <Button type="button" variant="outline" className="min-h-11 px-4" onClick={beginEditing}>Edit Profile</Button>
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="flex flex-col gap-6">
+              <CardContent className="flex flex-col gap-6 p-0">
                 {isEditing ? (
                   <div className="flex flex-col gap-6">
                     <section className="space-y-4" aria-labelledby="profile-account-heading">
@@ -363,12 +374,12 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
             </Card>
           </form>
 
-          <Card className="h-fit border-border/60 shadow-sm">
-            <CardHeader>
+          <Card className="h-fit gap-6 border border-border/60 bg-card p-6 shadow-sm">
+            <CardHeader className="p-0">
               <CardTitle className="text-base tracking-tight">Profile strength</CardTitle>
               <CardDescription className="leading-relaxed">Complete your profile to improve discovery.</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col gap-4">
+            <CardContent className="flex flex-col gap-4 p-0">
               <div className="flex items-end justify-between gap-3">
                 <span className="text-3xl font-semibold tabular-nums tracking-tight text-primary">{completion.percent}%</span>
                 <span className="text-xs text-muted-foreground">{completion.percent === 100 ? "Complete" : completion.percent >= 60 ? "Strong foundation" : "Getting started"}</span>
@@ -380,7 +391,6 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                   return <li key={label} className={`flex items-center gap-2 ${done ? "text-foreground" : "text-muted-foreground"}`}>{done ? <Check className="size-4 text-primary" aria-hidden="true" /> : <Circle className="size-4" aria-hidden="true" />}{label}</li>
                 })}
               </ul>
-              {member.memberSince && <p className="border-t border-border/60 pt-4 text-xs text-muted-foreground">Member since <span className="font-medium text-foreground">{member.memberSince}</span></p>}
             </CardContent>
           </Card>
         </TabsContent>
@@ -393,8 +403,8 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
             <Dialog.Title className="text-lg leading-snug font-semibold tracking-tight text-foreground">Confirm profile changes</Dialog.Title>
             <Dialog.Description className="mt-2 text-sm leading-relaxed text-muted-foreground">Are you sure you want to update your profile details?</Dialog.Description>
             <div className="mt-6 flex flex-col-reverse justify-end gap-2 sm:flex-row">
-              <Dialog.Close render={<Button type="button" variant="ghost" disabled={saving} />}>Cancel</Dialog.Close>
-              <Button type="button" className="btn-gold" onClick={() => void confirmSave()} disabled={saving}>
+              <Dialog.Close render={<Button type="button" variant="ghost" className="min-h-11 px-4" disabled={saving} />}>Cancel</Dialog.Close>
+              <Button type="button" className="btn-gold min-h-11 px-4" onClick={() => void confirmSave()} disabled={saving}>
                 {saving ? "Saving…" : "Confirm changes"}
               </Button>
             </div>

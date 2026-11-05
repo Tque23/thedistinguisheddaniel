@@ -111,7 +111,7 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
       <ViewHeader kicker="Account settings" title="Your account, your way" description="Manage security, communication preferences, and the way you experience the TDD Network." />
       <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,0.8fr)]">
         <div className="flex flex-col gap-6">
-          <Card>
+          <Card className="border border-border/60 bg-card shadow-sm">
             <CardHeader><CardTitle>Communication</CardTitle><CardDescription>Choose what deserves your attention.</CardDescription></CardHeader>
             <CardContent className="flex flex-col">
               <div className="divide-y divide-border">
@@ -122,28 +122,31 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
                   <Switch label="Network activity" checked={preferences.networkAlerts} onChange={(value) => { setPreferences({ ...preferences, networkAlerts: value }); setPreferencesStatus(null) }} />
                 </SettingRow>
               </div>
-              <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-5">
-                <Button className="btn-gold" disabled={!preferencesDirty || savingPreferences} onClick={() => void savePreferences()}>{savingPreferences ? "Saving…" : "Save preferences"}</Button>
-                {preferencesStatus && <StatusMessage tone={preferencesStatus.tone}>{preferencesStatus.text}</StatusMessage>}
+              <div className="mt-5 flex flex-col gap-3 border-t border-border/60 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" className="min-h-11 px-4" disabled={!preferencesDirty || savingPreferences} onClick={() => { setPreferences(member.preferences); setPreferencesStatus(null) }}>Reset preferences</Button>
+                  <Button className="min-h-11 px-4" disabled={!preferencesDirty || savingPreferences} onClick={() => void savePreferences()}>{savingPreferences ? "Saving…" : "Save preferences"}</Button>
+                </div>
+                {preferencesStatus && <div className="min-w-0"><StatusMessage tone={preferencesStatus.tone}>{preferencesStatus.text}</StatusMessage></div>}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border border-border/60 bg-card shadow-sm">
             <CardHeader><CardTitle>Security</CardTitle><CardDescription>Keep your member account protected.</CardDescription></CardHeader>
             <CardContent className="flex flex-col gap-4">
               <SettingRow icon={LockKeyhole} title="Password" description={member.passwordChangedAt ? `Last changed ${relativeTime(member.passwordChangedAt)}.` : "Use a strong password you don't use anywhere else."}>
-                <Button variant="outline" size="sm" aria-expanded={passwordOpen} onClick={() => { setPasswordOpen(!passwordOpen); setPasswordErrors({}); setPasswordStatus(null) }}>{passwordOpen ? "Cancel" : "Change password"}</Button>
+                <Button variant={passwordOpen ? "ghost" : "outline"} className="min-h-11 px-4" aria-expanded={passwordOpen} onClick={() => { setPasswordOpen(!passwordOpen); setPasswordErrors({}); setPasswordStatus(null) }}>{passwordOpen ? "Cancel" : "Change password"}</Button>
               </SettingRow>
               {passwordOpen && (
-                <form onSubmit={changePassword} noValidate className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
+                <form onSubmit={changePassword} noValidate className="grid gap-4 border-t border-border/60 pt-5 sm:grid-cols-2">
                   <Field id="new-password" label="New password" error={passwordErrors.next} hint="At least 8 characters, with a letter and a number.">
                     <Input id="new-password" name="new-password" type="password" autoComplete="new-password" value={password.next} aria-invalid={Boolean(passwordErrors.next)} aria-describedby={passwordErrors.next ? "new-password-error" : "new-password-hint"} onChange={(e) => setPassword({ ...password, next: e.target.value })} />
                   </Field>
                   <Field id="confirm-password" label="Confirm new password" error={passwordErrors.confirm}>
                     <Input id="confirm-password" name="confirm-password" type="password" autoComplete="new-password" value={password.confirm} aria-invalid={Boolean(passwordErrors.confirm)} aria-describedby={passwordErrors.confirm ? "confirm-password-error" : undefined} onChange={(e) => setPassword({ ...password, confirm: e.target.value })} />
                   </Field>
-                  <Button type="submit" size="sm" className="btn-gold w-fit sm:col-span-2" disabled={savingPassword}>{savingPassword ? "Updating…" : "Update password"}</Button>
+                  <Button type="submit" className="min-h-11 w-fit px-4 sm:col-span-2" disabled={savingPassword}>{savingPassword ? "Updating…" : "Update password"}</Button>
                 </form>
               )}
               {passwordStatus && <StatusMessage tone={passwordStatus.tone}>{passwordStatus.text}</StatusMessage>}
@@ -152,7 +155,7 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
         </div>
 
         <div className="flex flex-col gap-6">
-          <Card>
+          <Card className="border border-border/60 bg-card shadow-sm">
             <CardHeader><CardTitle>Contact email</CardTitle><CardDescription>Used for sign-in and important notices. Never shown publicly.</CardDescription></CardHeader>
             <CardContent>
               <form onSubmit={changeEmail} noValidate className="flex flex-col gap-3">
@@ -162,31 +165,31 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
                     <Input id="contact-email" name="email" type="email" autoComplete="email" className="ps-9" value={email} aria-invalid={Boolean(emailError)} aria-describedby={emailError ? "contact-email-error" : undefined} onChange={(e) => { setEmail(e.target.value); setEmailError(""); setEmailStatus(null) }} />
                   </div>
                 </Field>
-                <Button type="submit" variant="outline" className="w-full" disabled={savingEmail || email.trim().toLowerCase() === member.email.toLowerCase()}>{savingEmail ? "Sending confirmation…" : "Update email"}</Button>
+                <Button type="submit" variant="outline" className="min-h-11 w-full px-4" disabled={savingEmail || email.trim().toLowerCase() === member.email.toLowerCase()}>{savingEmail ? "Sending confirmation…" : "Update email"}</Button>
                 {emailStatus && <StatusMessage tone={emailStatus.tone}>{emailStatus.text}</StatusMessage>}
               </form>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border border-border/60 bg-card shadow-sm">
             <CardHeader><CardTitle>Sessions</CardTitle><CardDescription>Manage where you're signed in.</CardDescription></CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div className="flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"><MonitorSmartphone className="size-4 text-[#f3d27a]" /></div>
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"><MonitorSmartphone className="size-4 text-primary" /></div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground">This device</p>
                   <p className="text-xs text-muted-foreground">{member.lastSignInAt ? `Signed in ${relativeTime(member.lastSignInAt)}` : "Active now"}</p>
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <Button variant="outline" size="sm" disabled={signingOut !== null} onClick={() => void signOut("others")}><LogOut data-icon="inline-start" />{signingOut === "others" ? "Signing out…" : "Sign out of other devices"}</Button>
-                <Button variant="destructive" size="sm" disabled={signingOut !== null} onClick={() => void signOut("global")}>{signingOut === "global" ? "Signing out…" : "Sign out everywhere"}</Button>
+                <Button variant="outline" className="min-h-11 px-4" disabled={signingOut !== null} onClick={() => void signOut("others")}><LogOut data-icon="inline-start" />{signingOut === "others" ? "Signing out…" : "Sign out of other devices"}</Button>
+                <Button variant="destructive" className="min-h-11 px-4" disabled={signingOut !== null} onClick={() => void signOut("global")}>{signingOut === "global" ? "Signing out…" : "Sign out everywhere"}</Button>
               </div>
               {sessionStatus && <StatusMessage tone={sessionStatus.tone}>{sessionStatus.text}</StatusMessage>}
             </CardContent>
           </Card>
 
-          <Card size="sm">
+          <Card size="sm" className="border border-border/60 bg-card shadow-sm">
             <CardContent className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">Need to close your account?</p>
               <p className="text-xs text-muted-foreground">Our team will help you export or remove your information.</p>

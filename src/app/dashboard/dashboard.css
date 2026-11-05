@@ -131,9 +131,8 @@
   border-color: var(--burgundy);
 }
 
-/* Light "learner portal" surface used by My Courses, Calendar, Library,
-   Network, Opportunities, Announcements and Profile views. It re-maps the semantic
-   tokens so every shadcn component inside inherits the cream / navy / gold look. */
+/* Light member-facing surfaces re-map semantic tokens so every shadcn component
+   inherits the paper / navy / gold look. */
 .tdd-dashboard .ddni-light {
   color-scheme: light;
 
