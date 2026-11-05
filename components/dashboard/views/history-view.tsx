@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { EmptyState, ViewHeader } from "@/components/dashboard/dashboard-ui"
+import { EmptyState } from "@/components/dashboard/dashboard-ui"
 import { formatDate, relativeTime } from "@/lib/dashboard-data"
 import { BadgeCheck, History, KeyRound, LogIn, Mail, UserPlus, UserRound } from "lucide-react"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
@@ -16,7 +16,7 @@ const profileStatusLabels: Record<string, string> = {
   rejected: "Changes requested",
 }
 
-export function HistoryView({ member, data, onNavigate }: DashboardViewProps) {
+export function AccountHistory({ member, data, onNavigate }: Pick<DashboardViewProps, "member" | "data" | "onNavigate">) {
   const events: HistoryEvent[] = [
     { id: "joined", icon: UserPlus, title: "Joined the DDNI Network", description: "Your member account was created.", date: member.createdAt },
     { id: "confirmed", icon: BadgeCheck, title: "Email verified", description: `${member.email || "Your email"} was confirmed.`, date: member.emailConfirmedAt },
@@ -29,9 +29,7 @@ export function HistoryView({ member, data, onNavigate }: DashboardViewProps) {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <ViewHeader kicker="Account history" title="Your journey with DDNI" description="Key activity on your member account, most recent first." />
-
+    <div className="flex flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-3">
         <Summary label="Member since" value={member.memberSince || "—"} />
         <Summary label="Last sign-in" value={member.lastSignInAt ? relativeTime(member.lastSignInAt) : "—"} />
@@ -70,7 +68,7 @@ export function HistoryView({ member, data, onNavigate }: DashboardViewProps) {
       <div className="flex flex-col items-start gap-3 rounded-xl border border-border bg-card/60 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-foreground">See something you don&apos;t recognise?</p>
-          <p className="text-xs text-muted-foreground">Change your password and sign out of other devices, then let us know.</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">Change your password and sign out of other devices, then let us know.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => onNavigate("settings")}>Security settings</Button>

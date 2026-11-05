@@ -21,7 +21,6 @@ import { cn } from "@/lib/utils"
 import { requestCourseAccess as requestCourseAccessAction } from "@/src/app/dashboard/actions"
 import { ProfileView } from "@/components/dashboard/views/profile-view"
 import { SettingsView } from "@/components/dashboard/views/settings-view"
-import { HistoryView } from "@/components/dashboard/views/history-view"
 import { SupportView } from "@/components/dashboard/views/support-view"
 import {
   emptyProfile,
@@ -115,18 +114,20 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
   }, [router])
 
   const navigate = useCallback((view: DashboardView) => {
-    setActiveView(view)
+    const destination = view === "history" ? "profile" : view
+    setActiveView(destination)
     scrollRef.current?.scrollTo({ top: 0 })
     const url = new URL(window.location.href)
-    if (view === "overview") url.searchParams.delete("view")
-    else url.searchParams.set("view", view)
+    if (destination === "overview") url.searchParams.delete("view")
+    else url.searchParams.set("view", destination)
     if (url.href !== window.location.href) window.history.pushState({ view }, "", url)
   }, [])
 
   useEffect(() => {
     const syncFromUrl = () => {
       const view = new URLSearchParams(window.location.search).get("view")
-      setActiveView(isDashboardView(view) ? view : "overview")
+      const requestedView = isDashboardView(view) ? view : "overview"
+      setActiveView(requestedView === "history" ? "profile" : requestedView)
     }
     syncFromUrl()
     window.addEventListener("popstate", syncFromUrl)
@@ -254,7 +255,6 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
                     {activeView === "opportunities" && <OpportunitiesView {...viewProps} />}
                     {activeView === "announcements" && <AnnouncementsView {...viewProps} />}
                     {activeView === "profile" && <ProfileView {...viewProps} onMemberChange={updateMember} onProfileChange={updateProfile} />}
-                    {activeView === "history" && <HistoryView {...viewProps} />}
                     {activeView === "settings" && <SettingsView {...viewProps} onMemberChange={updateMember} />}
                     {activeView === "support" && <SupportView {...viewProps} />}
                   </motion.div>

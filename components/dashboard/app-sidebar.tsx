@@ -16,7 +16,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { Bell, BookOpen, BriefcaseBusiness, CalendarDays, House, LayoutGrid, Library, Settings, ShieldCheck, UserRound, Users2, Award } from "lucide-react"
+import { Bell, BookOpen, BriefcaseBusiness, CalendarDays, House, LayoutGrid, Library, Settings, ShieldCheck, UserRound, Users2 } from "lucide-react"
 import type { DashboardMember, DashboardView } from "@/components/dashboard/dashboard-shell"
 import { cormorantGaramond } from "@/src/app/fonts"
 type NavItem = { id: DashboardView; label: string; icon: typeof LayoutGrid }
@@ -26,11 +26,10 @@ const navItems: NavItem[] = [
   { id: "courses", label: "My Courses", icon: BookOpen },
   { id: "calendar", label: "My Calendar", icon: CalendarDays },
   { id: "library", label: "Resource Library", icon: Library },
-  { id: "history", label: "My Certificates", icon: Award },
   { id: "network", label: "DDNI Network", icon: Users2 },
   { id: "opportunities", label: "Opportunities", icon: BriefcaseBusiness },
   { id: "announcements", label: "Announcements", icon: Bell },
-  { id: "profile", label: "My Profile", icon: UserRound },
+  { id: "profile", label: "Profile", icon: UserRound },
   { id: "settings", label: "Settings", icon: Settings },
 ]
 

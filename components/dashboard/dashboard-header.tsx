@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { NotificationsMenu } from "@/components/dashboard/notifications-menu"
-import { BookOpen, FileText, History, LifeBuoy, LogOut, Search, Settings, UserRound, Users2 } from "lucide-react"
+import { BookOpen, FileText, LifeBuoy, LogOut, Search, Settings, UserRound, Users2 } from "lucide-react"
 import type { DashboardData, DashboardMember, DashboardView } from "@/components/dashboard/dashboard-shell"
 import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
 
@@ -32,8 +32,8 @@ const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
   network: { title: "DDNI Network", subtitle: "Connect with distinguished people." },
   opportunities: { title: "Opportunities", subtitle: "Put your gifts, skills and learning into action." },
   announcements: { title: "Announcements", subtitle: "Stay informed. Stay connected." },
-  profile: { title: "My Profile", subtitle: "Manage your public member profile and professional presence." },
-  history: { title: "Account History", subtitle: "A record of key activity on your member account." },
+  profile: { title: "Profile", subtitle: "Review your account activity and professional details." },
+  history: { title: "Profile", subtitle: "Review your account activity and professional details." },
   settings: { title: "Settings", subtitle: "Manage your account, security, and communication preferences." },
   support: { title: "Support", subtitle: "Get help from the DDNI team." },
 }
@@ -153,8 +153,7 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => goTo("profile")}><UserRound />My Profile</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => goTo("history")}><History />Account History</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => goTo("profile")}><UserRound />Profile &amp; history</DropdownMenuItem>
             <DropdownMenuItem onClick={() => goTo("settings")}><Settings />Account Settings</DropdownMenuItem>
             <DropdownMenuItem onClick={() => goTo("support")}><LifeBuoy />Support</DropdownMenuItem>
           </DropdownMenuGroup>
