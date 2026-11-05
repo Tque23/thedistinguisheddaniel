@@ -15,7 +15,20 @@ import type { DashboardMember, DashboardViewProps } from "@/components/dashboard
 type Status = { tone: "success" | "error"; text: string } | null
 
 function SettingRow({ icon: Icon, title, description, children }: { icon: typeof Bell; title: string; description: string; children: ReactNode }) {
-  return <div className="flex flex-col gap-4 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 items-start gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon className="size-4" aria-hidden /></div><div><p className="text-sm font-medium text-foreground">{title}</p><p className="mt-1 max-w-lg text-sm leading-relaxed text-muted-foreground">{description}</p></div></div><div className="shrink-0">{children}</div></div>
+  return (
+    <div className="flex flex-col gap-4 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <Icon className="size-4" aria-hidden />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-foreground">{title}</p>
+          <p className="mt-1 max-w-lg text-sm leading-relaxed text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  )
 }
 
 export function SettingsView({ member, onMemberChange, onNavigate }: DashboardViewProps & { onMemberChange: (updates: Partial<DashboardMember>) => void }) {
@@ -122,10 +135,10 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
                   <Switch label="Network activity" checked={preferences.networkAlerts} onChange={(value) => { setPreferences({ ...preferences, networkAlerts: value }); setPreferencesStatus(null) }} />
                 </SettingRow>
               </div>
-              <div className="mt-5 flex flex-col gap-3 border-t border-border/60 pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap gap-2">
+              <div className="mt-6 flex flex-col gap-4 border-t border-border/60 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-2.5">
                   <Button type="button" variant="outline" className="min-h-11 px-4" disabled={!preferencesDirty || savingPreferences} onClick={() => { setPreferences(member.preferences); setPreferencesStatus(null) }}>Reset preferences</Button>
-                  <Button className="min-h-11 px-4" disabled={!preferencesDirty || savingPreferences} onClick={() => void savePreferences()}>{savingPreferences ? "Saving…" : "Save preferences"}</Button>
+                  <Button className="btn-gold min-h-11 px-4" disabled={!preferencesDirty || savingPreferences} onClick={() => void savePreferences()}>{savingPreferences ? "Saving…" : "Save preferences"}</Button>
                 </div>
                 {preferencesStatus && <div className="min-w-0"><StatusMessage tone={preferencesStatus.tone}>{preferencesStatus.text}</StatusMessage></div>}
               </div>
