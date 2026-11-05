@@ -23,13 +23,13 @@ type NavItem = { id: DashboardView; label: string; icon: typeof LayoutGrid }
 
 const navItems: NavItem[] = [
   { id: "overview", label: "Dashboard", icon: LayoutGrid },
-  { id: "institute", label: "My Courses", icon: BookOpen },
-  { id: "overview", label: "My Calendar", icon: CalendarDays },
-  { id: "institute", label: "Resource Library", icon: Library },
-  { id: "profile", label: "My Certificates", icon: Award },
+  { id: "courses", label: "My Courses", icon: BookOpen },
+  { id: "calendar", label: "My Calendar", icon: CalendarDays },
+  { id: "library", label: "Resource Library", icon: Library },
+  { id: "history", label: "My Certificates", icon: Award },
   { id: "network", label: "DDNI Network", icon: Users2 },
-  { id: "network", label: "Opportunities", icon: BriefcaseBusiness },
-  { id: "overview", label: "Announcements", icon: Bell },
+  { id: "opportunities", label: "Opportunities", icon: BriefcaseBusiness },
+  { id: "announcements", label: "Announcements", icon: Bell },
   { id: "profile", label: "My Profile", icon: UserRound },
   { id: "settings", label: "Settings", icon: Settings },
 ]
@@ -80,10 +80,10 @@ export function AppSidebar({
               {navItems.map((item, index) => (
                 <SidebarMenuItem key={`${item.label}-${index}`}>
                   <SidebarMenuButton
-                    isActive={index === 0 ? activeView === "overview" : false}
+                    isActive={activeView === item.id}
                     tooltip={item.label}
                     onClick={() => navigate(item.id)}
-                    className="h-9 rounded-lg px-2.5 text-[15px] font-normal text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground"
+                    className="h-10 rounded-lg px-3 text-[15px] font-normal text-sidebar-foreground/90 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[active=true]:bg-[linear-gradient(180deg,#d1ab5c,#b08330)] data-[active=true]:font-semibold data-[active=true]:text-[#0a1b36] data-[active=true]:shadow-sm"
                   >
                     <item.icon />
                     <span>{item.label}</span>
@@ -115,7 +115,7 @@ export function AppSidebar({
       <SidebarFooter className="max-h-40 overflow-hidden border-t border-sidebar-border px-5 py-6 opacity-100 transition-[max-height,opacity,transform,padding] duration-200 ease-out group-data-[collapsible=icon]:max-h-0 group-data-[collapsible=icon]:translate-y-2 group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:px-5 group-data-[collapsible=icon]:py-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none">
         <blockquote className={`${cormorantGaramond.className} text-[16px] leading-[1.45] text-sidebar-foreground`}>
           “But the people who know their God and carry out great exploits.”
-          <cite className="mt-1 block not-italic">Daniel 11:32 (NETV)</cite>
+          <cite className="mt-1 block text-sm not-italic text-[#d8b865]">Daniel 11:32 (NETV)</cite>
         </blockquote>
       </SidebarFooter>
     </Sidebar>

@@ -26,7 +26,12 @@ import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
 const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
   overview: { title: "Welcome back", subtitle: "Here's what's happening across your Institute and Network." },
   institute: { title: "The Institute", subtitle: "Courses and resources curated for your growth." },
-  network: { title: "The Network", subtitle: "Discover opportunities and connect with fellow members." },
+  courses: { title: "My Courses", subtitle: "Continue your journey of growth and distinction." },
+  calendar: { title: "My Calendar", subtitle: "Stay up to date with your courses, sessions and events." },
+  library: { title: "Resource Library", subtitle: "Resources to support your learning and growth." },
+  network: { title: "DDNI Network", subtitle: "Connect with distinguished people." },
+  opportunities: { title: "Opportunities", subtitle: "Put your gifts, skills and learning into action." },
+  announcements: { title: "Announcements", subtitle: "Stay informed. Stay connected." },
   profile: { title: "My Profile", subtitle: "Manage your public member profile and professional presence." },
   history: { title: "Account History", subtitle: "A record of key activity on your member account." },
   settings: { title: "Settings", subtitle: "Manage your account, security, and communication preferences." },
@@ -49,9 +54,9 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
     if (q.length < 2) return []
     const matches = (...values: string[]) => values.some((value) => value.toLowerCase().includes(q))
     return [
-      ...data.courses.filter((c) => matches(c.title, c.instructor, c.category)).map((c) => ({ id: `c-${c.id}`, label: c.title, detail: "Course", view: "institute" as const, icon: BookOpen })),
-      ...data.resources.filter((r) => matches(r.title, r.type, r.description)).map((r) => ({ id: `r-${r.id}`, label: r.title, detail: "Resource", view: "institute" as const, icon: FileText })),
-      ...data.opportunities.filter((o) => matches(o.title, o.description)).map((o) => ({ id: `o-${o.id}`, label: o.title, detail: "Opportunity", view: "network" as const, icon: Users2 })),
+      ...data.courses.filter((c) => matches(c.title, c.instructor, c.category)).map((c) => ({ id: `c-${c.id}`, label: c.title, detail: "Course", view: "courses" as const, icon: BookOpen })),
+      ...data.resources.filter((r) => matches(r.title, r.type, r.description)).map((r) => ({ id: `r-${r.id}`, label: r.title, detail: "Resource", view: "library" as const, icon: FileText })),
+      ...data.opportunities.filter((o) => matches(o.title, o.description)).map((o) => ({ id: `o-${o.id}`, label: o.title, detail: "Opportunity", view: "opportunities" as const, icon: Users2 })),
       ...data.directory.filter((m) => matches(m.name, m.company, m.headline, ...m.skills)).map((m) => ({ id: `m-${m.id}`, label: m.name, detail: "Member", view: "network" as const, icon: UserRound })),
     ].slice(0, 8)
   }, [query, data])

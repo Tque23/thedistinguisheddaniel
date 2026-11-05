@@ -1,5 +1,12 @@
 import localFont from "next/font/local"
-import { Cormorant_Garamond } from "next/font/google"
+import { Cormorant_Garamond, Playfair_Display } from "next/font/google"
+
+export const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-ddni-serif",
+  display: "swap",
+})
 
 export const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],

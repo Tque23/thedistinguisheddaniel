@@ -40,13 +40,13 @@
   --input: #1c2e3d;
   --ring: #f3d27a;
 
-  --sidebar: #050f18;
+  --sidebar: #0a1b36;
   --sidebar-foreground: #f8f9fa;
   --sidebar-primary: #dcb567;
   --sidebar-primary-foreground: #1a1200;
-  --sidebar-accent: #101f2c;
+  --sidebar-accent: #12294d;
   --sidebar-accent-foreground: #f3d27a;
-  --sidebar-border: #1c2e3d;
+  --sidebar-border: rgba(201, 161, 79, 0.22);
   --sidebar-ring: #f3d27a;
 
   font-family: "Inter", "Source Sans Pro", system-ui, sans-serif;
@@ -91,6 +91,103 @@
 
 :is(.tdd-dashboard, .tdd-dashboard-theme) .border-burgundy {
   border-color: var(--burgundy);
+}
+
+/* Light "learner portal" surface used by the My Courses, Calendar, Library,
+   Network, Opportunities and Announcements views. It re-maps the semantic
+   tokens so every shadcn component inside inherits the cream / navy / gold look. */
+.tdd-dashboard .ddni-light {
+  color-scheme: light;
+
+  --background: #fbfaf6;
+  --foreground: #0c1d3a;
+  --card: #ffffff;
+  --card-foreground: #0c1d3a;
+  --popover: #ffffff;
+  --popover-foreground: #0c1d3a;
+  --primary: #b8893a;
+  --primary-foreground: #ffffff;
+  --secondary: #f4efe2;
+  --secondary-foreground: #0c1d3a;
+  --muted: #f4f1ea;
+  --muted-foreground: #5b6579;
+  --accent: #f7efdc;
+  --accent-foreground: #7a5518;
+  --border: #e8e2d3;
+  --input: #ddd5c2;
+  --ring: #c9a14f;
+
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.ddni-serif {
+  font-family: var(--font-ddni-serif), "Playfair Display", Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+.ddni-btn {
+  transition: filter 0.2s ease, background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.ddni-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.ddni-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ddni-btn:focus-visible {
+  outline: 2px solid #0c1d3a;
+  outline-offset: 2px;
+}
+
+.ddni-btn-gold {
+  background: linear-gradient(180deg, #c9a24f 0%, #a97b2b 100%);
+  border: 1px solid #a57728;
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 1px 2px rgba(122, 85, 24, 0.25);
+}
+
+.ddni-btn-gold:hover:not(:disabled) {
+  filter: brightness(1.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 4px 12px -4px rgba(122, 85, 24, 0.45);
+}
+
+.ddni-btn-outline {
+  background: #ffffff;
+  border: 1px solid #b8893a;
+  color: #8a6420;
+}
+
+.ddni-btn-outline:hover:not(:disabled) {
+  background: #fbf3df;
+}
+
+.ddni-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 2px rgba(12, 29, 58, 0.04), 0 8px 20px -14px rgba(12, 29, 58, 0.18);
+}
+
+.ddni-card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.ddni-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(184, 137, 58, 0.5);
+  box-shadow: 0 1px 2px rgba(12, 29, 58, 0.05), 0 14px 28px -14px rgba(12, 29, 58, 0.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ddni-card-hover:hover,
+  .ddni-btn:active:not(:disabled) {
+    transform: none;
+  }
 }
 
 .tdd-dashboard .dashboard-card-hover {

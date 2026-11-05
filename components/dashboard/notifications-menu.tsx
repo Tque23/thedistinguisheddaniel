@@ -29,9 +29,9 @@ export function NotificationsMenu({ data, onNavigate }: { data: DashboardData; o
   }, [])
 
   const items = useMemo<NotificationItem[]>(() => [
-    ...data.opportunities.map((item) => ({ id: `op-${item.id}`, title: "New opportunity", description: item.title, createdAt: item.createdAt, view: "network" as const, icon: Users2, source: "Network" as const })),
-    ...data.courses.map((item) => ({ id: `course-${item.id}`, title: "New course", description: item.title, createdAt: item.createdAt, view: "institute" as const, icon: BookOpen, source: "Institute" as const })),
-    ...data.resources.map((item) => ({ id: `res-${item.id}`, title: "New resource", description: item.title, createdAt: item.createdAt, view: "institute" as const, icon: FileText, source: "Institute" as const })),
+    ...data.opportunities.map((item) => ({ id: `op-${item.id}`, title: "New opportunity", description: item.title, createdAt: item.createdAt, view: "announcements" as const, icon: Users2, source: "Network" as const })),
+    ...data.courses.map((item) => ({ id: `course-${item.id}`, title: "New course", description: item.title, createdAt: item.createdAt, view: "courses" as const, icon: BookOpen, source: "Institute" as const })),
+    ...data.resources.map((item) => ({ id: `res-${item.id}`, title: "New resource", description: item.title, createdAt: item.createdAt, view: "library" as const, icon: FileText, source: "Institute" as const })),
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 8), [data])
 
   const isUnread = (item: NotificationItem) => new Date(item.createdAt).getTime() > seenAt

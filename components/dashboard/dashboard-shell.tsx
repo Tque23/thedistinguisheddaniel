@@ -11,6 +11,13 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { OverviewView } from "@/components/dashboard/views/overview-view"
 import { InstituteView } from "@/components/dashboard/views/institute-view"
 import { NetworkView } from "@/components/dashboard/views/network-view"
+import { MyCoursesView } from "@/components/dashboard/views/mycourses-view"
+import { CalendarView } from "@/components/dashboard/views/calendar-view"
+import { LibraryView } from "@/components/dashboard/views/library-view"
+import { OpportunitiesView } from "@/components/dashboard/views/opportunities-view"
+import { AnnouncementsView } from "@/components/dashboard/views/announcements-view"
+import { playfair } from "@/src/app/fonts"
+import { cn } from "@/lib/utils"
 import { ProfileView } from "@/components/dashboard/views/profile-view"
 import { SettingsView } from "@/components/dashboard/views/settings-view"
 import { HistoryView } from "@/components/dashboard/views/history-view"
@@ -31,8 +38,10 @@ import {
   type Resource,
 } from "@/lib/dashboard-data"
 
-export const DASHBOARD_VIEWS = ["overview", "institute", "network", "profile", "history", "settings", "support"] as const
+export const DASHBOARD_VIEWS = ["overview", "institute", "courses", "calendar", "library", "network", "opportunities", "announcements", "profile", "history", "settings", "support"] as const
 export type DashboardView = (typeof DASHBOARD_VIEWS)[number]
+
+const LIGHT_VIEWS: readonly DashboardView[] = ["courses", "calendar", "library", "network", "opportunities", "announcements"]
 
 const SESSION_TIMEOUT_MS = 5 * 60 * 1000
 const RESERVED_ANNOUNCEMENTS = `("__dashboard_announcement__","__landing_announcement__")`
@@ -216,7 +225,7 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
   }
 
   return (
-    <div className="tdd-dashboard flex h-svh flex-col overflow-hidden">
+    <div className={cn("tdd-dashboard flex h-svh flex-col overflow-hidden", playfair.variable)}>
       <AnnouncementBar />
       {isTimedOut && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-[#050f18]/90 p-6 backdrop-blur-sm" role="status">
@@ -230,7 +239,7 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
       )}
       <SidebarProvider className="min-h-0 flex-1">
         <AppSidebar activeView={activeView} onNavigate={navigate} member={member} />
-        <SidebarInset className="min-h-0 min-w-0">
+        <SidebarInset className={cn("min-h-0 min-w-0", LIGHT_VIEWS.includes(activeView) && "ddni-light")}>
           <DashboardHeader activeView={activeView} onNavigate={navigate} member={member} data={data} />
           <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
             <AnimatePresence mode="wait">
@@ -244,7 +253,12 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
               >
                 {activeView === "overview" && <OverviewView {...viewProps} />}
                 {activeView === "institute" && <InstituteView {...viewProps} />}
+                {activeView === "courses" && <MyCoursesView {...viewProps} />}
+                {activeView === "calendar" && <CalendarView {...viewProps} />}
+                {activeView === "library" && <LibraryView {...viewProps} />}
                 {activeView === "network" && <NetworkView {...viewProps} />}
+                {activeView === "opportunities" && <OpportunitiesView {...viewProps} />}
+                {activeView === "announcements" && <AnnouncementsView {...viewProps} />}
                 {activeView === "profile" && <ProfileView {...viewProps} onMemberChange={updateMember} onProfileChange={updateProfile} />}
                 {activeView === "history" && <HistoryView {...viewProps} />}
                 {activeView === "settings" && <SettingsView {...viewProps} onMemberChange={updateMember} />}
