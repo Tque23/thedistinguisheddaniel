@@ -41,7 +41,7 @@ import {
 export const DASHBOARD_VIEWS = ["overview", "institute", "courses", "calendar", "library", "network", "opportunities", "announcements", "profile", "history", "settings", "support"] as const
 export type DashboardView = (typeof DASHBOARD_VIEWS)[number]
 
-const LIGHT_VIEWS: readonly DashboardView[] = ["courses", "calendar", "library", "network", "opportunities", "announcements", "profile"]
+const LIGHT_VIEWS: readonly DashboardView[] = ["courses", "calendar", "library", "network", "opportunities", "announcements", "profile", "settings"]
 
 const SESSION_TIMEOUT_MS = 5 * 60 * 1000
 const RESERVED_ANNOUNCEMENTS = `("__dashboard_announcement__","__landing_announcement__")`

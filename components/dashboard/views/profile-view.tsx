@@ -253,8 +253,8 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                 <div className="flex shrink-0 flex-wrap gap-2">
                   {isEditing ? (
                     <>
-                      <Button type="button" variant="ghost" className="min-h-10 px-4" onClick={cancelEditing} disabled={saving}>Cancel</Button>
-                      <Button type="submit" className="btn-gold min-h-10 px-4" disabled={!dirty || saving}>{saving ? "Saving…" : "Save Changes"}</Button>
+                      <Button type="button" variant="ghost" className="ddni-btn min-h-10 px-4" onClick={cancelEditing} disabled={saving}>Cancel</Button>
+                      <Button type="submit" className="btn-gold ddni-btn min-h-10 px-4" disabled={!dirty || saving}>{saving ? "Saving…" : "Save Changes"}</Button>
                     </>
                   ) : (
                     <Button type="button" variant="outline" className="min-h-10 px-4" onClick={beginEditing}>Edit Profile</Button>
@@ -313,7 +313,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                         <h3 id="profile-account-heading" className="text-sm font-semibold tracking-tight text-foreground">Account details</h3>
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">How your DDNI member account is identified.</p>
                       </div>
-                      <dl className="grid gap-x-6 gap-y-5 rounded-xl bg-muted/30 p-4 sm:grid-cols-2 sm:p-5">
+                      <dl className="grid gap-x-6 gap-y-5 rounded-xl border border-border/60 bg-muted/30 p-4 sm:grid-cols-2 sm:p-5">
                         <ProfileDetail label="Full name">{member.name}</ProfileDetail>
                         <ProfileDetail label="Email address">{accountEmail}</ProfileDetail>
                         <ProfileDetail label="Location">{profileLocation}</ProfileDetail>

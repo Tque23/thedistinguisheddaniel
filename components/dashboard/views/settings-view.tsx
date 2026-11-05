@@ -111,8 +111,8 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
       <ViewHeader kicker="Account settings" title="Your account, your way" description="Manage security, communication preferences, and the way you experience the TDD Network." />
       <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,0.8fr)]">
         <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader><CardTitle>Communication</CardTitle><CardDescription>Choose what deserves your attention.</CardDescription></CardHeader>
+          <Card className="border-border/60 bg-card shadow-sm">
+            <CardHeader><CardTitle className="tracking-tight">Communication</CardTitle><CardDescription>Choose what deserves your attention.</CardDescription></CardHeader>
             <CardContent className="flex flex-col">
               <div className="divide-y divide-border">
                 <SettingRow icon={Mail} title="Email updates" description="Institute news, course announcements and member updates.">
@@ -122,15 +122,16 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
                   <Switch label="Network activity" checked={preferences.networkAlerts} onChange={(value) => { setPreferences({ ...preferences, networkAlerts: value }); setPreferencesStatus(null) }} />
                 </SettingRow>
               </div>
-              <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-5">
-                <Button className="btn-gold" disabled={!preferencesDirty || savingPreferences} onClick={() => void savePreferences()}>{savingPreferences ? "Saving…" : "Save preferences"}</Button>
+              <div className="mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-border/60 pt-5">
+                <Button variant="ghost" disabled={!preferencesDirty || savingPreferences} onClick={() => { setPreferences(member.preferences); setPreferencesStatus(null) }}>Cancel</Button>
+                <Button className="btn-gold ddni-btn" disabled={!preferencesDirty || savingPreferences} onClick={() => void savePreferences()}>{savingPreferences ? "Saving…" : "Save preferences"}</Button>
                 {preferencesStatus && <StatusMessage tone={preferencesStatus.tone}>{preferencesStatus.text}</StatusMessage>}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader><CardTitle>Security</CardTitle><CardDescription>Keep your member account protected.</CardDescription></CardHeader>
+          <Card className="border-border/60 bg-card shadow-sm">
+            <CardHeader><CardTitle className="tracking-tight">Security</CardTitle><CardDescription>Keep your member account protected.</CardDescription></CardHeader>
             <CardContent className="flex flex-col gap-4">
               <SettingRow icon={LockKeyhole} title="Password" description={member.passwordChangedAt ? `Last changed ${relativeTime(member.passwordChangedAt)}.` : "Use a strong password you don't use anywhere else."}>
                 <Button variant="outline" size="sm" aria-expanded={passwordOpen} onClick={() => { setPasswordOpen(!passwordOpen); setPasswordErrors({}); setPasswordStatus(null) }}>{passwordOpen ? "Cancel" : "Change password"}</Button>
@@ -152,8 +153,8 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
         </div>
 
         <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader><CardTitle>Contact email</CardTitle><CardDescription>Used for sign-in and important notices. Never shown publicly.</CardDescription></CardHeader>
+          <Card className="border-border/60 bg-card shadow-sm">
+            <CardHeader><CardTitle className="tracking-tight">Contact email</CardTitle><CardDescription>Used for sign-in and important notices. Never shown publicly.</CardDescription></CardHeader>
             <CardContent>
               <form onSubmit={changeEmail} noValidate className="flex flex-col gap-3">
                 <Field id="contact-email" label="Email address" error={emailError}>
@@ -168,8 +169,8 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader><CardTitle>Sessions</CardTitle><CardDescription>Manage where you're signed in.</CardDescription></CardHeader>
+          <Card className="border-border/60 bg-card shadow-sm">
+            <CardHeader><CardTitle className="tracking-tight">Sessions</CardTitle><CardDescription>Manage where you're signed in.</CardDescription></CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div className="flex items-start gap-3">
                 <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"><MonitorSmartphone className="size-4 text-[#f3d27a]" /></div>
