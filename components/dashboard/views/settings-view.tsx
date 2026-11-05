@@ -1,216 +1,526 @@
 "use client"
 
-import { useState, type FormEvent, type ReactNode } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import { saveCommunicationPreferences } from "@/src/app/dashboard/actions"
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react"
+import { Dialog } from "@base-ui/react/dialog"
+import { saveMemberProfile } from "@/src/app/dashboard/actions"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Field, StatusMessage, Switch, ViewHeader } from "@/components/dashboard/dashboard-ui"
-import { EMAIL_PATTERN, relativeTime } from "@/lib/dashboard-data"
-import { Bell, LockKeyhole, LogOut, Mail, MonitorSmartphone } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { AccountHistory } from "@/components/dashboard/views/history-view"
+import { Field, StatusMessage, ViewHeader } from "@/components/dashboard/dashboard-ui"
+import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
+import { initialsFor, isValidUrl, normalizeSkills, profileCompletion, type MemberProfile } from "@/lib/dashboard-data"
+import { Check, Circle, History, ShieldCheck, UserRound, Pencil, Save } from "lucide-react"
 import type { DashboardMember, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
-type Status = { tone: "success" | "error"; text: string } | null
+type FormState = {
+  name: string
+  title: string
+  avatarUrl: string
+  headline: string
+  role: string
+  company: string
+  location: string
+  website: string
+  linkedinUrl: string
+  skills: string
+  bio: string
+}
 
-function SettingRow({ icon: Icon, title, description, children }: { icon: typeof Bell; title: string; description: string; children: ReactNode }) {
+type Errors = Partial<Record<keyof FormState, string>>
+
+const BIO_LIMIT = 600
+
+function toForm(member: DashboardMember, profile: MemberProfile): FormState {
+  return {
+    name: member.name === "Member" ? "" : member.name,
+    title: member.title === "DDNI Member" ? "" : member.title,
+    avatarUrl: member.avatarUrl,
+    headline: profile.headline,
+    role: profile.role,
+    company: profile.company,
+    location: profile.location || member.location,
+    website: profile.website,
+    linkedinUrl: profile.linkedinUrl,
+    skills: profile.skills.join(", "),
+    bio: profile.bio,
+  }
+}
+
+function validate(form: FormState): Errors {
+  const errors: Errors = {}
+  const name = form.name.trim()
+  if (name.length < 2) errors.name = "Enter your full name."
+  else if (name.length > 80) errors.name = "Keep your name under 80 characters."
+  if (form.title.length > 100) errors.title = "Keep your title under 100 characters."
+  if (form.headline.length > 140) errors.headline = "Keep your headline under 140 characters."
+  if (form.role.length > 100) errors.role = "Keep your role under 100 characters."
+  if (form.company.length > 120) errors.company = "Keep your company under 120 characters."
+  if (form.location.length > 100) errors.location = "Keep your location under 100 characters."
+  if (form.avatarUrl.length > 2048 || (form.avatarUrl && !isValidUrl(form.avatarUrl))) errors.avatarUrl = "Enter a full image link starting with https://."
+  if (form.website.length > 2048 || (form.website && !isValidUrl(form.website))) errors.website = "Enter a full link starting with https://."
+  if (form.linkedinUrl.length > 2048 || (form.linkedinUrl && (!isValidUrl(form.linkedinUrl) || !/linkedin\.com/i.test(form.linkedinUrl)))) {
+    errors.linkedinUrl = "Enter your LinkedIn profile link, e.g. https://linkedin.com/in/you."
+  }
+  const skills = normalizeSkills(form.skills)
+  if (skills.length > 12) errors.skills = "List up to 12 areas of expertise."
+  else if (skills.some((skill) => skill.length > 64)) errors.skills = "Keep each area of expertise under 64 characters."
+  if (form.bio.length > BIO_LIMIT) errors.bio = `Keep your introduction under ${BIO_LIMIT} characters.`
+  return errors
+}
+
+const statusLabels: Record<string, string> = { pending_review: "Pending review", approved: "Approved", rejected: "Changes requested" }
+
+function ProfileDetail({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-4 py-5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Icon className="size-4" aria-hidden />
-        </div>
-        <div>
-          <p className="text-sm font-medium text-foreground">{title}</p>
-          <p className="mt-1 max-w-lg text-sm leading-relaxed text-muted-foreground">{description}</p>
-        </div>
-      </div>
-      <div className="shrink-0">{children}</div>
+    <div className="min-w-0 space-y-1">
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className="break-words text-sm leading-relaxed font-medium text-foreground">
+        {children || <span className="font-normal text-muted-foreground">Not provided</span>}
+      </dd>
     </div>
   )
 }
 
-export function SettingsView({ member, onMemberChange, onNavigate }: DashboardViewProps & { onMemberChange: (updates: Partial<DashboardMember>) => void }) {
-  const router = useRouter()
+export function ProfileView({
+  member,
+  data,
+  onNavigate,
+  onMemberChange,
+  onProfileChange,
+}: DashboardViewProps & { onMemberChange: (updates: Partial<DashboardMember>) => void; onProfileChange: (profile: MemberProfile) => void }) {
+  const saved = useMemo(() => toForm(member, data.profile), [member, data.profile])
+  const [form, setForm] = useState<FormState>(saved)
+  const [errors, setErrors] = useState<Errors>({})
+  const [status, setStatus] = useState<{ tone: "success" | "error"; text: string } | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  const [preferences, setPreferences] = useState(member.preferences)
-  const [preferencesStatus, setPreferencesStatus] = useState<Status>(null)
-  const [savingPreferences, setSavingPreferences] = useState(false)
-  const preferencesDirty = preferences.emailUpdates !== member.preferences.emailUpdates || preferences.networkAlerts !== member.preferences.networkAlerts
+  useEffect(() => {
+    if (!isEditing) setForm(saved)
+  }, [saved, isEditing])
 
-  const [passwordOpen, setPasswordOpen] = useState(false)
-  const [password, setPassword] = useState({ next: "", confirm: "" })
-  const [passwordErrors, setPasswordErrors] = useState<{ next?: string; confirm?: string }>({})
-  const [passwordStatus, setPasswordStatus] = useState<Status>(null)
-  const [savingPassword, setSavingPassword] = useState(false)
+  const dirty = (Object.keys(form) as (keyof FormState)[]).some((key) => form[key] !== saved[key])
+  const preview = {
+    ...member,
+    name: form.name.trim() || member.name,
+    title: form.title.trim() || "DDNI Member",
+    avatarUrl: isValidUrl(form.avatarUrl) ? form.avatarUrl : "",
+    initials: initialsFor(form.name.trim() || member.name),
+  }
+  const completion = profileCompletion(preview, {
+    ...data.profile,
+    headline: form.headline,
+    company: form.company,
+    location: form.location,
+    bio: form.bio,
+    skills: normalizeSkills(form.skills),
+  })
 
-  const [email, setEmail] = useState(member.pendingEmail || member.email)
-  const [emailError, setEmailError] = useState("")
-  const [emailStatus, setEmailStatus] = useState<Status>(member.pendingEmail ? { tone: "success", text: `Waiting for you to confirm ${member.pendingEmail}. Check both inboxes.` } : null)
-  const [savingEmail, setSavingEmail] = useState(false)
-
-  const [sessionStatus, setSessionStatus] = useState<Status>(null)
-  const [signingOut, setSigningOut] = useState<"others" | "global" | null>(null)
-
-  async function savePreferences() {
-    setSavingPreferences(true)
-    setPreferencesStatus(null)
-    const result = await saveCommunicationPreferences(preferences)
-    setSavingPreferences(false)
-    if (result.error) return setPreferencesStatus({ tone: "error", text: result.error ?? "We couldn't save your preferences. Please try again." })
-    onMemberChange({ preferences })
-    setPreferencesStatus({ tone: "success", text: "Preferences saved." })
+  function update<K extends keyof FormState>(key: K, value: FormState[K]) {
+    setForm((current) => ({ ...current, [key]: value }))
+    if (errors[key]) setErrors((current) => ({ ...current, [key]: undefined }))
+    setStatus(null)
   }
 
-  async function changePassword(event: FormEvent) {
+  function beginEditing() {
+    setForm(saved)
+    setErrors({})
+    setStatus(null)
+    setIsEditing(true)
+  }
+
+  function cancelEditing() {
+    setForm(saved)
+    setErrors({})
+    setStatus(null)
+    setIsEditing(false)
+  }
+
+  function requestSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const errors: typeof passwordErrors = {}
-    if (password.next.length < 8) errors.next = "Use at least 8 characters."
-    else if (!/[A-Za-z]/.test(password.next) || !/\d/.test(password.next)) errors.next = "Include at least one letter and one number."
-    if (password.confirm !== password.next) errors.confirm = "Passwords don't match."
-    setPasswordErrors(errors)
-    if (Object.keys(errors).length) return
-    setSavingPassword(true)
-    setPasswordStatus(null)
-    const now = new Date().toISOString()
-    const { error } = await createClient().auth.updateUser({ password: password.next, data: { password_changed_at: now } })
-    setSavingPassword(false)
-    if (error) {
-      const message = /reauth|recent/i.test(error.message) ? "For security, please sign out and back in, then try again." : /different|same/i.test(error.message) ? "Choose a password you haven't used for this account." : "We couldn't update your password. Please try again."
-      return setPasswordStatus({ tone: "error", text: message })
-    }
-    onMemberChange({ passwordChangedAt: now })
-    setPassword({ next: "", confirm: "" })
-    setPasswordOpen(false)
-    setPasswordStatus({ tone: "success", text: "Your password has been updated." })
-  }
-
-  async function changeEmail(event: FormEvent) {
-    event.preventDefault()
-    const next = email.trim().toLowerCase()
-    setEmailStatus(null)
-    if (!EMAIL_PATTERN.test(next) || next.length > 254) return setEmailError("Enter a valid email address.")
-    if (next === member.email.toLowerCase()) return setEmailError("This is already your contact email.")
-    setEmailError("")
-    setSavingEmail(true)
-    const now = new Date().toISOString()
-    const { error } = await createClient().auth.updateUser(
-      { email: next, data: { email_change_requested_at: now } },
-      { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/dashboard?view=settings")}` },
-    )
-    setSavingEmail(false)
-    if (error) return setEmailStatus({ tone: "error", text: /already|registered|exists/i.test(error.message) ? "That email is already used by another account." : "We couldn't start the email change. Please try again." })
-    onMemberChange({ pendingEmail: next, emailChangeRequestedAt: now })
-    setEmailStatus({ tone: "success", text: `Confirmation sent. Follow the link sent to ${next} (and your current inbox, if asked) to finish.` })
-  }
-
-  async function signOut(scope: "others" | "global") {
-    setSigningOut(scope)
-    setSessionStatus(null)
-    const { error } = await createClient().auth.signOut({ scope })
-    setSigningOut(null)
-    if (error) return setSessionStatus({ tone: "error", text: "We couldn't sign out those sessions. Please try again." })
-    if (scope === "global") {
-      router.replace("/auth")
-      router.refresh()
+    const nextErrors = validate(form)
+    setErrors(nextErrors)
+    if (Object.keys(nextErrors).length > 0) {
+      setStatus({ tone: "error", text: "Please fix the highlighted fields before continuing." })
+      const firstInvalid = Object.keys(nextErrors)[0] as keyof FormState
+      window.requestAnimationFrame(() => document.getElementById(`profile-${firstInvalid}`)?.focus())
       return
     }
-    setSessionStatus({ tone: "success", text: "You've been signed out on all other devices." })
+    setStatus(null)
+    setIsConfirmOpen(true)
   }
 
+  async function confirmSave() {
+    setIsConfirmOpen(false)
+    setSaving(true)
+    setStatus(null)
+    const skills = normalizeSkills(form.skills)
+
+    try {
+      const result = await saveMemberProfile({
+        name: form.name,
+        title: form.title,
+        avatarUrl: form.avatarUrl,
+        headline: form.headline,
+        role: form.role,
+        company: form.company,
+        location: form.location,
+        website: form.website,
+        linkedinUrl: form.linkedinUrl,
+        skills,
+        bio: form.bio,
+      })
+      if (!result.savedAt) {
+        setStatus({ tone: "error", text: result.error ?? "We couldn't save your profile. Please try again." })
+        return
+      }
+
+      const name = form.name.trim()
+      const title = form.title.trim()
+      const location = form.location.trim()
+      const savedAt = result.savedAt
+      onProfileChange({
+        headline: form.headline.trim(),
+        role: form.role.trim(),
+        company: form.company.trim(),
+        location,
+        website: form.website.trim(),
+        linkedinUrl: form.linkedinUrl.trim(),
+        bio: form.bio.trim(),
+        skills,
+        updatedAt: savedAt,
+      })
+      if (result.error) {
+        setStatus({ tone: "error", text: result.error })
+        return
+      }
+      onMemberChange({
+        name,
+        title: title || "DDNI Member",
+        avatarUrl: form.avatarUrl.trim(),
+        location,
+        initials: initialsFor(name),
+        profileStatus: "pending_review",
+        lastProfileSavedAt: savedAt,
+      })
+      setIsEditing(false)
+      setStatus({ tone: "success", text: "Profile saved and submitted for review." })
+    } catch {
+      setStatus({ tone: "error", text: "We couldn't save your profile. Please try again." })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const input = (key: keyof FormState, label: string, props: React.ComponentProps<typeof Input> = {}, hint?: string) => (
+    <Field id={`profile-${key}`} label={label} error={errors[key]} hint={hint}>
+      <Input
+        {...props}
+        id={`profile-${key}`}
+        name={key}
+        value={form[key]}
+        onChange={(event) => update(key, event.target.value)}
+        aria-invalid={Boolean(errors[key])}
+        aria-describedby={errors[key] ? `profile-${key}-error` : hint ? `profile-${key}-hint` : undefined}
+      />
+    </Field>
+  )
+
+  const accountEmail = member.email || "No email on file"
+  const profileLocation = data.profile.location || member.location
+
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <ViewHeader kicker="Account settings" title="Your account, your way" description="Manage security, communication preferences, and the way you experience the TDD Network." />
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,0.8fr)]">
-        <div className="flex flex-col gap-6">
-          <Card className="border border-border/60 bg-card shadow-sm">
-            <CardHeader><CardTitle>Communication</CardTitle><CardDescription>Choose what deserves your attention.</CardDescription></CardHeader>
-            <CardContent className="flex flex-col">
-              <div className="divide-y divide-border">
-                <SettingRow icon={Mail} title="Email updates" description="Institute news, course announcements and member updates.">
-                  <Switch label="Email updates" checked={preferences.emailUpdates} onChange={(value) => { setPreferences({ ...preferences, emailUpdates: value }); setPreferencesStatus(null) }} />
-                </SettingRow>
-                <SettingRow icon={Bell} title="Network activity" description="Emails about new opportunities and responses in the Network.">
-                  <Switch label="Network activity" checked={preferences.networkAlerts} onChange={(value) => { setPreferences({ ...preferences, networkAlerts: value }); setPreferencesStatus(null) }} />
-                </SettingRow>
-              </div>
-              <div className="mt-6 flex flex-col gap-4 border-t border-border/60 pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <Button type="button" variant="outline" className="min-h-11 px-4" disabled={!preferencesDirty || savingPreferences} onClick={() => { setPreferences(member.preferences); setPreferencesStatus(null) }}>Reset preferences</Button>
-                  <Button className="btn-gold min-h-11 px-4" disabled={!preferencesDirty || savingPreferences} onClick={() => void savePreferences()}>{savingPreferences ? "Saving…" : "Save preferences"}</Button>
-                </div>
-                {preferencesStatus && <div className="min-w-0"><StatusMessage tone={preferencesStatus.tone}>{preferencesStatus.text}</StatusMessage></div>}
-              </div>
-            </CardContent>
-          </Card>
+    <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-6">
+      <ViewHeader kicker="Member account" title="Your DDNI account" description="Review your account activity and keep your professional profile current." />
 
-          <Card className="border border-border/60 bg-card shadow-sm">
-            <CardHeader><CardTitle>Security</CardTitle><CardDescription>Keep your member account protected.</CardDescription></CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <SettingRow icon={LockKeyhole} title="Password" description={member.passwordChangedAt ? `Last changed ${relativeTime(member.passwordChangedAt)}.` : "Use a strong password you don't use anywhere else."}>
-                <Button variant={passwordOpen ? "ghost" : "outline"} className="min-h-11 px-4" aria-expanded={passwordOpen} onClick={() => { setPasswordOpen(!passwordOpen); setPasswordErrors({}); setPasswordStatus(null) }}>{passwordOpen ? "Cancel" : "Change password"}</Button>
-              </SettingRow>
-              {passwordOpen && (
-                <form onSubmit={changePassword} noValidate className="grid gap-4 border-t border-border/60 pt-5 sm:grid-cols-2">
-                  <Field id="new-password" label="New password" error={passwordErrors.next} hint="At least 8 characters, with a letter and a number.">
-                    <Input id="new-password" name="new-password" type="password" autoComplete="new-password" value={password.next} aria-invalid={Boolean(passwordErrors.next)} aria-describedby={passwordErrors.next ? "new-password-error" : "new-password-hint"} onChange={(e) => setPassword({ ...password, next: e.target.value })} />
-                  </Field>
-                  <Field id="confirm-password" label="Confirm new password" error={passwordErrors.confirm}>
-                    <Input id="confirm-password" name="confirm-password" type="password" autoComplete="new-password" value={password.confirm} aria-invalid={Boolean(passwordErrors.confirm)} aria-describedby={passwordErrors.confirm ? "confirm-password-error" : undefined} onChange={(e) => setPassword({ ...password, confirm: e.target.value })} />
-                  </Field>
-                  <Button type="submit" className="min-h-11 w-fit px-4 sm:col-span-2" disabled={savingPassword}>{savingPassword ? "Updating…" : "Update password"}</Button>
-                </form>
+      {status && <StatusMessage tone={status.tone}>{status.text}</StatusMessage>}
+      {data.errors.profile && <StatusMessage tone="error">{data.errors.profile}</StatusMessage>}
+      {member.profileStatus === "rejected" && (
+        <StatusMessage tone="error">
+          {`The DDNI team requested changes${member.profileReviewNote ? `: ${member.profileReviewNote}` : "."} Update your profile and save to resubmit.`}
+        </StatusMessage>
+      )}
+
+      {/* Unified Member Summary Header */}
+      <Card className="border border-border/60 bg-card p-6 shadow-sm">
+        <CardContent className="p-0">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div
+                className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl text-lg font-semibold ring-1 ring-border/60"
+                style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}
+              >
+                <MemberAvatarContent member={member} imageClassName="rounded-2xl" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold tracking-wider text-primary uppercase">DDNI Member</span>
+                  {member.profileStatus && (
+                    <Badge variant="outline" className="border-border/60 bg-muted/50 text-xs">
+                      {statusLabels[member.profileStatus] || member.profileStatus}
+                    </Badge>
+                  )}
+                </div>
+                <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">{member.name}</h2>
+                <p className="text-sm text-muted-foreground">{member.title !== "DDNI Member" ? member.title : "Member account"}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
+              {member.emailConfirmedAt && (
+                <Badge variant="outline" className="gap-1.5 border-primary/20 bg-primary/10 text-foreground">
+                  <ShieldCheck className="size-3.5 text-primary" aria-hidden="true" />
+                  Verified email
+                </Badge>
               )}
-              {passwordStatus && <StatusMessage tone={passwordStatus.tone}>{passwordStatus.text}</StatusMessage>}
-            </CardContent>
-          </Card>
+              {member.memberSince && (
+                <p className="rounded-lg bg-muted/50 px-3 py-1.5 text-xs text-muted-foreground">
+                  Member since <span className="font-medium text-foreground">{member.memberSince}</span>
+                </p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabs Root */}
+      <Tabs defaultValue="details" className="w-full space-y-6">
+        {/* Full-width Tab Navigation positioned directly at the top of the view body */}
+        <div className="border-b border-border/60">
+          <TabsList variant="line" aria-label="Profile sections" className="h-auto w-full justify-start gap-2 px-0 pb-0">
+            <TabsTrigger value="details" className="min-h-11 gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground border-b-2 border-transparent data-active:border-primary">
+              <UserRound className="size-4" aria-hidden="true" />
+              Profile details
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="min-h-11 gap-2 rounded-none px-4 text-sm font-medium data-active:text-foreground border-b-2 border-transparent data-active:border-primary">
+              <History className="size-4" aria-hidden="true" />
+              Account history
+            </TabsTrigger>
+          </TabsList>
         </div>
 
-        <div className="flex flex-col gap-6">
-          <Card className="border border-border/60 bg-card shadow-sm">
-            <CardHeader><CardTitle>Contact email</CardTitle><CardDescription>Used for sign-in and important notices. Never shown publicly.</CardDescription></CardHeader>
-            <CardContent>
-              <form onSubmit={changeEmail} noValidate className="flex flex-col gap-3">
-                <Field id="contact-email" label="Email address" error={emailError}>
-                  <div className="relative">
-                    <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input id="contact-email" name="email" type="email" autoComplete="email" className="ps-9" value={email} aria-invalid={Boolean(emailError)} aria-describedby={emailError ? "contact-email-error" : undefined} onChange={(e) => { setEmail(e.target.value); setEmailError(""); setEmailStatus(null) }} />
+        {/* Tab 1: Profile details */}
+        <TabsContent value="details">
+          <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[1fr_320px]">
+            <form onSubmit={requestSave} noValidate className="min-w-0">
+              <Card className="border border-border/60 bg-card p-6 shadow-sm">
+                <CardHeader className="flex flex-col gap-4 p-0 pb-6 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 mb-6">
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg tracking-tight">Personal & Professional Details</CardTitle>
+                    <CardDescription className="leading-relaxed">Your public profile details shared with Network members after review.</CardDescription>
                   </div>
-                </Field>
-                <Button type="submit" variant="outline" className="min-h-11 w-full px-4" disabled={savingEmail || email.trim().toLowerCase() === member.email.toLowerCase()}>{savingEmail ? "Sending confirmation…" : "Update email"}</Button>
-                {emailStatus && <StatusMessage tone={emailStatus.tone}>{emailStatus.text}</StatusMessage>}
-              </form>
-            </CardContent>
-          </Card>
+                  <div className="flex shrink-0 gap-2">
+                    {isEditing ? (
+                      <>
+                        <Button type="button" variant="ghost" className="min-h-10 px-4" onClick={cancelEditing} disabled={saving}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" className="btn-gold min-h-10 px-4 gap-1.5" disabled={!dirty || saving}>
+                          <Save className="size-4" />
+                          {saving ? "Saving…" : "Save Changes"}
+                        </Button>
+                      </>
+                    ) : (
+                      <Button type="button" variant="outline" className="min-h-10 px-4 gap-1.5" onClick={beginEditing}>
+                        <Pencil className="size-4" />
+                        Edit Profile
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
 
-          <Card className="border border-border/60 bg-card shadow-sm">
-            <CardHeader><CardTitle>Sessions</CardTitle><CardDescription>Manage where you're signed in.</CardDescription></CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <div className="flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted"><MonitorSmartphone className="size-4 text-primary" /></div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground">This device</p>
-                  <p className="text-xs text-muted-foreground">{member.lastSignInAt ? `Signed in ${relativeTime(member.lastSignInAt)}` : "Active now"}</p>
+                <CardContent className="p-0">
+                  {isEditing ? (
+                    <div className="space-y-8">
+                      <section className="space-y-4" aria-labelledby="edit-account-heading">
+                        <div className="border-b border-border/40 pb-2">
+                          <h3 id="edit-account-heading" className="text-sm font-semibold tracking-tight text-foreground">Account details</h3>
+                          <p className="text-xs text-muted-foreground">Core credentials used to identify your account.</p>
+                        </div>
+                        <div className="grid gap-5 sm:grid-cols-2">
+                          {input("name", "Full name", { autoComplete: "name", required: true })}
+                          {input("title", "Professional title", { placeholder: "e.g. Founder, Whitfield Capital" })}
+                          <Field id="profile-email" label="Email address" hint="Change your email in Settings.">
+                            <p className="flex min-h-11 items-center rounded-lg border border-border/60 bg-muted/50 px-3 text-sm text-muted-foreground">{accountEmail}</p>
+                          </Field>
+                          {input("location", "Location", { autoComplete: "address-level2", placeholder: "City, Country" })}
+                          {input("avatarUrl", "Profile photo link", { type: "url", placeholder: "https://…" }, "Link to a square image (JPG or PNG).")}
+                        </div>
+                      </section>
+
+                      <section className="space-y-4" aria-labelledby="edit-professional-heading">
+                        <div className="border-b border-border/40 pb-2">
+                          <h3 id="edit-professional-heading" className="text-sm font-semibold tracking-tight text-foreground">Professional presence</h3>
+                          <p className="text-xs text-muted-foreground">Information members use to connect and collaborate with you.</p>
+                        </div>
+                        <div className="grid gap-5 sm:grid-cols-2">
+                          {input("headline", "Headline", { placeholder: "What you do in a sentence" })}
+                          {input("role", "Role", { placeholder: "e.g. Managing Partner" })}
+                          {input("company", "Company or ministry", { placeholder: "Organization name" })}
+                          {input("website", "Website", { type: "url", placeholder: "https://…" })}
+                          {input("linkedinUrl", "LinkedIn", { type: "url", placeholder: "https://linkedin.com/in/…" })}
+                          <div className="sm:col-span-2">
+                            {input("skills", "Areas of expertise", { placeholder: "Leadership, Finance, Teaching" }, "Separate skills with commas.")}
+                          </div>
+                          <Field id="profile-bio" label="Personal introduction" error={errors.bio} hint={`${form.bio.length}/${BIO_LIMIT}`} className="sm:col-span-2">
+                            <Textarea
+                              id="profile-bio"
+                              name="bio"
+                              rows={5}
+                              value={form.bio}
+                              onChange={(event) => update("bio", event.target.value)}
+                              aria-invalid={Boolean(errors.bio)}
+                              aria-describedby={errors.bio ? "profile-bio-error" : "profile-bio-hint"}
+                              placeholder="A short introduction for other members."
+                            />
+                          </Field>
+                        </div>
+                      </section>
+                    </div>
+                  ) : (
+                    <div className="space-y-8">
+                      <section className="space-y-4">
+                        <div className="border-b border-border/40 pb-2">
+                          <h3 className="text-sm font-semibold tracking-tight text-foreground">Account details</h3>
+                          <p className="text-xs text-muted-foreground">Core account identifiers.</p>
+                        </div>
+                        <dl className="grid gap-6 rounded-xl bg-muted/30 p-5 sm:grid-cols-2">
+                          <ProfileDetail label="Full name">{member.name}</ProfileDetail>
+                          <ProfileDetail label="Email address">{accountEmail}</ProfileDetail>
+                          <ProfileDetail label="Location">{profileLocation}</ProfileDetail>
+                          <ProfileDetail label="Professional title">{member.title !== "DDNI Member" ? member.title : ""}</ProfileDetail>
+                        </dl>
+                      </section>
+
+                      <section className="space-y-4">
+                        <div className="border-b border-border/40 pb-2">
+                          <h3 className="text-sm font-semibold tracking-tight text-foreground">Professional presence</h3>
+                          <p className="text-xs text-muted-foreground">Visible profile details.</p>
+                        </div>
+                        <dl className="grid gap-6 sm:grid-cols-2">
+                          <ProfileDetail label="Headline">{data.profile.headline}</ProfileDetail>
+                          <ProfileDetail label="Role">{data.profile.role}</ProfileDetail>
+                          <ProfileDetail label="Company or ministry">{data.profile.company}</ProfileDetail>
+                          <ProfileDetail label="Website">
+                            {data.profile.website && isValidUrl(data.profile.website) ? (
+                              <a href={data.profile.website} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline-offset-4 hover:underline">
+                                {data.profile.website}
+                              </a>
+                            ) : (
+                              data.profile.website
+                            )}
+                          </ProfileDetail>
+                          <ProfileDetail label="LinkedIn">
+                            {data.profile.linkedinUrl && isValidUrl(data.profile.linkedinUrl) ? (
+                              <a href={data.profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="break-all text-primary underline-offset-4 hover:underline">
+                                {data.profile.linkedinUrl}
+                              </a>
+                            ) : (
+                              data.profile.linkedinUrl
+                            )}
+                          </ProfileDetail>
+                        </dl>
+                      </section>
+
+                      <section className="space-y-2 border-t border-border/40 pt-6">
+                        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Areas of expertise</h3>
+                        {data.profile.skills.length > 0 ? (
+                          <ul className="flex flex-wrap gap-2 pt-1">
+                            {data.profile.skills.map((skill) => (
+                              <li key={skill}>
+                                <Badge variant="secondary">{skill}</Badge>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Not provided</p>
+                        )}
+                      </section>
+
+                      <section className="space-y-2 border-t border-border/40 pt-6">
+                        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Personal introduction</h3>
+                        <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">
+                          {data.profile.bio || <span className="text-muted-foreground">Not provided</span>}
+                        </p>
+                      </section>
+                    </div>
+                  )}
+
+                  <section className="space-y-3 border-t border-border/60 pt-6 mt-8">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Communication preferences</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline">{member.preferences.emailUpdates ? "Email updates on" : "Email updates off"}</Badge>
+                      <Badge variant="outline">{member.preferences.networkAlerts ? "Network alerts on" : "Network alerts off"}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Manage your notification settings in Settings.</p>
+                  </section>
+                </CardContent>
+              </Card>
+            </form>
+
+            {/* Profile Strength Sidebar */}
+            <Card className="sticky top-6 border border-border/60 bg-card p-6 shadow-sm">
+              <CardHeader className="p-0 pb-4">
+                <CardTitle className="text-base tracking-tight">Profile strength</CardTitle>
+                <CardDescription className="text-xs leading-relaxed">Complete your profile to maximize member discovery.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0 space-y-4">
+                <div className="flex items-end justify-between">
+                  <span className="text-3xl font-semibold tabular-nums tracking-tight text-primary">{completion.percent}%</span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {completion.percent === 100 ? "Complete" : completion.percent >= 60 ? "Strong foundation" : "Getting started"}
+                  </span>
                 </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Button variant="outline" className="min-h-11 px-4" disabled={signingOut !== null} onClick={() => void signOut("others")}><LogOut data-icon="inline-start" />{signingOut === "others" ? "Signing out…" : "Sign out of other devices"}</Button>
-                <Button variant="destructive" className="min-h-11 px-4" disabled={signingOut !== null} onClick={() => void signOut("global")}>{signingOut === "global" ? "Signing out…" : "Sign out everywhere"}</Button>
-              </div>
-              {sessionStatus && <StatusMessage tone={sessionStatus.tone}>{sessionStatus.text}</StatusMessage>}
-            </CardContent>
-          </Card>
+                <Progress value={completion.percent} className="h-2" />
+                <ul className="space-y-2.5 pt-2 text-sm">
+                  {["Full name", "Professional title", "Profile photo", "Headline", "Company", "Location", "Areas of expertise", "Personal introduction"].map(
+                    (label) => {
+                      const done = !completion.missing.includes(label)
+                      return (
+                        <li key={label} className={`flex items-center gap-2.5 text-xs ${done ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                          {done ? <Check className="size-4 text-primary shrink-0" aria-hidden="true" /> : <Circle className="size-4 shrink-0 text-muted-foreground/60" aria-hidden="true" />}
+                          {label}
+                        </li>
+                      )
+                    }
+                  )}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
-          <Card size="sm" className="border border-border/60 bg-card shadow-sm">
-            <CardContent className="flex flex-col gap-2">
-              <p className="text-sm font-medium text-foreground">Need to close your account?</p>
-              <p className="text-xs text-muted-foreground">Our team will help you export or remove your information.</p>
-              <Button variant="link" size="sm" className="h-auto w-fit px-0 text-xs" onClick={() => onNavigate("support")}>Contact support</Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        {/* Tab 2: Account history */}
+        <TabsContent value="activity">
+          <AccountHistory member={member} data={data} onNavigate={onNavigate} />
+        </TabsContent>
+      </Tabs>
+
+      {/* Confirmation Dialog */}
+      <Dialog.Root open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity duration-200" />
+          <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border/60 bg-card p-6 text-card-foreground shadow-xl outline-none">
+            <Dialog.Title className="text-lg leading-snug font-semibold tracking-tight text-foreground">Confirm profile changes</Dialog.Title>
+            <Dialog.Description className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Are you sure you want to update your profile details? Changes will be submitted for DDNI review.
+            </Dialog.Description>
+            <div className="mt-6 flex flex-col-reverse justify-end gap-2 sm:flex-row">
+              <Dialog.Close render={<Button type="button" variant="ghost" className="min-h-11 px-4" disabled={saving} />}>
+                Cancel
+              </Dialog.Close>
+              <Button type="button" className="btn-gold min-h-11 px-4" onClick={() => void confirmSave()} disabled={saving}>
+                {saving ? "Saving…" : "Confirm changes"}
+              </Button>
+            </div>
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   )
 }
