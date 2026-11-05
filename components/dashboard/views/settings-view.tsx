@@ -7,7 +7,7 @@ import { saveCommunicationPreferences } from "@/src/app/dashboard/actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Field, StatusMessage, Switch, ViewHeader } from "@/components/dashboard/dashboard-ui"
+import { Field, StatusMessage, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import { EMAIL_PATTERN, relativeTime } from "@/lib/dashboard-data"
 import { Bell, LockKeyhole, LogOut, Mail, MonitorSmartphone } from "lucide-react"
 import type { DashboardMember, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
@@ -28,6 +28,28 @@ function SettingRow({ icon: Icon, title, description, children }: { icon: typeof
       </div>
       <div className="shrink-0">{children}</div>
     </div>
+  )
+}
+
+function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+        checked ? "bg-primary" : "bg-input"
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none inline-block size-5 transform rounded-full bg-background shadow-lg ring-0 transition duration-200 ease-in-out ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
   )
 }
 
@@ -129,10 +151,10 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
             <CardContent className="flex flex-col">
               <div className="divide-y divide-border">
                 <SettingRow icon={Mail} title="Email updates" description="Institute news, course announcements and member updates.">
-                  <Switch label="Email updates" checked={preferences.emailUpdates} onChange={(value) => { setPreferences({ ...preferences, emailUpdates: value }); setPreferencesStatus(null) }} />
+                  <ToggleSwitch label="Email updates" checked={preferences.emailUpdates} onChange={(value) => { setPreferences({ ...preferences, emailUpdates: value }); setPreferencesStatus(null) }} />
                 </SettingRow>
                 <SettingRow icon={Bell} title="Network activity" description="Emails about new opportunities and responses in the Network.">
-                  <Switch label="Network activity" checked={preferences.networkAlerts} onChange={(value) => { setPreferences({ ...preferences, networkAlerts: value }); setPreferencesStatus(null) }} />
+                  <ToggleSwitch label="Network activity" checked={preferences.networkAlerts} onChange={(value) => { setPreferences({ ...preferences, networkAlerts: value }); setPreferencesStatus(null) }} />
                 </SettingRow>
               </div>
               <div className="mt-6 flex flex-col gap-4 border-t border-border/60 pt-5 sm:flex-row sm:items-center sm:justify-between">
