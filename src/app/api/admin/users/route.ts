@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 
@@ -47,11 +48,25 @@ export async function PATCH(request: Request) {
     const temporaryPassword = typeof body.temporary_password === "string" && body.temporary_password.length >= 8 ? body.temporary_password : `${crypto.randomUUID().slice(0, 8)}Aa!9`
     const { error } = await createAdminClient().auth.admin.updateUserById(body.id, { password: temporaryPassword })
     if (error) return NextResponse.json({ error: "Unable to reset password" }, { status: 400 })
+    revalidatePath("/admin")
     return NextResponse.json({ ok: true, temporary_password: temporaryPassword })
   }
   const { data, error } = await adminClient.auth.admin.updateUserById(body.id, updates)
   if (error) return NextResponse.json({ error: "Unable to update user" }, { status: 400 })
+  if (["pending_review", "approved", "rejected"].includes(body.profile_status)) {
+    const { data: profile, error: profileError } = await adminClient
+      .from("member_profiles")
+      .update({ directory_visible: body.profile_status === "approved" })
+      .eq("id", body.id)
+      .select("id")
+      .maybeSingle()
+    if (profileError) return NextResponse.json({ error: "User was updated, but directory visibility could not be changed." }, { status: 500 })
+    if (!profile) return NextResponse.json({ error: "User was updated, but no professional profile was found." }, { status: 404 })
+  }
   if (typeof body.dashboard_status === "string") await adminClient.auth.admin.signOut(body.id)
+  revalidatePath("/admin")
+  revalidatePath("/dashboard")
+  revalidatePath("/")
   return NextResponse.json({ user: { id: data.user.id, email: data.user.email, user_metadata: data.user.user_metadata, app_metadata: data.user.app_metadata } })
 }
 
@@ -62,5 +77,7 @@ export async function DELETE(request: Request) {
   if (typeof body.id !== "string" || body.id === admin.id) return NextResponse.json({ error: "Invalid user" }, { status: 400 })
   const { error } = await createAdminClient().auth.admin.deleteUser(body.id)
   if (error) return NextResponse.json({ error: "Unable to delete user" }, { status: 400 })
+  revalidatePath("/admin")
+  revalidatePath("/dashboard")
   return NextResponse.json({ ok: true })
 }

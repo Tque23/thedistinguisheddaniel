@@ -3,6 +3,7 @@
 import { useState, type FormEvent, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { saveCommunicationPreferences } from "@/src/app/dashboard/actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -42,9 +43,9 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
   async function savePreferences() {
     setSavingPreferences(true)
     setPreferencesStatus(null)
-    const { error } = await createClient().auth.updateUser({ data: { preferences: { email_updates: preferences.emailUpdates, network_alerts: preferences.networkAlerts } } })
+    const result = await saveCommunicationPreferences(preferences)
     setSavingPreferences(false)
-    if (error) return setPreferencesStatus({ tone: "error", text: "We couldn't save your preferences. Please try again." })
+    if (result.error) return setPreferencesStatus({ tone: "error", text: result.error ?? "We couldn't save your preferences. Please try again." })
     onMemberChange({ preferences })
     setPreferencesStatus({ tone: "success", text: "Preferences saved." })
   }

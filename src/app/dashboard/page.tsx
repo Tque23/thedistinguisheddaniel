@@ -5,6 +5,8 @@ import { DashboardShell, type DashboardMember } from "@/components/dashboard/das
 import { initialsFor } from "@/lib/dashboard-data"
 import "./dashboard.css"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Member Dashboard | The Distinguished Daniel Network and Institute",
   description:

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState, type FormEvent } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { saveMemberProfile } from "@/src/app/dashboard/actions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -94,46 +94,36 @@ export function ProfileView({ member, data, onMemberChange, onProfileChange }: D
     }
     setSaving(true)
     setStatus(null)
-    const supabase = createClient()
-    const now = new Date().toISOString()
     const skills = normalizeSkills(form.skills)
-    const profileRow = {
-      id: member.id,
-      headline: form.headline.trim(),
-      role: form.role.trim(),
-      company: form.company.trim(),
-      location: form.location.trim(),
-      website: form.website.trim(),
-      linkedin_url: form.linkedinUrl.trim(),
-      bio: form.bio.trim(),
+    const result = await saveMemberProfile({
+      name: form.name,
+      title: form.title,
+      avatarUrl: form.avatarUrl,
+      headline: form.headline,
+      role: form.role,
+      company: form.company,
+      location: form.location,
+      website: form.website,
+      linkedinUrl: form.linkedinUrl,
       skills,
-      updated_at: now,
-    }
-    const { error: profileError } = await supabase.from("member_profiles").upsert(profileRow)
-    if (profileError) {
+      bio: form.bio,
+    })
+    if (!result.savedAt) {
       setSaving(false)
-      setStatus({ tone: "error", text: "We couldn't save your profile. Please try again." })
+      setStatus({ tone: "error", text: result.error ?? "We couldn't save your profile. Please try again." })
       return
     }
+    setSaving(false)
     const name = form.name.trim()
     const title = form.title.trim()
-    const { error: authError } = await supabase.auth.updateUser({
-      data: {
-        full_name: name,
-        title,
-        avatar_url: form.avatarUrl.trim(),
-        location: profileRow.location,
-        professional_profile_status: "pending_review",
-        last_profile_saved_at: now,
-      },
-    })
-    setSaving(false)
-    onProfileChange({ headline: profileRow.headline, role: profileRow.role, company: profileRow.company, location: profileRow.location, website: profileRow.website, linkedinUrl: profileRow.linkedin_url, bio: profileRow.bio, skills, updatedAt: now })
-    if (authError) {
-      setStatus({ tone: "error", text: "Your professional details were saved, but we couldn't update your name and photo. Please try again." })
+    const location = form.location.trim()
+    const savedAt = result.savedAt
+    onProfileChange({ headline: form.headline.trim(), role: form.role.trim(), company: form.company.trim(), location, website: form.website.trim(), linkedinUrl: form.linkedinUrl.trim(), bio: form.bio.trim(), skills, updatedAt: savedAt })
+    if (result.error) {
+      setStatus({ tone: "error", text: result.error ?? "Your profile details were saved, but some account details could not be updated." })
       return
     }
-    onMemberChange({ name, title: title || "DDNI Member", avatarUrl: form.avatarUrl.trim(), location: profileRow.location, initials: initialsFor(name), profileStatus: "pending_review", lastProfileSavedAt: now })
+    onMemberChange({ name, title: title || "DDNI Member", avatarUrl: form.avatarUrl.trim(), location, initials: initialsFor(name), profileStatus: "pending_review", lastProfileSavedAt: savedAt })
     setStatus({ tone: "success", text: "Profile saved and submitted for review." })
   }
 

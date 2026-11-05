@@ -1,5 +1,7 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
+import type { SupabaseClient } from "@supabase/supabase-js"
+import type { Database } from "@/lib/supabase/database.types"
 
 export async function createClient() {
   const isExampleMode = process.env.NEXT_PUBLIC_EXAMPLE_MODE === "true"
@@ -20,12 +22,12 @@ export async function createClient() {
         update: () => ({ data: null, error: { message: "Example mode - no real database" } }),
         delete: () => ({ data: null, error: { message: "Example mode - no real database" } }),
       }),
-    } as any
+    } as unknown as SupabaseClient<Database>
   }
 
   const cookieStore = await cookies()
 
-  return createServerClient(supabaseUrl, supabaseKey, {
+  return createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll()

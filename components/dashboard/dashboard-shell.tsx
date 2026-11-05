@@ -18,6 +18,7 @@ import { OpportunitiesView } from "@/components/dashboard/views/opportunities-vi
 import { AnnouncementsView } from "@/components/dashboard/views/announcements-view"
 import { playfair } from "@/src/app/fonts"
 import { cn } from "@/lib/utils"
+import { requestCourseAccess as requestCourseAccessAction } from "@/src/app/dashboard/actions"
 import { ProfileView } from "@/components/dashboard/views/profile-view"
 import { SettingsView } from "@/components/dashboard/views/settings-view"
 import { HistoryView } from "@/components/dashboard/views/history-view"
@@ -197,21 +198,10 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
   const updateMember = useCallback((updates: Partial<DashboardMember>) => setMember((current) => ({ ...current, ...updates })), [])
   const updateProfile = useCallback((profile: MemberProfile) => setData((current) => ({ ...current, profile, errors: { ...current.errors, profile: undefined } })), [])
   const requestCourseAccess = useCallback(async (course: Course) => {
-    const client = createClient()
-    const { data: { user } } = await client.auth.getUser()
-    if (!user) return "Please sign in again to sign up for this course."
-    const nextStatus = course.isFree ? "enrolled" : "pending"
-    const { data: existing, error: existingError } = await client.from("course_enrollments").select("id, status").eq("user_id", user.id).eq("course_id", course.id).maybeSingle()
-    if (existingError) return "Unable to check your current sign-up."
-    if (existing?.status === "enrolled" || existing?.status === "pending") return null
-    const { error } = existing
-      ? await client.from("course_enrollments").update({ status: nextStatus, source: "self", updated_at: new Date().toISOString() }).eq("id", existing.id)
-      : await client.from("course_enrollments").upsert(
-        { user_id: user.id, course_id: course.id, status: nextStatus, source: "self" },
-        { onConflict: "user_id,course_id", ignoreDuplicates: true },
-      )
-    if (error) return course.isFree ? "Unable to open this course just now." : "Unable to send your sign-up just now."
-    await loadData(user.id)
+    const result = await requestCourseAccessAction(course.id)
+    if (result.error) return result.error
+    const { data: { user } } = await createClient().auth.getUser()
+    if (user) await loadData(user.id)
     return null
   }, [loadData])
 
