@@ -206,25 +206,25 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
         </StatusMessage>
       )}
 
-      <section className="flex flex-col gap-5 rounded-2xl bg-sidebar p-5 text-sidebar-foreground shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6" aria-label="Member identity">
+      <section className="grid gap-6 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-[minmax(0,1fr)_auto] md:items-center" aria-label="Member identity">
         <div className="flex min-w-0 items-center gap-4">
           <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl text-lg font-semibold ring-1 ring-white/15" style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}>
             <MemberAvatarContent member={member} imageClassName="rounded-2xl" />
           </div>
           <div className="min-w-0">
             <p className="text-xs font-semibold tracking-[0.14em] text-[#e4c276] uppercase">DDNI member</p>
-            <h2 className="mt-1 truncate font-display text-2xl leading-snug font-semibold tracking-tight text-white">{member.name}</h2>
-            <p className="mt-0.5 truncate text-sm text-white/75">{[member.title !== "DDNI Member" ? member.title : "", member.email].filter(Boolean).join(" · ") || "Member account"}</p>
+            <h2 className="mt-1 truncate font-display text-2xl leading-snug font-semibold tracking-tight text-foreground">{member.name}</h2>
+            <p className="mt-0.5 truncate text-sm text-muted-foreground">{[member.title !== "DDNI Member" ? member.title : "", member.email].filter(Boolean).join(" · ") || "Member account"}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           {member.emailConfirmedAt && (
-            <Badge variant="outline" className="gap-1.5 border-white/20 bg-white/5 text-white">
+            <Badge variant="outline" className="gap-1.5 border-border bg-muted/50 text-foreground">
               <ShieldCheck className="size-3.5 text-[#e4c276]" aria-hidden="true" />Verified email
             </Badge>
           )}
-          {member.profileStatus && <Badge variant="outline" className="border-white/20 bg-white/5 text-white">{statusLabels[member.profileStatus] || member.profileStatus}</Badge>}
-          {member.memberSince && <span className="w-full text-xs text-white/65 sm:w-auto sm:ps-2">Member since {member.memberSince}</span>}
+          {member.profileStatus && <Badge variant="outline" className="border-border bg-muted/50 text-foreground">{statusLabels[member.profileStatus] || member.profileStatus}</Badge>}
+          {member.memberSince && <span className="w-full text-xs text-muted-foreground sm:w-auto sm:ps-2">Member since {member.memberSince}</span>}
         </div>
       </section>
 
@@ -244,7 +244,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
 
         <TabsContent value="details" className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(16rem,0.75fr)]">
           <form onSubmit={requestSave} noValidate className="min-w-0">
-            <Card className="border-border/60 shadow-sm">
+            <Card className="border border-neutral-200 bg-white shadow-sm">
               <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 space-y-1">
                   <CardTitle className="text-lg tracking-tight">Personal and professional details</CardTitle>
@@ -264,7 +264,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
               <CardContent className="flex flex-col gap-6">
                 {isEditing ? (
                   <div className="flex flex-col gap-6">
-                    <section className="space-y-4" aria-labelledby="profile-account-heading">
+                    <section className="flex flex-col gap-4" aria-labelledby="profile-account-heading">
                       <div className="border-b border-border/60 pb-3">
                         <h3 id="profile-account-heading" className="text-sm font-semibold tracking-tight text-foreground">Account details</h3>
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">The details DDNI uses to identify your member account.</p>
@@ -279,7 +279,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                         {input("avatarUrl", "Profile photo link", { type: "url", placeholder: "https://…" }, "Link to a square image (JPG or PNG).")}
                       </div>
                     </section>
-                    <section className="space-y-4" aria-labelledby="profile-professional-heading">
+                    <section className="flex flex-col gap-4" aria-labelledby="profile-professional-heading">
                       <div className="border-b border-border/60 pb-3">
                         <h3 id="profile-professional-heading" className="text-sm font-semibold tracking-tight text-foreground">Professional presence</h3>
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">The information members can use to understand and connect with you.</p>
@@ -307,8 +307,8 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                     </section>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    <section className="space-y-4" aria-labelledby="profile-account-heading">
+                  <div className="flex flex-col gap-6">
+                    <section className="flex flex-col gap-4" aria-labelledby="profile-account-heading">
                       <div>
                         <h3 id="profile-account-heading" className="text-sm font-semibold tracking-tight text-foreground">Account details</h3>
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">How your DDNI member account is identified.</p>
@@ -337,7 +337,7 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                         </ProfileDetail>
                       </dl>
                     </section>
-                    <section className="space-y-2 border-t border-border/60 pt-5" aria-labelledby="profile-skills-title">
+                    <section className="flex flex-col gap-2 border-t border-border/60 pt-5" aria-labelledby="profile-skills-title">
                       <h3 id="profile-skills-title" className="text-xs font-medium text-muted-foreground">Areas of expertise</h3>
                       {data.profile.skills.length > 0 ? (
                         <ul className="flex flex-wrap gap-2">
@@ -345,13 +345,13 @@ export function ProfileView({ member, data, onNavigate, onMemberChange, onProfil
                         </ul>
                       ) : <p className="text-sm text-muted-foreground">Not provided</p>}
                     </section>
-                    <section className="space-y-2 border-t border-border/60 pt-5" aria-labelledby="profile-bio-title">
+                    <section className="flex flex-col gap-2 border-t border-border/60 pt-5" aria-labelledby="profile-bio-title">
                       <h3 id="profile-bio-title" className="text-xs font-medium text-muted-foreground">Personal introduction</h3>
                       <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">{data.profile.bio || <span className="text-muted-foreground">Not provided</span>}</p>
                     </section>
                   </div>
                 )}
-                <section className="space-y-2 border-t border-border/60 pt-5" aria-labelledby="profile-preferences-title">
+                <section className="flex flex-col gap-2 border-t border-border/60 pt-5" aria-labelledby="profile-preferences-title">
                   <h3 id="profile-preferences-title" className="text-xs font-medium text-muted-foreground">Communication preferences</h3>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">{member.preferences.emailUpdates ? "Email updates on" : "Email updates off"}</Badge>
