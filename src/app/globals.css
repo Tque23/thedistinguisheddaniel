@@ -350,3 +350,23 @@ footer {
     height: 3px;
   }
 }
+
+/* DDNI Upload Modal Backdrop & Framing (No Solid Background, Glassmorphic Blur) */
+#cloudinary-overlay,
+.cloudinary-overlay,
+div[style*="z-index: 100000"] {
+  background-color: rgba(7, 21, 32, 0.45) !important;
+  backdrop-filter: blur(14px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  transition: opacity 0.2s ease-out !important;
+}
+
+iframe[data-test="uw-iframe"],
+iframe.cloudinary-widget,
+iframe[src*="cloudinary.com"] {
+  border: 1px solid rgba(210, 173, 85, 0.4) !important;
+  border-radius: 1.25rem !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(210, 173, 85, 0.2) !important;
+  overflow: hidden !important;
+}
+

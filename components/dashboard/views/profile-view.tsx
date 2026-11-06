@@ -14,6 +14,7 @@ import { AccountHistory } from "@/components/dashboard/views/history-view"
 import { Field, StatusMessage, ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import { underlineTabClassName } from "@/components/dashboard/ddni-ui"
 import { MemberAvatarContent } from "@/components/dashboard/member-avatar"
+import { CloudinaryAvatarUpload } from "@/components/dashboard/cloudinary-avatar-upload"
 import { initialsFor, isValidUrl, normalizeSkills, profileCompletion, type MemberProfile } from "@/lib/dashboard-data"
 import { Check, Circle, History, ShieldCheck, UserRound, Pencil, Save } from "lucide-react"
 import type { DashboardMember, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
@@ -269,7 +270,7 @@ export function ProfileView({
                 <div className="flex min-w-0 flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-4">
                     <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl text-lg font-semibold ring-1 ring-border/60" style={{ backgroundColor: member.avatarColor, color: "#1a1200" }}>
-                      <MemberAvatarContent member={member} imageClassName="rounded-2xl" />
+                      <MemberAvatarContent member={isEditing ? preview : member} imageClassName="rounded-2xl" />
                     </div>
                     <div className="min-w-0 space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -332,7 +333,18 @@ export function ProfileView({
                             <p className="flex min-h-11 items-center rounded-lg border border-border/60 bg-muted/50 px-3 text-sm text-muted-foreground">{accountEmail}</p>
                           </Field>
                           {input("location", "Location", { autoComplete: "address-level2", placeholder: "City, Country" })}
-                          {input("avatarUrl", "Profile photo link", { type: "url", placeholder: "https://…" }, "Link to a square image (JPG or PNG).")}
+                          <div className="sm:col-span-2">
+                            <Field id="profile-avatarUrl" label="Profile photo" error={errors.avatarUrl} hint="Upload a photo from your device. It will automatically be cropped 1:1 and face-centered.">
+                              <CloudinaryAvatarUpload
+                                avatarUrl={form.avatarUrl}
+                                initials={preview.initials}
+                                avatarColor={member.avatarColor}
+                                onChange={(url) => update("avatarUrl", url)}
+                                disabled={saving}
+                                error={errors.avatarUrl}
+                              />
+                            </Field>
+                          </div>
                         </div>
                       </section>
 
