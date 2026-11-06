@@ -41,7 +41,7 @@ const viewTitles: Record<DashboardView, { title: string; subtitle: string }> = {
 
 type SearchResult = { id: string; label: string; detail: string; view: DashboardView; icon: typeof Search }
 
-export function DashboardHeader({ activeView, onNavigate, member, data }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void; member: DashboardMember; data: DashboardData }) {
+export function DashboardHeader({ activeView, onNavigate, member, data, onSetAnnouncementRead, onMarkAllAnnouncementsRead }: { activeView: DashboardView; onNavigate: (view: DashboardView) => void; member: DashboardMember; data: DashboardData; onSetAnnouncementRead: (announcementId: string, read: boolean) => Promise<string | null>; onMarkAllAnnouncementsRead: (announcementIds: string[]) => Promise<string | null> }) {
   const copy = viewTitles[activeView]
   const router = useRouter()
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
@@ -139,7 +139,7 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
           Home
         </Link>
 
-        <NotificationsMenu data={data} onNavigate={onNavigate} />
+        <NotificationsMenu data={data} onNavigate={onNavigate} onSetAnnouncementRead={onSetAnnouncementRead} onMarkAllAnnouncementsRead={onMarkAllAnnouncementsRead} />
 
         <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
         <DropdownMenuTrigger

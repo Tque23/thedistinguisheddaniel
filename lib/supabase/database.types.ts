@@ -113,6 +113,11 @@ type CourseSession = {
   video_url: string | null
   duration_minutes: number
   position: number
+  required: boolean
+  starts_at: string | null
+  ends_at: string | null
+  delivery_mode: "in-person" | "online"
+  location: string
   published: boolean
   created_at: string
   updated_at: string
@@ -138,9 +143,13 @@ type CourseAssessment = {
   id: string
   course_id: string
   session_id: string | null
+  path_id: string | null
   title: string
   instructions: string
   max_attempts: number
+  opens_at: string | null
+  closes_at: string | null
+  passing_score: number
   published: boolean
   created_at: string
   updated_at: string
@@ -190,12 +199,31 @@ type CourseSessionCompletion = {
   completed_at: string
 }
 
+type SavedResource = {
+  user_id: string
+  resource_id: string
+  created_at: string
+}
+
+type SavedOpportunity = {
+  user_id: string
+  opportunity_id: string
+  created_at: string
+}
+
+type AnnouncementRead = {
+  user_id: string
+  announcement_id: string
+  read_at: string
+}
+
 type OptionalInsert<Row, Required extends keyof Row> = Pick<Row, Required> & Partial<Omit<Row, Required>>
 
 export type Database = {
   public: {
     Tables: {
       announcements: Table<Announcement, OptionalInsert<Announcement, "title" | "body">>
+      announcement_reads: Table<AnnouncementRead, OptionalInsert<AnnouncementRead, "user_id" | "announcement_id">>
       blog_posts: Table<BlogPost, OptionalInsert<BlogPost, "title" | "instructor" | "body">>
       courses: Table<Course, OptionalInsert<Course, "slug" | "title" | "instructor">>
       course_assessment_answers: Table<CourseAssessmentAnswer, OptionalInsert<CourseAssessmentAnswer, "attempt_id" | "question_id" | "answer">>
@@ -211,6 +239,8 @@ export type Database = {
       course_sessions: Table<CourseSession, OptionalInsert<CourseSession, "course_id" | "title">>
       member_profiles: Table<MemberProfile, OptionalInsert<MemberProfile, "id">>
       resources: Table<Resource, OptionalInsert<Resource, "title" | "resource_type" | "url">>
+      saved_opportunities: Table<SavedOpportunity, Pick<SavedOpportunity, "user_id" | "opportunity_id">>
+      saved_resources: Table<SavedResource, Pick<SavedResource, "user_id" | "resource_id">>
     }
     Views: Record<string, never>
     Functions: {
@@ -228,6 +258,10 @@ export type Database = {
           p_max_attempts: number
           p_published: boolean
           p_questions: Json
+          p_opens_at: string | null
+          p_closes_at: string | null
+          p_passing_score: number
+          p_path_id: string | null
         }
         Returns: string
       }

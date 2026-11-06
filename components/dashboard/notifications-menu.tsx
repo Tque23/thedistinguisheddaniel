@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,16 +17,10 @@ import { Bell, BookOpen, FileText, Users2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { DashboardData, DashboardView } from "@/components/dashboard/dashboard-shell"
 
-const SEEN_KEY = "ddni-notifications-seen-at"
-
 type NotificationItem = { id: string; title: string; description: string; createdAt: string; view: DashboardView; icon: typeof Bell; source: "Institute" | "Network" }
 
-export function NotificationsMenu({ data, onNavigate }: { data: DashboardData; onNavigate: (view: DashboardView) => void }) {
-  const [seenAt, setSeenAt] = useState(0)
-
-  useEffect(() => {
-    setSeenAt(Number(window.localStorage.getItem(SEEN_KEY) || 0))
-  }, [])
+export function NotificationsMenu({ data, onNavigate, onSetAnnouncementRead, onMarkAllAnnouncementsRead }: { data: DashboardData; onNavigate: (view: DashboardView) => void; onSetAnnouncementRead: (announcementId: string, read: boolean) => Promise<string | null>; onMarkAllAnnouncementsRead: (announcementIds: string[]) => Promise<string | null> }) {
+  const [readError, setReadError] = useState("")
 
   const items = useMemo<NotificationItem[]>(() => [
     ...data.opportunities.map((item) => ({ id: `op-${item.id}`, title: "New opportunity", description: item.title, createdAt: item.createdAt, view: "announcements" as const, icon: Users2, source: "Network" as const })),
@@ -34,17 +28,27 @@ export function NotificationsMenu({ data, onNavigate }: { data: DashboardData; o
     ...data.resources.map((item) => ({ id: `res-${item.id}`, title: "New resource", description: item.title, createdAt: item.createdAt, view: "library" as const, icon: FileText, source: "Institute" as const })),
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 8), [data])
 
-  const isUnread = (item: NotificationItem) => new Date(item.createdAt).getTime() > seenAt
+  const readIds = useMemo(() => new Set(data.readAnnouncementIds), [data.readAnnouncementIds])
+  const isUnread = (item: NotificationItem) => item.source === "Network" && !readIds.has(item.id.slice(3))
   const unreadCount = items.filter(isUnread).length
 
-  function markAllRead() {
-    const now = Date.now()
-    window.localStorage.setItem(SEEN_KEY, String(now))
-    setSeenAt(now)
+  async function markAllRead() {
+    setReadError("")
+    const announcementIds = items.filter((item) => item.source === "Network").map((item) => item.id.slice(3))
+    const error = await onMarkAllAnnouncementsRead(announcementIds)
+    if (error) setReadError(error)
+  }
+
+  async function openNotification(item: NotificationItem) {
+    if (item.source === "Network") {
+      const error = await onSetAnnouncementRead(item.id.slice(3), true)
+      if (error) setReadError(error)
+    }
+    onNavigate(item.view)
   }
 
   return (
-    <DropdownMenu onOpenChange={(open) => { if (!open && unreadCount > 0) markAllRead() }}>
+    <DropdownMenu onOpenChange={(open) => { if (!open && unreadCount > 0) void markAllRead() }}>
       <DropdownMenuTrigger
         render={
           <Button variant="ghost" size="icon-sm" className="relative" aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} new` : "Notifications"}>
@@ -61,6 +65,7 @@ export function NotificationsMenu({ data, onNavigate }: { data: DashboardData; o
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        {readError && <p role="alert" className="px-3 py-2 text-xs text-destructive">{readError}</p>}
         <DropdownMenuGroup className="flex max-h-80 flex-col gap-0.5 overflow-y-auto">
           {items.length === 0 && (
             <p className="px-2 py-6 text-center text-xs text-muted-foreground">
@@ -68,7 +73,7 @@ export function NotificationsMenu({ data, onNavigate }: { data: DashboardData; o
             </p>
           )}
           {items.map((item) => (
-            <DropdownMenuItem key={item.id} className="flex items-start gap-2.5 py-2" onClick={() => onNavigate(item.view)}>
+            <DropdownMenuItem key={item.id} className="flex items-start gap-2.5 py-2" onClick={() => void openNotification(item)}>
               <div className={cn("mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full", item.source === "Institute" ? "bg-[#dcb567]/15 text-[#f3d27a]" : "bg-[#1d3557]/60 text-[#a9c7f3]")}>
                 <item.icon className="size-3.5" />
               </div>
@@ -87,7 +92,7 @@ export function NotificationsMenu({ data, onNavigate }: { data: DashboardData; o
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={markAllRead} className="justify-center text-xs text-muted-foreground">Mark all as read</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => void markAllRead()} className="justify-center text-xs text-muted-foreground">Mark all as read</DropdownMenuItem>
             </DropdownMenuGroup>
           </>
         )}

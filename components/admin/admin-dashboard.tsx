@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import {
   deleteContentItem,
@@ -9,6 +9,7 @@ import {
   setContentPublished,
   setCourseAccess as setCourseAccessAction,
   issueCourseCertificate,
+  getPendingAssessmentCount,
 } from "@/src/app/admin/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Field, StatusMessage } from "@/components/dashboard/dashboard-ui"
 import { formatDate, isValidUrl, normalizeSkills, relativeTime } from "@/lib/dashboard-data"
-import { Pencil, Plus, Trash2, X, Users, ShieldCheck, Settings2, ChevronDown, Check, MessageSquareWarning, LayoutDashboard, FileText, Megaphone, GraduationCap, Award } from "lucide-react"
+import { Pencil, Plus, Trash2, X, Users, ShieldCheck, Settings2, ChevronDown, Check, MessageSquareWarning, LayoutDashboard, FileText, Megaphone, GraduationCap, Award, KeyRound } from "lucide-react"
 import { ClassManagement } from "@/components/admin/class-management"
 
 type FieldKind = "text" | "textarea" | "url" | "select"
@@ -66,6 +67,9 @@ type User = { id: string; email?: string; created_at: string; last_sign_in_at?: 
 type Enrollment = { id: string; user_id: string; course_id: string; status: "pending" | "enrolled" | "revoked"; source: string; created_at: string }
 type CourseOption = { id: string; title: string; is_free: boolean }
 type AdminCertificate = { id: string; user_id: string; course_id: string | null; certificate_code: string; issued_at: string }
+type PasskeyOutcome = "success" | "invalid" | "failed"
+type PasskeyAction = (passkey: string) => Promise<PasskeyOutcome>
+type SettledUserResponse = PromiseSettledResult<Response>
 
 const accessOptions = ["prepared", "updates", "active", "blocked"] as const
 const accessLabels: Record<string, string> = { prepared: "Dashboard is being prepared", updates: "Updates to the dashboard are being made", active: "Active", blocked: "Blocked" }
@@ -73,6 +77,15 @@ const reviewLabels: Record<string, string> = { pending_review: "Profile pending 
 const selectClass = "h-11 min-w-0 rounded-xl border border-input bg-background px-3 text-sm text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
 
 function profileStatusOf(user: User) { return String(user.user_metadata?.professional_profile_status || "") }
+
+async function hasInvalidPasskey(results: SettledUserResponse[]) {
+  for (const result of results) {
+    if (result.status !== "fulfilled" || result.value.ok) continue
+    const body = await result.value.json() as { error?: string }
+    if (body.error === "Invalid Passkey") return true
+  }
+  return false
+}
 
 export default function AdminDashboard() {
   const [allowed, setAllowed] = useState<boolean | null>(null)
@@ -98,6 +111,46 @@ export default function AdminDashboard() {
   const [landingAnnouncement, setLandingAnnouncement] = useState("We have launched. Don\'t miss your spot.")
   const [announcementStatus, setAnnouncementStatus] = useState("")
   const [accessBusy, setAccessBusy] = useState("")
+  const [pendingWrittenAssessments, setPendingWrittenAssessments] = useState(0)
+  const [pendingAssessmentError, setPendingAssessmentError] = useState("")
+  const [passkeyDialog, setPasskeyDialog] = useState("")
+  const [passkeyValue, setPasskeyValue] = useState("")
+  const [passkeyError, setPasskeyError] = useState("")
+  const [passkeyBusy, setPasskeyBusy] = useState(false)
+  const passkeyAction = useRef<PasskeyAction | null>(null)
+
+  function requirePasskey(title: string, action: PasskeyAction) {
+    passkeyAction.current = action
+    setPasskeyDialog(title)
+    setPasskeyValue("")
+    setPasskeyError("")
+  }
+
+  async function submitPasskey(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!/^\d{4}$/.test(passkeyValue)) {
+      setPasskeyError("Invalid Passkey")
+      return
+    }
+    if (!passkeyAction.current) return
+    setPasskeyBusy(true)
+    try {
+      const outcome = await passkeyAction.current(passkeyValue)
+      if (outcome === "invalid") {
+        setPasskeyError("Invalid Passkey")
+        return
+      }
+      setPasskeyDialog("")
+      passkeyAction.current = null
+    } catch (error) {
+      console.error("[admin] passkey-protected action failed", error)
+      setUserStatus("Unable to complete this member change. Please try again.")
+      setPasskeyDialog("")
+      passkeyAction.current = null
+    } finally {
+      setPasskeyBusy(false)
+    }
+  }
 
   const config = sections[section]
   const dashboardAnnouncementKey = "__dashboard_announcement__"
@@ -167,65 +220,133 @@ export default function AdminDashboard() {
       setUserStatus("Unable to load member accounts.")
     }
   }
-  async function updateUser(id: string, updates: Record<string, unknown>, successMessage = "User access updated.") {
+  async function loadPendingAssessmentCount() {
+    const result = await getPendingAssessmentCount()
+    if ("error" in result) {
+      setPendingAssessmentError(result.error || "Unable to load pending assessments.")
+      return
+    }
+    setPendingAssessmentError("")
+    setPendingWrittenAssessments(result.count)
+  }
+  async function updateUser(id: string, updates: Record<string, unknown>, passkey: string, successMessage = "User access updated."): Promise<PasskeyOutcome> {
     try {
-      const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...updates }) })
-      setUserStatus(response.ok ? successMessage : "Unable to update user.")
-      if (response.ok) await loadUsers()
-      return response.ok
+      const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...updates, passkey }) })
+      const result = await response.json() as { error?: string }
+      if (!response.ok) {
+        setUserStatus(result.error || "Unable to update user.")
+        return result.error === "Invalid Passkey" ? "invalid" : "failed"
+      }
+      setUserStatus(successMessage)
+      await loadUsers()
+      return "success"
     } catch (error) {
       console.error("[admin] updateUser failed", error)
       setUserStatus("Unable to update user.")
-      return false
+      return "failed"
     }
   }
-  async function toggleAdmin(user: User) { await updateUser(user.id, { is_admin: user.app_metadata?.is_admin !== true }, user.app_metadata?.is_admin === true ? "Admin role removed." : "Admin role assigned.") }
-  async function updateContact(user: User) { const email = window.prompt("Contact email", user.email || ""); if (email && email !== user.email) await updateUser(user.id, { email }, "Contact email updated.") }
-  async function reviewProfile(user: User, profileStatus: "approved" | "rejected") {
-    const ok = await updateUser(user.id, { profile_status: profileStatus, profile_review_note: profileStatus === "rejected" ? reviewNote : "" }, profileStatus === "approved" ? "Profile approved." : "Changes requested. The member will see your note on their dashboard.")
-    if (ok) setReviewNote("")
+  async function toggleAdmin(user: User, passkey: string) {
+    return updateUser(user.id, { is_admin: user.app_metadata?.is_admin !== true }, passkey, user.app_metadata?.is_admin === true ? "Admin role removed." : "Admin role assigned.")
   }
-  async function resendVerification(user: User) {
+  async function updateContact(user: User, passkey: string): Promise<PasskeyOutcome> {
+    const email = window.prompt("Contact email", user.email || "")
+    if (!email || email === user.email) return "success"
+    return updateUser(user.id, { email }, passkey, "Contact email updated.")
+  }
+  async function reviewProfile(user: User, profileStatus: "approved" | "rejected", passkey: string): Promise<PasskeyOutcome> {
+    const outcome = await updateUser(user.id, { profile_status: profileStatus, profile_review_note: profileStatus === "rejected" ? reviewNote : "" }, passkey, profileStatus === "approved" ? "Profile approved." : "Changes requested. The member will see your note on their dashboard.")
+    if (outcome === "success") setReviewNote("")
+    return outcome
+  }
+  async function resendVerification(user: User, passkey: string): Promise<PasskeyOutcome> {
     try {
-      const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true }) })
-      setVerificationStatus(response.ok ? `Verification email sent to ${user.email || "member"}.` : "Unable to send verification email.")
+      const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true, passkey }) })
+      const result = await response.json() as { error?: string }
+      if (!response.ok) {
+        setVerificationStatus(result.error || "Unable to send verification email.")
+        return result.error === "Invalid Passkey" ? "invalid" : "failed"
+      }
+      setVerificationStatus(`Verification email sent to ${user.email || "member"}.`)
+      return "success"
     } catch (error) {
       console.error("[admin] resendVerification failed", error)
       setVerificationStatus("Unable to send verification email.")
+      return "failed"
     }
   }
-  async function resendUnverifiedInBulk() {
+  async function resendUnverifiedInBulk(passkey: string): Promise<PasskeyOutcome> {
     const unverified = users.filter((user) => !user.email_confirmed_at && user.email)
-    if (!unverified.length) { setVerificationStatus("There are no unverified users to contact."); return }
-    if (!window.confirm(`Send verification emails to ${unverified.length} unverified members?`)) return
+    if (!unverified.length) { setVerificationStatus("There are no unverified users to contact."); return "success" }
     setVerificationStatus(`Sending ${unverified.length} verification email${unverified.length === 1 ? "" : "s"}...`)
-    const results = await Promise.allSettled(unverified.map((user) => fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true }) })))
+    const results = await Promise.allSettled(unverified.map((user) => fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, resend_verification: true, passkey }) })))
     const sent = results.filter((result) => result.status === "fulfilled" && result.value.ok).length
     setVerificationStatus(`Sent ${sent} of ${unverified.length} verification emails.`)
+    if (await hasInvalidPasskey(results)) return "invalid"
+    return sent === unverified.length ? "success" : "failed"
   }
-  async function updateAllMemberAccess(dashboard_status: "prepared" | "active" | "updates", label: string) {
+  async function updateAllMemberAccess(dashboard_status: "prepared" | "active" | "updates", label: string, passkey: string): Promise<PasskeyOutcome> {
     const members = users.filter((user) => user.email !== "admin@distinguisheddaniel.com")
-    if (!members.length) { setUserStatus("There are no members to update."); return }
-    if (!window.confirm(`${label} for all ${members.length} members?`)) return
+    if (!members.length) { setUserStatus("There are no members to update."); return "success" }
     setUserStatus(`Updating access for ${members.length} members...`)
     const results = await Promise.allSettled(members.map((user) => fetch("/api/admin/users", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: user.id, dashboard_status }),
+      body: JSON.stringify({ id: user.id, dashboard_status, passkey }),
     })))
     const updated = results.filter((result) => result.status === "fulfilled" && result.value.ok).length
     setUserStatus(`Updated access for ${updated} of ${members.length} members.`)
     if (updated > 0) await loadUsers()
+    if (await hasInvalidPasskey(results)) return "invalid"
+    return updated === members.length ? "success" : "failed"
   }
-  async function deleteUser(user: User) {
-    if (!window.confirm(`Delete the account for ${user.email || "this user"}?`)) return
+  function requestBulkMemberAccess(dashboardStatus: "prepared" | "active" | "updates", label: string) {
+    const members = users.filter((user) => user.email !== "admin@distinguisheddaniel.com")
+    if (!members.length) { setUserStatus("There are no members to update."); return }
+    if (!window.confirm(`${label} for all ${members.length} members?`)) return
+    requirePasskey("Confirm bulk dashboard update", (passkey) => updateAllMemberAccess(dashboardStatus, label, passkey))
+  }
+  function requestBulkVerification() {
+    const count = users.filter((user) => !user.email_confirmed_at && user.email).length
+    if (!count) { setVerificationStatus("There are no unverified users to contact."); return }
+    if (!window.confirm(`Send verification emails to ${count} unverified members?`)) return
+    requirePasskey("Confirm verification email resend", resendUnverifiedInBulk)
+  }
+  async function deleteUser(user: User, passkey: string): Promise<PasskeyOutcome> {
     try {
-      const response = await fetch("/api/admin/users", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id }) })
-      setUserStatus(response.ok ? "User account deleted." : "Unable to delete user.")
-      if (response.ok) await loadUsers()
+      const response = await fetch("/api/admin/users", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, passkey }) })
+      const result = await response.json() as { error?: string }
+      if (!response.ok) {
+        setUserStatus(result.error || "Unable to delete user.")
+        return result.error === "Invalid Passkey" ? "invalid" : "failed"
+      }
+      setUserStatus("User account deleted.")
+      await loadUsers()
+      return "success"
     } catch (error) {
       console.error("[admin] deleteUser failed", error)
       setUserStatus("Unable to delete user.")
+      return "failed"
+    }
+  }
+  async function resetUserPassword(user: User, passkey: string): Promise<PasskeyOutcome> {
+    try {
+      const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: user.id, reset_password: true, passkey }) })
+      const result = await response.json() as { error?: string; temporary_password?: string }
+      if (!response.ok) {
+        setUserStatus(result.error || "Unable to reset password.")
+        return result.error === "Invalid Passkey" ? "invalid" : "failed"
+      }
+      if (!result.temporary_password) {
+        setUserStatus("Password reset, but the temporary password could not be displayed.")
+        return "failed"
+      }
+      setUserStatus(`Temporary password for ${user.email || "member"}: ${result.temporary_password}`)
+      return "success"
+    } catch (error) {
+      console.error("[admin] resetUserPassword failed", error)
+      setUserStatus("Unable to reset password.")
+      return "failed"
     }
   }
   useEffect(() => {
@@ -239,7 +360,7 @@ export default function AdminDashboard() {
         }
         const isAdmin = user?.app_metadata?.is_admin === true
         setAllowed(isAdmin)
-        if (isAdmin) { await loadItems(); await loadUsers(); await loadAnnouncementSettings(); await loadCourseAccess() }
+        if (isAdmin) { await loadItems(); await loadUsers(); await loadAnnouncementSettings(); await loadCourseAccess(); await loadPendingAssessmentCount() }
       } catch (error) {
         console.error("[admin] initialization failed", error)
         setAllowed(false)
@@ -249,34 +370,42 @@ export default function AdminDashboard() {
   }, [])
   function resetForm() { setEditingId(null); setForm({}); setFormErrors({}); setStatus("") }
   function startEdit(item: Item) { setEditingId(item.id); setForm(Object.fromEntries(config.fields.map((field) => [field.name, field.name === "is_free" ? (item.is_free ? "Free" : "Paid") : String(item[field.name] ?? "")]))); setFormErrors({}); setStatus("") }
-  async function setCourseAccess(userId: string, courseId: string, status: "enrolled" | "revoked") {
+  async function setCourseAccess(userId: string, courseId: string, status: "enrolled" | "revoked", passkey: string): Promise<PasskeyOutcome> {
     setAccessBusy(`${userId}:${courseId}`)
     try {
-      const result = await setCourseAccessAction(userId, courseId, status)
+      const result = await setCourseAccessAction(userId, courseId, status, passkey)
       setUserStatus(result.error ?? (status === "enrolled" ? "Course access granted." : "Course access revoked."))
       if (!("error" in result)) await loadCourseAccess()
+      return result.error === "Invalid Passkey" ? "invalid" : result.error ? "failed" : "success"
     } catch (error) {
       console.error("[admin] setCourseAccess failed", error)
       setUserStatus("Unable to update course access. Please try again.")
+      return "failed"
     } finally {
       setAccessBusy("")
     }
   }
-  async function issueCertificate(userId: string, courseId: string, courseTitle: string) {
+  async function issueCertificate(userId: string, courseId: string, passkey: string): Promise<PasskeyOutcome> {
     const busyKey = `${userId}:${courseId}`
-    if (!window.confirm(`Confirm this member completed "${courseTitle}" and issue their certificate?`)) return
     setAccessBusy(busyKey)
     setUserStatus("")
     try {
-      const result = await issueCourseCertificate(userId, courseId)
+      const result = await issueCourseCertificate(userId, courseId, passkey)
       setUserStatus(result.error ?? "Course completion recorded and certificate issued.")
       if (!result.error) await loadCourseAccess()
+      return result.error === "Invalid Passkey" ? "invalid" : result.error ? "failed" : "success"
     } catch (error) {
       console.error("[admin] issueCertificate failed", error)
       setUserStatus("Unable to issue this certificate. Please try again.")
+      return "failed"
     } finally {
       setAccessBusy("")
     }
+  }
+  function requestCourseAccess(userId: string, courseId: string, status: "enrolled" | "revoked") {
+    if (status === "revoked" && !window.confirm("Revoke this member's course access?")) return
+    requirePasskey(status === "revoked" ? "Confirm course access revocation" : "Confirm course access change", (passkey) =>
+      setCourseAccess(userId, courseId, status, passkey))
   }
   function validateForm() {
     const errors: Record<string, string> = {}
@@ -372,21 +501,23 @@ export default function AdminDashboard() {
           <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">{activeAreaInfo.description}</p>
         </header>
         {activeArea === "overview" && <>
-          <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <StatTile label="Members" value={users.length} />
             <StatTile label="Active dashboards" value={users.filter((user) => user.user_metadata?.dashboard_status === "active").length} />
             <StatTile label="Unverified members" value={users.filter((user) => !user.email_confirmed_at).length} />
             <button type="button" className="text-left" onClick={() => { setReviewFilter("pending_review"); setActiveArea("members") }}><StatTile label="Profiles to review" value={reviewCounts.pending_review} highlight={reviewCounts.pending_review > 0} /></button>
+            <StatTile label="Pending Written Assessments to Grade" value={pendingWrittenAssessments} highlight={pendingWrittenAssessments > 0} />
           </div>
+          {pendingAssessmentError && <p role="alert" className="mb-4 text-sm text-destructive">{pendingAssessmentError}</p>}
           <Card className="border-border/70">
             <CardHeader><CardTitle>Needs attention</CardTitle><p className="text-sm text-muted-foreground">Review outstanding requests and member profiles from the Members workspace.</p></CardHeader>
             <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap gap-2"><Badge variant={enrollments.some((enrollment) => enrollment.status === "pending") ? "default" : "secondary"}>{enrollments.filter((enrollment) => enrollment.status === "pending").length} course requests</Badge><Badge variant={reviewCounts.pending_review > 0 ? "default" : "secondary"}>{reviewCounts.pending_review} profiles to review</Badge></div>
+              <div className="flex flex-wrap gap-2"><Badge variant={enrollments.some((enrollment) => enrollment.status === "pending") ? "default" : "secondary"}>{enrollments.filter((enrollment) => enrollment.status === "pending").length} course requests</Badge><Badge variant={reviewCounts.pending_review > 0 ? "default" : "secondary"}>{reviewCounts.pending_review} profiles to review</Badge><Badge variant={pendingWrittenAssessments > 0 ? "default" : "secondary"}>{pendingWrittenAssessments} assessments to grade</Badge></div>
               <Button variant="outline" onClick={() => setActiveArea("members")}>Open member management</Button>
             </CardContent>
           </Card>
         </>}
-        {activeArea === "classes" && <ClassManagement courses={courseCatalog} members={users} />}
+        {activeArea === "classes" && <ClassManagement courses={courseCatalog} members={users} onAssessmentGraded={() => void loadPendingAssessmentCount()} />}
         {activeArea === "announcements" && <Card>
           <CardHeader><CardTitle>Live announcements</CardTitle><p className="text-sm text-muted-foreground">These messages appear immediately on the public landing page and member dashboard. Network opportunities are managed separately under Content.</p></CardHeader>
           <CardContent className="grid gap-6 lg:grid-cols-2">
@@ -414,19 +545,34 @@ export default function AdminDashboard() {
         </>}
         {activeArea === "members" && <Card id="member-access">
           <CardHeader><CardTitle className="flex items-center gap-2"><Settings2 /> Member access and admin roles</CardTitle><p className="text-sm text-muted-foreground">Review course requests, update individual accounts, or use carefully confirmed bulk actions.</p></CardHeader><CardContent className="flex flex-col gap-5">
-      <PendingCourseRequests users={users} courses={courseCatalog} enrollments={enrollments} busy={accessBusy} onGrant={(userId, courseId) => void setCourseAccess(userId, courseId, "enrolled")} />
-      <section aria-labelledby="bulk-member-actions" className="rounded-2xl border border-border/80 bg-muted/40 p-5"><div className="mb-4"><h3 id="bulk-member-actions" className="font-medium tracking-tight">Bulk actions</h3><p className="mt-1 text-sm leading-relaxed text-muted-foreground">Changes apply to every member except the primary administrator.</p></div><div className="flex flex-wrap gap-3"><Button variant="outline" onClick={() => void updateAllMemberAccess("prepared", "Set dashboard access to prepared")}>Set all to prepared</Button><Button variant="outline" onClick={() => void updateAllMemberAccess("active", "Activate dashboards")}>Activate all members</Button><Button variant="outline" onClick={() => void updateAllMemberAccess("updates", "Set dashboard access to updates")}>Set all to updates</Button><Button variant="outline" onClick={() => void resendUnverifiedInBulk()}>Resend verification emails</Button></div></section>
+      <PendingCourseRequests users={users} courses={courseCatalog} enrollments={enrollments} busy={accessBusy} onGrant={(userId, courseId) => requestCourseAccess(userId, courseId, "enrolled")} />
+      <section aria-labelledby="bulk-member-actions" className="rounded-2xl border border-border/80 bg-muted/40 p-5"><div className="mb-4"><h3 id="bulk-member-actions" className="font-medium tracking-tight">Bulk actions</h3><p className="mt-1 text-sm leading-relaxed text-muted-foreground">Changes apply to every member except the primary administrator.</p></div><div className="flex flex-wrap gap-3"><Button variant="outline" onClick={() => requestBulkMemberAccess("prepared", "Set dashboard access to prepared")}>Set all to prepared</Button><Button variant="outline" onClick={() => requestBulkMemberAccess("active", "Activate dashboards")}>Activate all members</Button><Button variant="outline" onClick={() => requestBulkMemberAccess("updates", "Set dashboard access to updates")}>Set all to updates</Button><Button variant="outline" onClick={requestBulkVerification}>Resend verification emails</Button></div></section>
       {verificationStatus && <p role="status" className="text-sm text-muted-foreground">{verificationStatus}</p>}
-      {userStatus && <p role="status" className="text-sm text-muted-foreground">{userStatus}</p>}
+      {userStatus && <p role={userStatus === "Invalid Passkey" ? "alert" : "status"} className={`text-sm ${userStatus === "Invalid Passkey" ? "text-destructive" : "text-muted-foreground"}`}>{userStatus}</p>}
       <div className="flex flex-col gap-3 sm:flex-row"><Input aria-label="Search users" placeholder="Search by name, email or company" value={userSearch} onChange={(event) => setUserSearch(event.target.value)} className="h-11" /><select aria-label="Filter by profile review" className={selectClass} value={reviewFilter} onChange={(event) => setReviewFilter(event.target.value as typeof reviewFilter)}><option value="all">All profiles</option><option value="pending_review">Pending review ({reviewCounts.pending_review})</option><option value="approved">Approved</option><option value="rejected">Changes requested</option><option value="none">Not submitted</option></select><select aria-label="Sort users" className={selectClass} value={userSort} onChange={(event) => setUserSort(event.target.value as typeof userSort)}><option value="created_at">Newest first</option><option value="name">Name</option><option value="email">Email</option><option value="verified">Unverified first</option></select></div>
-      <div className="flex flex-col gap-4">{visibleUsers.map((user) => { const expanded = expandedUserId === user.id; const profileStatus = profileStatusOf(user); return <div key={user.id} className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm"><div className="flex flex-col gap-4 lg:flex-row lg:items-center"><div className="min-w-0 flex-1"><p className="font-medium tracking-tight">{String(user.user_metadata?.full_name || "Member")}</p><p className="break-words text-sm text-muted-foreground">{user.email || "No email"}{user.user_metadata?.title ? ` · ${String(user.user_metadata.title)}` : ""}</p><div className="mt-3 flex flex-wrap gap-2"><Badge variant={user.app_metadata?.is_admin === true ? "default" : "secondary"}>{user.app_metadata?.is_admin === true ? "Admin" : "Member"}</Badge><Badge variant={user.email_confirmed_at ? "outline" : "destructive"}>{user.email_confirmed_at ? "Verified" : "Unverified"}</Badge><Badge variant="outline">{accessLabels[String(user.user_metadata?.dashboard_status || "prepared")]}</Badge>{profileStatus && <Badge variant={profileStatus === "pending_review" ? "default" : "outline"} className={profileStatus === "pending_review" ? "btn-gold" : ""}>{reviewLabels[profileStatus] || profileStatus}</Badge>}</div></div><div className="flex flex-wrap items-center gap-2.5"><select aria-label={`Dashboard access for ${user.email}`} className={selectClass} value={String(user.user_metadata?.dashboard_status || "prepared")} onChange={(e) => void updateUser(user.id, { dashboard_status: e.target.value })}>{accessOptions.map((option) => <option key={option} value={option}>{accessLabels[option]}</option>)}</select><Button variant="outline" size="sm" onClick={() => void toggleAdmin(user)}><ShieldCheck data-icon="inline-start" />{user.app_metadata?.is_admin === true ? "Remove admin" : "Assign admin"}</Button><Button variant="outline" size="sm" onClick={() => void updateContact(user)}><Pencil data-icon="inline-start" />Contact</Button>{!user.email_confirmed_at && user.email && <Button variant="outline" size="sm" onClick={() => void resendVerification(user)}>Resend verification</Button>}<Button variant="ghost" size="sm" aria-expanded={expanded} onClick={() => { setExpandedUserId(expanded ? null : user.id); setReviewNote("") }}><ChevronDown data-icon="inline-start" className={expanded ? "rotate-180 transition-transform motion-reduce:transition-none" : "transition-transform motion-reduce:transition-none"} />Profile</Button>{user.email !== "admin@distinguisheddaniel.com" && <Button variant="outline" size="sm" className="text-destructive" aria-label={`Delete ${user.email || "user"}`} onClick={() => void deleteUser(user)}><Trash2 /></Button>}</div></div>
-        {expanded && <MemberDetails user={user} reviewNote={reviewNote} onReviewNoteChange={setReviewNote} onReview={(next) => void reviewProfile(user, next)} courses={courseCatalog} enrollments={enrollments.filter((enrollment) => enrollment.user_id === user.id)} certificates={certificates.filter((certificate) => certificate.user_id === user.id)} busy={accessBusy} onGrant={(courseId) => void setCourseAccess(user.id, courseId, "enrolled")} onRevoke={(courseId) => void setCourseAccess(user.id, courseId, "revoked")} onIssueCertificate={(courseId, courseTitle) => void issueCertificate(user.id, courseId, courseTitle)} />}
+      <div className="flex flex-col gap-4">{visibleUsers.map((user) => { const expanded = expandedUserId === user.id; const profileStatus = profileStatusOf(user); return <div key={user.id} className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm"><div className="flex flex-col gap-4 lg:flex-row lg:items-center"><div className="min-w-0 flex-1"><p className="font-medium tracking-tight">{String(user.user_metadata?.full_name || "Member")}</p><p className="break-words text-sm text-muted-foreground">{user.email || "No email"}{user.user_metadata?.title ? ` · ${String(user.user_metadata.title)}` : ""}</p><div className="mt-3 flex flex-wrap gap-2"><Badge variant={user.app_metadata?.is_admin === true ? "default" : "secondary"}>{user.app_metadata?.is_admin === true ? "Admin" : "Member"}</Badge><Badge variant={user.email_confirmed_at ? "outline" : "destructive"}>{user.email_confirmed_at ? "Verified" : "Unverified"}</Badge><Badge variant="outline">{accessLabels[String(user.user_metadata?.dashboard_status || "prepared")]}</Badge>{profileStatus && <Badge variant={profileStatus === "pending_review" ? "default" : "outline"} className={profileStatus === "pending_review" ? "btn-gold" : ""}>{reviewLabels[profileStatus] || profileStatus}</Badge>}</div></div><div className="flex flex-wrap items-center gap-2.5"><select aria-label={`Dashboard access for ${user.email}`} className={selectClass} value={String(user.user_metadata?.dashboard_status || "prepared")} onChange={(event) => { const dashboard_status = event.target.value; requirePasskey("Confirm dashboard access change", (passkey) => updateUser(user.id, { dashboard_status }, passkey)) }}>{accessOptions.map((option) => <option key={option} value={option}>{accessLabels[option]}</option>)}</select><Button variant="outline" size="sm" onClick={() => requirePasskey("Confirm administrator role change", (passkey) => toggleAdmin(user, passkey))}><ShieldCheck data-icon="inline-start" />{user.app_metadata?.is_admin === true ? "Remove admin" : "Assign admin"}</Button><Button variant="outline" size="sm" onClick={() => requirePasskey("Confirm contact email change", (passkey) => updateContact(user, passkey))}><Pencil data-icon="inline-start" />Contact</Button>{!user.email_confirmed_at && user.email && <Button variant="outline" size="sm" onClick={() => requirePasskey("Confirm verification email resend", (passkey) => resendVerification(user, passkey))}>Resend verification</Button>}<Button variant="ghost" size="sm" aria-expanded={expanded} onClick={() => { setExpandedUserId(expanded ? null : user.id); setReviewNote("") }}><ChevronDown data-icon="inline-start" className={expanded ? "rotate-180 transition-transform motion-reduce:transition-none" : "transition-transform motion-reduce:transition-none"} />Profile</Button>{user.email !== "admin@distinguisheddaniel.com" && <Button variant="outline" size="sm" className="text-destructive" aria-label={`Delete ${user.email || "user"}`} onClick={() => { if (window.confirm(`Delete the account for ${user.email || "this user"}?`)) requirePasskey("Confirm member account deletion", (passkey) => deleteUser(user, passkey)) }}><Trash2 /></Button>}</div></div>
+        {expanded && <MemberDetails user={user} reviewNote={reviewNote} onReviewNoteChange={setReviewNote} onReview={(next) => requirePasskey("Confirm profile review update", (passkey) => reviewProfile(user, next, passkey))} onResetPassword={() => requirePasskey("Confirm password reset", (passkey) => resetUserPassword(user, passkey))} courses={courseCatalog} enrollments={enrollments.filter((enrollment) => enrollment.user_id === user.id)} certificates={certificates.filter((certificate) => certificate.user_id === user.id)} busy={accessBusy} onGrant={(courseId) => requestCourseAccess(user.id, courseId, "enrolled")} onRevoke={(courseId) => requestCourseAccess(user.id, courseId, "revoked")} onIssueCertificate={(courseId, courseTitle) => { if (window.confirm(`Confirm this member completed "${courseTitle}" and issue their certificate?`)) requirePasskey("Confirm course certificate", (passkey) => issueCertificate(user.id, courseId, passkey)) }} />}
       </div> })}{visibleUsers.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No users match this search.</p>}</div>
           </CardContent>
         </Card>}
       </div>
     </div>
-  </div></main>
+  </div>
+  {passkeyDialog && <div className="fixed inset-0 z-[120] grid place-items-center bg-black/50 p-4" onKeyDown={(event) => { if (event.key === "Escape" && !passkeyBusy) { setPasskeyDialog(""); passkeyAction.current = null } }} onMouseDown={(event) => { if (event.target === event.currentTarget && !passkeyBusy) { setPasskeyDialog(""); passkeyAction.current = null } }}>
+    <section role="dialog" aria-modal="true" aria-labelledby="member-passkey-title" className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
+      <h2 id="member-passkey-title" className="text-lg font-semibold">{passkeyDialog}</h2>
+      <p className="mt-2 text-sm text-muted-foreground">Enter the 4-digit passkey to continue.</p>
+      <form className="mt-5 flex flex-col gap-4" onSubmit={(event) => void submitPasskey(event)}>
+        <Input autoFocus type="password" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="one-time-code" aria-label="4-digit admin passkey" aria-invalid={Boolean(passkeyError)} value={passkeyValue} onChange={(event) => { setPasskeyValue(event.target.value.replace(/\D/g, "").slice(0, 4)); setPasskeyError("") }} />
+        {passkeyError && <p role="alert" className="text-sm font-medium text-destructive">{passkeyError}</p>}
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" disabled={passkeyBusy} onClick={() => { setPasskeyDialog(""); passkeyAction.current = null }}>Cancel</Button>
+          <Button type="submit" className="btn-gold" disabled={passkeyBusy || passkeyValue.length !== 4}>{passkeyBusy ? "Confirming..." : "Confirm"}</Button>
+        </div>
+      </form>
+    </section>
+  </div>}
+  </main>
 }
 
 function StatTile({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
@@ -457,7 +603,7 @@ function PendingCourseRequests({ users, courses, enrollments, busy, onGrant }: {
   </section>
 }
 
-function MemberDetails({ user, reviewNote, onReviewNoteChange, onReview, courses, enrollments, certificates, busy, onGrant, onRevoke, onIssueCertificate }: { user: User; reviewNote: string; onReviewNoteChange: (value: string) => void; onReview: (status: "approved" | "rejected") => void; courses: CourseOption[]; enrollments: Enrollment[]; certificates: AdminCertificate[]; busy: string; onGrant: (courseId: string) => void; onRevoke: (courseId: string) => void; onIssueCertificate: (courseId: string, courseTitle: string) => void }) {
+function MemberDetails({ user, reviewNote, onReviewNoteChange, onReview, onResetPassword, courses, enrollments, certificates, busy, onGrant, onRevoke, onIssueCertificate }: { user: User; reviewNote: string; onReviewNoteChange: (value: string) => void; onReview: (status: "approved" | "rejected") => void; onResetPassword: () => void; courses: CourseOption[]; enrollments: Enrollment[]; certificates: AdminCertificate[]; busy: string; onGrant: (courseId: string) => void; onRevoke: (courseId: string) => void; onIssueCertificate: (courseId: string, courseTitle: string) => void }) {
   const profile = user.profile
   const preferences = (user.user_metadata?.preferences || {}) as Record<string, unknown>
   const skills = normalizeSkills(profile?.skills)
@@ -493,6 +639,7 @@ function MemberDetails({ user, reviewNote, onReviewNoteChange, onReview, courses
               {certificate
                 ? <Badge variant="outline" className="w-fit border-primary/30 text-primary"><Check className="me-1 size-3.5" />Issued</Badge>
                 : <Button size="sm" className="btn-gold shrink-0" disabled={!course || isBusy} onClick={() => course && onIssueCertificate(course.id, course.title)}><Award data-icon="inline-start" />{isBusy ? "Issuing…" : "Mark complete & issue"}</Button>}
+              <Button size="sm" variant="outline" className="shrink-0 text-destructive" disabled={isBusy} onClick={() => course && onRevoke(course.id)}>Revoke Access</Button>
             </li>
           })}
         </ul>
@@ -504,7 +651,7 @@ function MemberDetails({ user, reviewNote, onReviewNoteChange, onReview, courses
       <p className="text-xs text-muted-foreground">{profileStatus ? `${reviewLabels[profileStatus] || profileStatus}${reviewedAt ? ` · reviewed ${relativeTime(reviewedAt)}` : ""}` : "Not submitted yet."} This doesn&apos;t change dashboard access.</p>
       {note && <StatusMessage tone="error">{note}</StatusMessage>}
       <Textarea aria-label="Note for the member" placeholder="Optional note when requesting changes" rows={3} maxLength={500} value={reviewNote} onChange={(e) => onReviewNoteChange(e.target.value)} />
-      <div className="flex flex-wrap gap-2"><Button size="sm" className="btn-gold" disabled={!profile || profileStatus === "approved"} onClick={() => onReview("approved")}><Check data-icon="inline-start" />Approve</Button><Button size="sm" variant="outline" disabled={!profile} onClick={() => onReview("rejected")}><MessageSquareWarning data-icon="inline-start" />Request changes</Button></div>
+      <div className="flex flex-wrap gap-2"><Button size="sm" className="btn-gold" disabled={!profile || profileStatus === "approved"} onClick={() => onReview("approved")}><Check data-icon="inline-start" />Approve</Button><Button size="sm" variant="outline" disabled={!profile} onClick={() => onReview("rejected")}><MessageSquareWarning data-icon="inline-start" />Request changes</Button><Button size="sm" variant="outline" onClick={onResetPassword}><KeyRound data-icon="inline-start" />Trigger Password Reset</Button></div>
     </div>
   </div>
 }

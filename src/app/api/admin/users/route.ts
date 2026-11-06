@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { isValidAdminMemberPasskey } from "@/lib/admin-passkey"
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -36,6 +37,7 @@ export async function PATCH(request: Request) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const body: unknown = await request.json().catch(() => null)
   if (!isRecord(body)) return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+  if (!isValidAdminMemberPasskey(body.passkey)) return NextResponse.json({ error: "Invalid Passkey" }, { status: 403 })
   if (typeof body.id !== "string") return NextResponse.json({ error: "Invalid user" }, { status: 400 })
   const updates: { email?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown>; ban_duration?: string } = {}
   if (typeof body.email === "string" && body.email.trim()) updates.email = body.email.trim().toLowerCase()
@@ -104,6 +106,7 @@ export async function DELETE(request: Request) {
   if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const body: unknown = await request.json().catch(() => null)
   if (!isRecord(body)) return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+  if (!isValidAdminMemberPasskey(body.passkey)) return NextResponse.json({ error: "Invalid Passkey" }, { status: 403 })
   if (typeof body.id !== "string" || body.id === admin.id) return NextResponse.json({ error: "Invalid user" }, { status: 400 })
   const { error } = await createAdminClient().auth.admin.deleteUser(body.id)
   if (error) {

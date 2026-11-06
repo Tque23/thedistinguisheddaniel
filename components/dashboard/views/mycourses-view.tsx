@@ -4,9 +4,10 @@ import { useMemo, useState } from "react"
 import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Clock, FileText, MapPin, PlayCircle, Star, UserRound, Users2 } from "lucide-react"
 import { catalogCourse } from "@/lib/courses"
 import { enrollmentFor, type Course, type CourseEnrollment } from "@/lib/dashboard-data"
-import { courseCodeFor, formatSessionDate, formatTimeRange, primarySessions, type Session } from "@/lib/ddni-schedule"
+import { courseCalendarSessions, courseCodeFor, formatSessionDate, formatTimeRange, type Session } from "@/lib/ddni-schedule"
 import { CourseCover, DdniButton, EmptyPanel, LoadingBlock, Panel, Pill, SegmentedTabs, TextLink, type TabItem } from "@/components/dashboard/ddni-ui"
 import { CourseDetailsSheet } from "@/components/dashboard/course-details-sheet"
+import { CourseLearningWorkspace } from "@/components/dashboard/course-learning-workspace"
 import { ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
@@ -21,14 +22,15 @@ type CourseItem = {
   sessions: Session[]
   completedSessions: number
   lessonCount: number
+  nextLessonTitle: string | null
   status: Status
   upcoming: Session | undefined
   tagline: string
 }
 
-function buildItem(course: Course, enrollment: CourseEnrollment | undefined, now: Date, lessonCount: number, completedSessions: number): CourseItem {
+function buildItem(course: Course, enrollment: CourseEnrollment | undefined, now: Date, scheduledSessions: Session[], lessonCount: number, completedSessions: number, nextLessonTitle: string | null): CourseItem {
   const catalog = catalogCourse(course.slug)
-  const sessions = primarySessions(course.slug)
+  const sessions = [...scheduledSessions].sort((a, b) => a.start.getTime() - b.start.getTime())
   const started = sessions.length > 0 && sessions[0].start.getTime() <= now.getTime()
   let status: Status = "available"
   if (enrollment?.status === "enrolled") {
@@ -43,6 +45,7 @@ function buildItem(course: Course, enrollment: CourseEnrollment | undefined, now
     sessions,
     completedSessions,
     lessonCount,
+    nextLessonTitle,
     status,
     upcoming: sessions.find((session) => session.end.getTime() >= now.getTime()),
     tagline: catalog?.tagline ?? "",
@@ -69,18 +72,18 @@ function InfoRow({ icon: Icon, children }: { icon: typeof UserRound; children: R
 function CourseCard({ item, now, onOpen, onContinue }: { item: CourseItem; now: Date; onOpen: () => void; onContinue: () => void }) {
   const { course, sessions, status, completedSessions, lessonCount } = item
   const pill = statusPill[status]
+  const joined = status === "in-progress" || status === "registered" || status === "completed"
   const first = sessions[0]
-  const modeLabel = first ? (first.mode === "online" ? "Online" : "In-person") : "In-person"
+  const modeLabel = first ? (first.mode === "online" ? "Online" : "In-person") : "Format to be announced"
   const startsLabel = first
     ? `${first.start.getTime() <= now.getTime() ? "Started" : "Starts"} ${formatSessionDate(first.start)}`
-    : course.eventDate ? `Starts ${new Date(course.eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}` : "Starts TBA"
+    : "Schedule to be announced"
   const sessionsLabel = lessonCount
-    ? status === "in-progress" || status === "completed" ? `${completedSessions} of ${lessonCount} lessons completed` : `${lessonCount} lessons`
+    ? joined ? `${completedSessions} of ${lessonCount} lessons complete` : `${lessonCount} lessons`
     : sessions.length
       ? `${sessions.length} scheduled sessions`
     : course.duration || "Sessions TBA"
   const progress = lessonCount ? Math.round((completedSessions / lessonCount) * 100) : 0
-  const joined = status === "in-progress" || status === "registered" || status === "completed"
 
   return (
     <article className="ddni-card ddni-card-hover flex flex-col gap-6 p-6">
@@ -102,12 +105,13 @@ function CourseCard({ item, now, onOpen, onContinue }: { item: CourseItem; now: 
         </div>
       </div>
 
-      {status === "in-progress" ? (
+      {joined && lessonCount > 0 ? (
         <div className="rounded-lg border border-border bg-[#fcfaf5] p-3">
           <div className="flex items-center justify-between text-sm font-semibold text-foreground"><span>Course Progress</span><span>{progress}%</span></div>
           <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#ece7d9]" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label={`${course.title} progress`}>
             <div className="h-full rounded-full bg-gradient-to-r from-[#b8893a] to-[#d4ad5c] transition-[width] duration-500" style={{ width: `${Math.max(progress, 4)}%` }} />
           </div>
+          {item.nextLessonTitle && <p className="mt-2 text-xs leading-relaxed text-muted-foreground"><span className="font-semibold text-foreground">Next lesson:</span> {item.nextLessonTitle}</p>}
         </div>
       ) : course.isFree && status === "available" ? (
         <p className="text-sm font-semibold text-[#1f7a43]">Free Course</p>
@@ -136,13 +140,23 @@ export function MyCoursesView({ data, onNavigate, onRequestCourseAccess, onSetSe
   const now = useMemo(() => new Date(), [])
 
   const items = useMemo(
-    () => data.courses.map((course) => buildItem(
-      course,
-      enrollmentFor(data.enrollments, course.id),
-      now,
-      data.sessions.filter((session) => session.courseId === course.id).length,
-      data.sessions.filter((session) => session.courseId === course.id && data.sessionCompletions.some((completion) => completion.sessionId === session.id)).length,
-    )),
+    () => data.courses.map((course) => {
+      const courseSessions = data.sessions
+        .filter((session) => session.courseId === course.id)
+        .sort((a, b) => a.position - b.position || a.id.localeCompare(b.id))
+      const scheduledSessions = courseCalendarSessions(data.courses, courseSessions)
+      const completed = new Set(data.sessionCompletions.map((completion) => completion.sessionId))
+      const next = courseSessions.find((session) => !completed.has(session.id))
+      return buildItem(
+        course,
+        enrollmentFor(data.enrollments, course.id),
+        now,
+        scheduledSessions,
+        courseSessions.length,
+        courseSessions.filter((session) => completed.has(session.id)).length,
+        next?.title ?? null,
+      )
+    }),
     [data.courses, data.enrollments, data.sessions, data.sessionCompletions, now],
   )
 
@@ -173,6 +187,28 @@ export function MyCoursesView({ data, onNavigate, onRequestCourseAccess, onSetSe
   }, [items])
   const recommended = items.filter((item) => item.status === "available" || item.status === "registered").slice(0, 3)
   const selectedEnrollment = selected ? enrollmentFor(data.enrollments, selected.id) : undefined
+
+  if (selected && selectedEnrollment?.status === "enrolled") {
+    return (
+      <ViewContainer>
+        <CourseLearningWorkspace
+          course={selected}
+          paths={data.learningPaths}
+          sessions={data.sessions}
+          materials={data.materials}
+          assessments={data.assessments}
+          questions={data.assessmentQuestions}
+          attempts={data.assessmentAttempts}
+          answers={data.assessmentAnswers}
+          completions={data.sessionCompletions}
+          learningError={data.errors.learning}
+          onBack={() => setSelected(null)}
+          onSetSessionCompletion={onSetSessionCompletion}
+          onSubmitAssessment={onSubmitCourseAssessment}
+        />
+      </ViewContainer>
+    )
+  }
 
   return (
     <ViewContainer>
@@ -250,19 +286,8 @@ export function MyCoursesView({ data, onNavigate, onRequestCourseAccess, onSetSe
       <CourseDetailsSheet
         course={selected}
         enrollment={selectedEnrollment}
-        learningPaths={data.learningPaths}
-        sessions={data.sessions}
-        materials={data.materials}
-        assessments={data.assessments}
-        assessmentQuestions={data.assessmentQuestions}
-        assessmentAttempts={data.assessmentAttempts}
-        assessmentAnswers={data.assessmentAnswers}
-        sessionCompletions={data.sessionCompletions}
-        learningError={data.errors.learning}
         onClose={() => setSelected(null)}
         onRequestCourseAccess={onRequestCourseAccess}
-        onSetSessionCompletion={onSetSessionCompletion}
-        onSubmitCourseAssessment={onSubmitCourseAssessment}
       />
     </ViewContainer>
   )

@@ -288,7 +288,7 @@ function AuthForm() {
           </p>
           {timedOut && !isSignUp && !isForgot && !isReset && (
             <p role="status" className="mt-5 max-w-lg rounded-xl border border-[#d2ad55]/30 bg-[#d2ad55]/10 px-4 py-3 text-sm text-[#f3d27a]">
-              Your dashboard session expired after 5 minutes of inactivity. Please log in again.
+              Your dashboard session expired after 20 minutes of inactivity. Please log in again.
             </p>
           )}
           {genericAuthError && (

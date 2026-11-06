@@ -1,17 +1,15 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { ArrowRight, BookOpen, Briefcase, CalendarDays, Clock, Library, Mail, MapPin, MoreVertical, Pin, Megaphone, ShieldCheck, Users2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { Opportunity } from "@/lib/dashboard-data"
 import { ANNOUNCEMENT_CATEGORIES, announcementCategory, longDate, type AnnouncementCategory } from "@/lib/ddni-content"
-import { SESSIONS, formatTimeRange, sessionTitle } from "@/lib/ddni-schedule"
+import { courseCalendarSessions, formatTimeRange, sessionTitle } from "@/lib/ddni-schedule"
 import { cn } from "@/lib/utils"
 import { DdniButton, EmptyPanel, LoadingBlock, Panel, TextLink, UnderlineTabs, type TabItem } from "@/components/dashboard/ddni-ui"
 import { ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import type { DashboardView, DashboardViewProps } from "@/components/dashboard/dashboard-shell"
-
-const SEEN_KEY = "ddni-notifications-seen-at"
 
 type TabId = "all" | "unread" | "courses" | "updates"
 
@@ -49,22 +47,17 @@ function Meta({ date }: { date: string }) {
   )
 }
 
-export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
+export function AnnouncementsView({ data, onNavigate, onSetAnnouncementRead, onMarkAllAnnouncementsRead }: DashboardViewProps) {
   const [tab, setTab] = useState<TabId>("all")
   const [category, setCategory] = useState<AnnouncementCategory | null>(null)
-  const [seenAt, setSeenAt] = useState(0)
-  const [readIds, setReadIds] = useState<Set<string>>(() => new Set())
-  const [unreadIds, setUnreadIds] = useState<Set<string>>(() => new Set())
+  const [actionError, setActionError] = useState("")
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
-
-  useEffect(() => {
-    setSeenAt(Number(window.localStorage.getItem(SEEN_KEY) || 0))
-  }, [])
+  const readIds = useMemo(() => new Set(data.readAnnouncementIds), [data.readAnnouncementIds])
 
   const items = data.opportunities
   const pinned = items[0]
   const rest = items.slice(1)
-  const isUnread = (item: Opportunity) => unreadIds.has(item.id) || (!readIds.has(item.id) && new Date(item.createdAt).getTime() > seenAt)
+  const isUnread = (item: Opportunity) => !readIds.has(item.id)
   const unreadCount = items.filter(isUnread).length
 
   const categoryCounts = useMemo(() => {
@@ -92,32 +85,39 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
   const showPinned = pinned && (!category || announcementCategory(pinned) === category)
     && (tab === "all" || (tab === "unread" && isUnread(pinned)) || (tab === "courses" && announcementCategory(pinned) === "My Courses") || (tab === "updates" && announcementCategory(pinned) !== "My Courses"))
 
-  function markRead(id: string) {
-    setReadIds((current) => new Set(current).add(id))
-    setUnreadIds((current) => { const next = new Set(current); next.delete(id); return next })
+  async function markRead(id: string) {
+    setActionError("")
+    const error = await onSetAnnouncementRead(id, true)
+    if (error) setActionError(error)
+    return !error
   }
 
-  function markUnread(id: string) {
-    setUnreadIds((current) => new Set(current).add(id))
-    setReadIds((current) => { const next = new Set(current); next.delete(id); return next })
+  async function markUnread(id: string) {
+    setActionError("")
+    const error = await onSetAnnouncementRead(id, false)
+    if (error) setActionError(error)
   }
 
-  function markAllRead() {
-    const now = Date.now()
-    window.localStorage.setItem(SEEN_KEY, String(now))
-    setSeenAt(now)
-    setReadIds(new Set(items.map((item) => item.id)))
-    setUnreadIds(new Set())
+  async function markAllRead() {
+    setActionError("")
+    const error = await onMarkAllAnnouncementsRead(items.map((item) => item.id))
+    if (error) setActionError(error)
   }
 
-  function act(item: Opportunity) {
-    markRead(item.id)
+  async function act(item: Opportunity) {
+    if (!await markRead(item.id)) return
     const action = CATEGORY_ACTION[announcementCategory(item)]
     if (action.view) onNavigate(action.view)
     else setExpanded((current) => { const next = new Set(current); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next })
   }
 
-  const upcoming = SESSIONS.filter((session) => session.end.getTime() >= Date.now() && session.mode === "in-person").slice(0, 3)
+  const upcoming = useMemo(
+    () => courseCalendarSessions(data.courses, data.sessions)
+      .filter((session) => session.end.getTime() >= Date.now() && session.mode === "in-person")
+      .sort((a, b) => a.start.getTime() - b.start.getTime())
+      .slice(0, 3),
+    [data.courses, data.sessions],
+  )
 
   return (
     <ViewContainer>
@@ -127,6 +127,7 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
         description="Stay informed. Stay connected."
         actions={<DdniButton variant="outline" onClick={markAllRead} disabled={unreadCount === 0}><Mail />Mark all as read</DdniButton>}
       />
+      {(data.errors.saved || actionError) && <p role="alert" className="text-sm text-[#b3261e]">{actionError || data.errors.saved}</p>}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="flex min-w-0 flex-col gap-6">
@@ -159,7 +160,7 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
                       <p className={cn("text-sm leading-relaxed text-foreground/85", !expanded.has(pinned.id) && "line-clamp-3")}>{pinned.description}</p>
                       <Meta date={pinned.createdAt} />
                     </div>
-                    <DdniButton size="lg" className="sm:self-center" onClick={() => act(pinned)}>{CATEGORY_ACTION[announcementCategory(pinned)].label}<ArrowRight /></DdniButton>
+                    <DdniButton size="lg" className="sm:self-center" onClick={() => void act(pinned)}>{CATEGORY_ACTION[announcementCategory(pinned)].label}<ArrowRight /></DdniButton>
                   </div>
                 </article>
               )}
@@ -182,13 +183,13 @@ export function AnnouncementsView({ data, onNavigate }: DashboardViewProps) {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 self-end sm:self-center">
-                          <DdniButton variant="outline" size="md" onClick={() => act(item)} aria-expanded={CATEGORY_ACTION[cat].view ? undefined : open}>{!CATEGORY_ACTION[cat].view && open ? "Show Less" : CATEGORY_ACTION[cat].label}<ArrowRight /></DdniButton>
+                          <DdniButton variant="outline" size="md" onClick={() => void act(item)} aria-expanded={CATEGORY_ACTION[cat].view ? undefined : open}>{!CATEGORY_ACTION[cat].view && open ? "Show Less" : CATEGORY_ACTION[cat].label}<ArrowRight /></DdniButton>
                           <DropdownMenu>
                             <DropdownMenuTrigger render={<button type="button" aria-label={`More actions for ${item.title}`} className="grid size-9 place-items-center rounded-md text-foreground/80 transition-colors hover:bg-[#f7efdc]" />}>
                               <MoreVertical className="size-5" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              {unread ? <DropdownMenuItem onClick={() => markRead(item.id)}>Mark as read</DropdownMenuItem> : <DropdownMenuItem onClick={() => markUnread(item.id)}>Mark as unread</DropdownMenuItem>}
+                              {unread ? <DropdownMenuItem onClick={() => void markRead(item.id)}>Mark as read</DropdownMenuItem> : <DropdownMenuItem onClick={() => void markUnread(item.id)}>Mark as unread</DropdownMenuItem>}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { isValidAdminMemberPasskey } from "@/lib/admin-passkey"
 import type { Json } from "@/lib/supabase/database.types"
 
 type ContentSection = "announcements" | "resources" | "courses" | "blog_posts"
@@ -207,9 +208,10 @@ async function saveAnnouncementSettingInternal(title: "__dashboard_announcement_
   return { saved: true }
 }
 
-async function setCourseAccessInternal(userId: string, courseId: string, status: "enrolled" | "revoked") {
+async function setCourseAccessInternal(userId: string, courseId: string, status: "enrolled" | "revoked", passkey: string) {
   const context = await adminContext()
   if (!context) return { error: "Administrator access is required." }
+  if (!isValidAdminMemberPasskey(passkey)) return { error: "Invalid Passkey" }
   if (typeof userId !== "string" || !userId.trim() || typeof courseId !== "string" || !courseId.trim()
     || (status !== "enrolled" && status !== "revoked")) return { error: "Invalid course access request." }
   const { supabase } = context
@@ -223,9 +225,10 @@ async function setCourseAccessInternal(userId: string, courseId: string, status:
   return { saved: true }
 }
 
-async function issueCourseCertificateInternal(userId: string, courseId: string) {
+async function issueCourseCertificateInternal(userId: string, courseId: string, passkey: string) {
   const context = await adminContext()
   if (!context) return { error: "Administrator access is required." }
+  if (!isValidAdminMemberPasskey(passkey)) return { error: "Invalid Passkey" }
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
   if (!uuidPattern.test(userId) || !uuidPattern.test(courseId)) return { error: "Select a valid member and course." }
 
@@ -278,12 +281,25 @@ export async function saveAnnouncementSetting(title: "__dashboard_announcement__
   return withActionErrors("saveAnnouncementSetting", "Unable to save this announcement. Please try again.", () => saveAnnouncementSettingInternal(title, body))
 }
 
-export async function setCourseAccess(userId: string, courseId: string, status: "enrolled" | "revoked") {
-  return withActionErrors("setCourseAccess", "Unable to update course access. Please try again.", () => setCourseAccessInternal(userId, courseId, status))
+export async function setCourseAccess(userId: string, courseId: string, status: "enrolled" | "revoked", passkey: string) {
+  return withActionErrors("setCourseAccess", "Unable to update course access. Please try again.", () => setCourseAccessInternal(userId, courseId, status, passkey))
 }
 
-export async function issueCourseCertificate(userId: string, courseId: string) {
-  return withActionErrors("issueCourseCertificate", "Unable to issue this certificate. Please try again.", () => issueCourseCertificateInternal(userId, courseId))
+export async function issueCourseCertificate(userId: string, courseId: string, passkey: string) {
+  return withActionErrors("issueCourseCertificate", "Unable to issue this certificate. Please try again.", () => issueCourseCertificateInternal(userId, courseId, passkey))
+}
+
+export async function getPendingAssessmentCount() {
+  return withActionErrors("getPendingAssessmentCount", "Unable to load pending assessments.", async () => {
+    const context = await adminContext()
+    if (!context) return { error: "Administrator access is required." }
+    const { count, error } = await context.supabase
+      .from("course_assessment_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending_review")
+    if (error) return { error: "Unable to load pending assessments." }
+    return { count: count ?? 0 }
+  })
 }
 
 export type LearningPathSubmission = {
@@ -349,6 +365,11 @@ export type CourseSessionSubmission = {
   videoUrl: string
   durationMinutes: number
   position: number
+  required: boolean
+  startsAt: string | null
+  endsAt: string | null
+  deliveryMode: "in-person" | "online"
+  location: string
   published: boolean
 }
 
@@ -365,6 +386,13 @@ export async function saveCourseSession(input: CourseSessionSubmission) {
       || (input.videoUrl.trim() && !validHttpUrl(input.videoUrl.trim()))
       || !Number.isInteger(input.durationMinutes) || input.durationMinutes < 0 || input.durationMinutes > 1440
       || !Number.isInteger(input.position) || input.position < 0 || input.position > 10000
+      || typeof input.required !== "boolean"
+      || (input.startsAt !== null && (typeof input.startsAt !== "string" || Number.isNaN(Date.parse(input.startsAt))))
+      || (input.endsAt !== null && (typeof input.endsAt !== "string" || Number.isNaN(Date.parse(input.endsAt))))
+      || (input.startsAt === null) !== (input.endsAt === null)
+      || (input.startsAt !== null && input.endsAt !== null && Date.parse(input.startsAt) >= Date.parse(input.endsAt))
+      || (input.deliveryMode !== "in-person" && input.deliveryMode !== "online")
+      || typeof input.location !== "string" || input.location.length > 240
       || typeof input.published !== "boolean") {
       return { error: "Session details are invalid." }
     }
@@ -385,6 +413,11 @@ export async function saveCourseSession(input: CourseSessionSubmission) {
       video_url: input.videoUrl.trim() || null,
       duration_minutes: input.durationMinutes,
       position: input.position,
+      required: input.required,
+      starts_at: input.startsAt,
+      ends_at: input.endsAt,
+      delivery_mode: input.deliveryMode,
+      location: input.location.trim(),
       published: input.published,
       updated_at: new Date().toISOString(),
     }
@@ -508,9 +541,13 @@ export type CourseAssessmentSubmission = {
   id?: string
   courseId: string
   sessionId: string | null
+  pathId: string | null
   title: string
   instructions: string
   maxAttempts: number
+  opensAt: string | null
+  closesAt: string | null
+  passingScore: number
   published: boolean
   questions: AssessmentQuestionSubmission[]
 }
@@ -522,9 +559,15 @@ export async function saveCourseAssessment(input: CourseAssessmentSubmission) {
     if (!input || typeof input !== "object" || !uuidPattern.test(input.courseId)
       || (input.id !== undefined && !uuidPattern.test(input.id))
       || (input.sessionId !== null && !uuidPattern.test(input.sessionId))
+      || (input.pathId !== null && !uuidPattern.test(input.pathId))
+      || (input.sessionId !== null && input.pathId !== null)
       || typeof input.title !== "string" || input.title.trim().length < 2 || input.title.trim().length > 160
       || typeof input.instructions !== "string" || input.instructions.length > 2000
       || !Number.isInteger(input.maxAttempts) || input.maxAttempts < 1 || input.maxAttempts > 50
+      || (input.opensAt !== null && (typeof input.opensAt !== "string" || Number.isNaN(Date.parse(input.opensAt))))
+      || (input.closesAt !== null && (typeof input.closesAt !== "string" || Number.isNaN(Date.parse(input.closesAt))))
+      || (input.opensAt !== null && input.closesAt !== null && Date.parse(input.opensAt) >= Date.parse(input.closesAt))
+      || !Number.isInteger(input.passingScore) || input.passingScore < 0 || input.passingScore > 100
       || typeof input.published !== "boolean" || !Array.isArray(input.questions) || input.questions.length < 1 || input.questions.length > 100) {
       return { error: "Assessment details are invalid." }
     }
@@ -567,6 +610,10 @@ export async function saveCourseAssessment(input: CourseAssessmentSubmission) {
       p_max_attempts: input.maxAttempts,
       p_published: input.published,
       p_questions: questions,
+      p_opens_at: input.opensAt,
+      p_closes_at: input.closesAt,
+      p_passing_score: input.passingScore,
+      p_path_id: input.pathId,
     })
     if (error) {
       return { error: /member attempts/i.test(error.message)

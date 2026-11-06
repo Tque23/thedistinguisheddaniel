@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import { BookOpen, CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, Users2, Video } from "lucide-react"
 import { catalogCourse } from "@/lib/courses"
 import { cn } from "@/lib/utils"
-import { SESSIONS, downloadIcs, formatSessionDate, formatTimeRange, sameDay, sessionTitle, type Session } from "@/lib/ddni-schedule"
+import { courseCalendarSessions, downloadIcs, formatSessionDate, formatTimeRange, sameDay, sessionTitle, type Session } from "@/lib/ddni-schedule"
 import { CourseCover, DdniButton, Panel, TextLink } from "@/components/dashboard/ddni-ui"
 import { ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
@@ -49,12 +49,16 @@ function DateTile({ date }: { date: Date }) {
 
 export function CalendarView({ data, onNavigate }: DashboardViewProps) {
   const now = useMemo(() => new Date(), [])
+  const scheduledSessions = useMemo(
+    () => courseCalendarSessions(data.courses, data.sessions),
+    [data.courses, data.sessions],
+  )
   const enrolledSlugs = useMemo(() => {
     const enrolledIds = new Set(data.enrollments.filter((enrollment) => enrollment.status === "enrolled").map((enrollment) => enrollment.courseId))
     return new Set(data.courses.filter((course) => enrolledIds.has(course.id)).map((course) => course.slug))
   }, [data.courses, data.enrollments])
 
-  const upcoming = useMemo(() => SESSIONS.filter((session) => session.end.getTime() >= now.getTime()), [now])
+  const upcoming = useMemo(() => scheduledSessions.filter((session) => session.end.getTime() >= now.getTime()), [scheduledSessions, now])
   const nextSession = useMemo(() => upcoming.find((session) => enrolledSlugs.has(session.courseSlug)) ?? upcoming[0], [upcoming, enrolledSlugs])
 
   const initial = nextSession?.start ?? now
@@ -87,7 +91,7 @@ export function CalendarView({ data, onNavigate }: DashboardViewProps) {
     setAnchor(startOfDay(session.start))
   }
 
-  const eventsOn = (day: Date) => SESSIONS.filter((session) => sameDay(session.start, day))
+  const eventsOn = (day: Date) => scheduledSessions.filter((session) => sameDay(session.start, day))
 
   const monthDays = useMemo(() => {
     const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1)
@@ -97,13 +101,13 @@ export function CalendarView({ data, onNavigate }: DashboardViewProps) {
     return Array.from({ length: rows * 7 }, (_, index) => addDays(start, index))
   }, [cursor])
 
-  const monthEvents = SESSIONS.filter((session) => session.start.getFullYear() === cursor.getFullYear() && session.start.getMonth() === cursor.getMonth())
+  const monthEvents = scheduledSessions.filter((session) => session.start.getFullYear() === cursor.getFullYear() && session.start.getMonth() === cursor.getMonth())
   const nextCatalog = nextSession ? catalogCourse(nextSession.courseSlug) : undefined
-  const nextCourseSessions = nextSession ? SESSIONS.filter((session) => session.courseSlug === nextSession.courseSlug && session.formatIndex === nextSession.formatIndex) : []
+  const nextCourseSessions = nextSession ? scheduledSessions.filter((session) => session.courseSlug === nextSession.courseSlug && session.formatIndex === nextSession.formatIndex) : []
 
   return (
     <ViewContainer>
-      <ViewHeader kicker="Member schedule" title="My Calendar" description="Stay up to date with your courses, sessions and events." />
+      <ViewHeader kicker="Member schedule" title="My Calendar" description="Course dates come from the same lessons managed in the course outline." />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
         <section className="ddni-card min-w-0 p-6" aria-label="Calendar">

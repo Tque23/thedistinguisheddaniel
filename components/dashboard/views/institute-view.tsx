@@ -51,7 +51,7 @@ function ResourceAction({ resource }: { resource: Resource }) {
 
 function accessCopy(course: Course, status: string | undefined) {
   if (status === "enrolled") return course.isFree ? "You’re registered. You have immediate access to this free course." : "Access granted. You’re confirmed for this course."
-  if (status === "pending") return "Sign-up received. An administrator will grant access after payment is confirmed."
+  if (status === "pending") return "Your request is pending administrator approval."
   if (status === "revoked") return "Access was revoked. You can request access again."
   return course.isFree ? "Sign up to get immediate access." : "Sign up to request access. An administrator will confirm paid enrolment."
 }
@@ -233,6 +233,7 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
                 </div>
               ) : null}
               <p className="px-4 text-sm text-muted-foreground">{accessCopy(selectedCourse, selectedEnrollment?.status)}</p>
+              {selectedEnrollment?.status === "pending" && !selectedCourse.isFree && <div role="status" className="mx-4 rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-950"><p className="font-semibold">Sign-up recorded · proof email not tracked</p><p className="mt-1">Open your email app using the link below to send proof of payment. The dashboard cannot confirm whether that email was sent or received.</p></div>}
               {signupMessage && <div className="px-4"><StatusMessage tone={signupMessage.startsWith("Unable") || signupMessage.startsWith("Please") ? "error" : "success"}>{signupMessage}</StatusMessage></div>}
               <SheetFooter>
                 {selectedEnrollment?.status === "enrolled" ? (
@@ -245,7 +246,7 @@ export function InstituteView({ data, onRequestCourseAccess }: DashboardViewProp
                   </Button>
                 )}
                 {!selectedCourse.isFree && selectedEnrollment?.status !== "enrolled" && (
-                  <a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Proof of payment: ${selectedCourse.title}`)}`} className={buttonVariants({ variant: "outline", className: "min-h-11 px-4" })}>Send proof of payment</a>
+                  <a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Proof of payment: ${selectedCourse.title}`)}`} className={buttonVariants({ variant: "outline", className: "min-h-11 px-4" })}>Open email app to send proof of payment</a>
                 )}
                 <Button variant="outline" className="min-h-11 px-4" onClick={() => setSelectedCourse(null)}>Close</Button>
               </SheetFooter>

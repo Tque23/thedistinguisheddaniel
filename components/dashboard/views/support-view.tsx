@@ -54,8 +54,8 @@ export function SupportView({ member, onNavigate }: DashboardViewProps) {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,0.8fr)]">
         <Card className="gap-6 border border-border/60 bg-card p-6 shadow-sm">
           <CardHeader className="p-0">
-            <CardTitle className="font-semibold">Send us a message</CardTitle>
-            <CardDescription>Your message opens in your email app, addressed to {SUPPORT_EMAIL}, with your member details included.</CardDescription>
+            <CardTitle className="font-semibold">Prepare a support email</CardTitle>
+            <CardDescription>Your email app will open with a draft addressed to {SUPPORT_EMAIL} and your member details included. The dashboard does not store or track the message.</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <form onSubmit={submit} noValidate className="flex flex-col gap-4">
@@ -72,7 +72,7 @@ export function SupportView({ member, onNavigate }: DashboardViewProps) {
                 <Textarea id="support-message" name="message" required value={form.message} maxLength={2000} rows={6} aria-invalid={Boolean(errors.message)} aria-describedby={errors.message ? "support-message-error" : "support-message-hint"} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Share as much detail as you can." />
               </Field>
               <div className="flex flex-wrap items-center gap-3">
-                <Button type="submit" className="btn-gold min-h-11 px-4"><Send data-icon="inline-start" />Send message</Button>
+                <Button type="submit" className="btn-gold min-h-11 px-4"><Send data-icon="inline-start" />Open email app</Button>
                 {sent && <StatusMessage tone="success">Your email app should open now. If it doesn&apos;t, email us at {SUPPORT_EMAIL}.</StatusMessage>}
               </div>
             </form>

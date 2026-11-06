@@ -5,8 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { StatusMessage } from "@/components/dashboard/dashboard-ui"
-import { CourseLearningWorkspace } from "@/components/dashboard/course-learning-workspace"
-import { SUPPORT_EMAIL, formatDate, type AssessmentSubmissionResult, type Course, type CourseAssessment, type CourseAssessmentAnswer, type CourseAssessmentAttempt, type CourseAssessmentQuestion, type CourseEnrollment, type CourseLearningPath, type CourseMaterial, type CourseSession, type CourseSessionCompletion } from "@/lib/dashboard-data"
+import { SUPPORT_EMAIL, formatDate, type Course, type CourseEnrollment } from "@/lib/dashboard-data"
 import { catalogCourse } from "@/lib/courses"
 import { BookOpen, CalendarDays, Clock, MapPin, UserRound } from "lucide-react"
 
@@ -20,35 +19,13 @@ function accessCopy(course: Course, status: string | undefined) {
 export function CourseDetailsSheet({
   course,
   enrollment,
-  learningPaths,
-  sessions,
-  materials,
-  assessments,
-  assessmentQuestions,
-  assessmentAttempts,
-  assessmentAnswers,
-  sessionCompletions,
-  learningError,
   onClose,
   onRequestCourseAccess,
-  onSetSessionCompletion,
-  onSubmitCourseAssessment,
 }: {
   course: Course | null
   enrollment: CourseEnrollment | undefined
-  learningPaths: CourseLearningPath[]
-  sessions: CourseSession[]
-  materials: CourseMaterial[]
-  assessments: CourseAssessment[]
-  assessmentQuestions: CourseAssessmentQuestion[]
-  assessmentAttempts: CourseAssessmentAttempt[]
-  assessmentAnswers: CourseAssessmentAnswer[]
-  sessionCompletions: CourseSessionCompletion[]
-  learningError?: string
   onClose: () => void
   onRequestCourseAccess: (course: Course) => Promise<string | null>
-  onSetSessionCompletion: (sessionId: string, complete: boolean) => Promise<string | null>
-  onSubmitCourseAssessment: (assessmentId: string, answers: { questionId: string; answer: string }[]) => Promise<{ result: AssessmentSubmissionResult } | { error: string }>
 }) {
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState("")
@@ -115,23 +92,12 @@ export function CourseDetailsSheet({
               </div>
             ) : null}
             <p className="px-4 text-sm text-muted-foreground">{accessCopy(course, enrollment?.status)}</p>
-            {message && <div className="px-4"><StatusMessage tone={message.startsWith("Unable") || message.startsWith("Please") ? "error" : "success"}>{message}</StatusMessage></div>}
-            {enrollment?.status === "enrolled" && (
-              <CourseLearningWorkspace
-                course={course}
-                paths={learningPaths}
-                sessions={sessions}
-                materials={materials}
-                assessments={assessments}
-                questions={assessmentQuestions}
-                attempts={assessmentAttempts}
-                answers={assessmentAnswers}
-                completions={sessionCompletions}
-                learningError={learningError}
-                onSetSessionCompletion={onSetSessionCompletion}
-                onSubmitAssessment={onSubmitCourseAssessment}
-              />
+            {!course.isFree && enrollment?.status !== "enrolled" && (
+              <p className="px-4 text-xs leading-relaxed text-muted-foreground">
+                Proof of payment opens in your email app. This dashboard does not receive or track the email.
+              </p>
             )}
+            {message && <div className="px-4"><StatusMessage tone={message.startsWith("Unable") || message.startsWith("Please") ? "error" : "success"}>{message}</StatusMessage></div>}
             <SheetFooter>
               {enrollment?.status === "enrolled" ? (
                 <Button className="btn-gold" disabled>You have access</Button>
@@ -143,7 +109,7 @@ export function CourseDetailsSheet({
                 </Button>
               )}
               {!course.isFree && enrollment?.status !== "enrolled" && (
-                <a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Proof of payment: ${course.title}`)}`} className={buttonVariants({ variant: "outline", className: "min-h-11 px-4" })}>Send proof of payment</a>
+                <a href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Proof of payment: ${course.title}`)}`} className={buttonVariants({ variant: "outline", className: "min-h-11 px-4" })}>Open email app to send proof of payment</a>
               )}
               <Button variant="outline" onClick={close}>Close</Button>
             </SheetFooter>

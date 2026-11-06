@@ -75,6 +75,11 @@ export type CourseSession = {
   videoUrl: string
   durationMinutes: number
   position: number
+  required: boolean
+  startsAt: string | null
+  endsAt: string | null
+  deliveryMode: "in-person" | "online"
+  location: string
   published: boolean
 }
 
@@ -95,9 +100,13 @@ export type CourseAssessment = {
   id: string
   courseId: string
   sessionId: string | null
+  pathId: string | null
   title: string
   instructions: string
   maxAttempts: number
+  opensAt: string | null
+  closesAt: string | null
+  passingScore: number
 }
 
 export type CourseAssessmentQuestion = {
@@ -269,6 +278,11 @@ export function toCourseSession(row: Row): CourseSession {
     videoUrl: text(row.video_url),
     durationMinutes: Number.isFinite(Number(row.duration_minutes)) ? Number(row.duration_minutes) : 0,
     position: Number.isFinite(Number(row.position)) ? Number(row.position) : 0,
+    required: row.required !== false,
+    startsAt: row.starts_at == null ? null : text(row.starts_at),
+    endsAt: row.ends_at == null ? null : text(row.ends_at),
+    deliveryMode: row.delivery_mode === "online" ? "online" : "in-person",
+    location: text(row.location),
     published: row.published === true,
   }
 }
@@ -291,9 +305,13 @@ export function toCourseAssessment(row: Row): CourseAssessment {
     id: text(row.id),
     courseId: text(row.course_id),
     sessionId: row.session_id == null ? null : text(row.session_id),
+    pathId: row.path_id == null ? null : text(row.path_id),
     title: text(row.title),
     instructions: text(row.instructions),
     maxAttempts: Number.isFinite(Number(row.max_attempts)) ? Number(row.max_attempts) : 1,
+    opensAt: row.opens_at == null ? null : text(row.opens_at),
+    closesAt: row.closes_at == null ? null : text(row.closes_at),
+    passingScore: Number.isFinite(Number(row.passing_score)) ? Number(row.passing_score) : 70,
   }
 }
 

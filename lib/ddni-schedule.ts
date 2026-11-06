@@ -1,6 +1,5 @@
 import { COURSES } from "@/lib/courses"
-
-const MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
+import type { Course, CourseSession } from "@/lib/dashboard-data"
 
 export type Session = {
   id: string
@@ -17,61 +16,36 @@ export type Session = {
   price: string
 }
 
-function parseSeating(seating: string) {
-  const match = seating.match(/^(.*?)\s+([A-Za-z]+)\s+(\d{4})$/)
-  if (!match) return null
-  const days = match[1].match(/\d+/g)?.map(Number) ?? []
-  const month = MONTHS.indexOf(match[2].toLowerCase())
-  if (!days.length || month < 0) return null
-  return { days, month, year: Number(match[3]) }
-}
+export function courseCalendarSessions(courses: Course[], courseSessions: CourseSession[]): Session[] {
+  const coursesById = new Map(courses.map((course) => [course.id, course]))
+  const totals = new Map<string, number>()
+  courseSessions.forEach((session) => totals.set(session.courseId, (totals.get(session.courseId) ?? 0) + 1))
 
-function parseTime(time: string) {
-  const match = time.match(/(\d{1,2})h(\d{2})\D+?(\d{1,2})h(\d{2})/)
-  if (!match) return { startHour: 19, startMinute: 0, endHour: 21, endMinute: 0 }
-  return { startHour: Number(match[1]), startMinute: Number(match[2]), endHour: Number(match[3]), endMinute: Number(match[4]) }
-}
-
-function buildSessions(): Session[] {
-  const sessions: Session[] = []
-  for (const course of COURSES) {
-    const courseCode = course.description.match(/Course Code:\s*(\d+)/)?.[1] ?? ""
-    course.formats.forEach((format, formatIndex) => {
-      const seating = parseSeating(format.seating)
-      if (!seating) return
-      const time = parseTime(format.time)
-      const online = /online/i.test(format.label)
-      seating.days.forEach((day, index) => {
-        sessions.push({
-          id: `${course.id}-${formatIndex}-${index + 1}`,
-          courseSlug: course.id,
-          courseTitle: course.title,
-          courseCode,
-          formatIndex,
-          number: index + 1,
-          total: seating.days.length,
-          start: new Date(seating.year, seating.month, day, time.startHour, time.startMinute),
-          end: new Date(seating.year, seating.month, day, time.endHour, time.endMinute),
-          mode: online ? "online" : "in-person",
-          location: online ? "Online (MS Teams)" : "KAN Apostolic Hub",
-          price: format.price,
-        })
-      })
-    })
-  }
-  return sessions.sort((a, b) => a.start.getTime() - b.start.getTime())
-}
-
-export const SESSIONS: Session[] = buildSessions()
-
-export function primarySessions(courseSlug: string) {
-  return SESSIONS.filter((session) => session.courseSlug === courseSlug && session.formatIndex === 0)
+  return courseSessions.flatMap((session) => {
+    if (!session.startsAt || !session.endsAt) return []
+    const start = new Date(session.startsAt)
+    const end = new Date(session.endsAt)
+    const course = coursesById.get(session.courseId)
+    if (!course || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return []
+    return [{
+      id: session.id,
+      courseSlug: course.slug,
+      courseTitle: course.title,
+      courseCode: courseCodeFor(course.slug),
+      formatIndex: 0,
+      number: session.position + 1,
+      total: totals.get(course.id) ?? 1,
+      start,
+      end,
+      mode: session.deliveryMode,
+      location: session.location || (session.deliveryMode === "online" ? "Online" : "Location to be announced"),
+      price: course.price,
+    }]
+  }).sort((a, b) => a.start.getTime() - b.start.getTime())
 }
 
 export function courseCodeFor(courseSlug: string) {
-  return SESSIONS.find((session) => session.courseSlug === courseSlug)?.courseCode
-    ?? COURSES.find((course) => course.id === courseSlug)?.description.match(/Course Code:\s*(\d+)/)?.[1]
-    ?? ""
+  return COURSES.find((course) => course.id === courseSlug)?.description.match(/Course Code:\s*(\d+)/)?.[1] ?? ""
 }
 
 export function sameDay(a: Date, b: Date) {

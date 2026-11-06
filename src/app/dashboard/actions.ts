@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server"
 import type { Json } from "@/lib/supabase/database.types"
 import type { AssessmentSubmissionResult } from "@/lib/dashboard-data"
 
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
 export type MemberProfileSubmission = {
   name: string
   title: string
@@ -166,7 +168,136 @@ function isHttpUrl(value: string) {
     }
   }
 
-  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  async function getDashboardUser() {
+    const supabase = await createClient()
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error || !user) return { error: "Please sign in again to update your saved items." } as const
+    return { supabase, user } as const
+  }
+
+  export async function toggleSaveResource(resourceId: string) {
+    try {
+      const context = await getDashboardUser()
+      if ("error" in context) return context
+      if (typeof resourceId !== "string" || !uuidPattern.test(resourceId)) return { error: "The selected resource is invalid." }
+
+      const { data: existing, error: lookupError } = await context.supabase
+        .from("saved_resources")
+        .select("resource_id")
+        .eq("user_id", context.user.id)
+        .eq("resource_id", resourceId)
+        .maybeSingle()
+      if (lookupError) return { error: "Unable to update your saved resources." }
+
+      if (existing) {
+        const { error } = await context.supabase.from("saved_resources")
+          .delete().eq("user_id", context.user.id).eq("resource_id", resourceId)
+        if (error) return { error: "Unable to update your saved resources." }
+        revalidatePath("/dashboard")
+        return { saved: false }
+      }
+
+      const { data: resource, error: resourceError } = await context.supabase
+        .from("resources").select("id").eq("id", resourceId).eq("published", true).maybeSingle()
+      if (resourceError || !resource) return { error: "This resource is unavailable." }
+      const { error } = await context.supabase.from("saved_resources")
+        .insert({ user_id: context.user.id, resource_id: resourceId })
+      if (error) return { error: "Unable to update your saved resources." }
+      revalidatePath("/dashboard")
+      return { saved: true }
+    } catch (error) {
+      console.error("[dashboard] toggleSaveResource failed", error)
+      return { error: "Unable to update your saved resources. Please try again." }
+    }
+  }
+
+  export async function toggleSaveOpportunity(opportunityId: string) {
+    try {
+      const context = await getDashboardUser()
+      if ("error" in context) return context
+      if (typeof opportunityId !== "string" || !uuidPattern.test(opportunityId)) return { error: "The selected opportunity is invalid." }
+
+      const { data: existing, error: lookupError } = await context.supabase
+        .from("saved_opportunities")
+        .select("opportunity_id")
+        .eq("user_id", context.user.id)
+        .eq("opportunity_id", opportunityId)
+        .maybeSingle()
+      if (lookupError) return { error: "Unable to update your saved opportunities." }
+
+      if (existing) {
+        const { error } = await context.supabase.from("saved_opportunities")
+          .delete().eq("user_id", context.user.id).eq("opportunity_id", opportunityId)
+        if (error) return { error: "Unable to update your saved opportunities." }
+        revalidatePath("/dashboard")
+        return { saved: false }
+      }
+
+      const { data: opportunity, error: opportunityError } = await context.supabase
+        .from("announcements").select("id").eq("id", opportunityId).eq("published", true).maybeSingle()
+      if (opportunityError || !opportunity) return { error: "This opportunity is unavailable." }
+      const { error } = await context.supabase.from("saved_opportunities")
+        .insert({ user_id: context.user.id, opportunity_id: opportunityId })
+      if (error) return { error: "Unable to update your saved opportunities." }
+      revalidatePath("/dashboard")
+      return { saved: true }
+    } catch (error) {
+      console.error("[dashboard] toggleSaveOpportunity failed", error)
+      return { error: "Unable to update your saved opportunities. Please try again." }
+    }
+  }
+
+  export async function setAnnouncementRead(announcementId: string, read: boolean) {
+    try {
+      const context = await getDashboardUser()
+      if ("error" in context) return context
+      if (typeof announcementId !== "string" || !uuidPattern.test(announcementId) || typeof read !== "boolean") {
+        return { error: "The announcement read status is invalid." }
+      }
+
+      if (read) {
+        const { data: announcement, error: announcementError } = await context.supabase
+          .from("announcements").select("id").eq("id", announcementId).eq("published", true).maybeSingle()
+        if (announcementError || !announcement) return { error: "This announcement is unavailable." }
+        const { error } = await context.supabase.from("announcement_reads")
+          .upsert({ user_id: context.user.id, announcement_id: announcementId }, { onConflict: "user_id,announcement_id" })
+        if (error) return { error: "Unable to update announcement read status." }
+      } else {
+        const { error } = await context.supabase.from("announcement_reads")
+          .delete().eq("user_id", context.user.id).eq("announcement_id", announcementId)
+        if (error) return { error: "Unable to update announcement read status." }
+      }
+      revalidatePath("/dashboard")
+      return { saved: true }
+    } catch (error) {
+      console.error("[dashboard] setAnnouncementRead failed", error)
+      return { error: "Unable to update announcement read status. Please try again." }
+    }
+  }
+
+  export async function markAnnouncementsRead(announcementIds: string[]) {
+    try {
+      const context = await getDashboardUser()
+      if ("error" in context) return context
+      if (!Array.isArray(announcementIds) || announcementIds.length > 50
+        || new Set(announcementIds).size !== announcementIds.length
+        || announcementIds.some((id) => typeof id !== "string" || !uuidPattern.test(id))) {
+        return { error: "The announcement list is invalid." }
+      }
+      if (announcementIds.length) {
+        const { error } = await context.supabase.from("announcement_reads").upsert(
+          announcementIds.map((announcement_id) => ({ user_id: context.user.id, announcement_id })),
+          { onConflict: "user_id,announcement_id" },
+        )
+        if (error) return { error: "Unable to mark announcements as read." }
+      }
+      revalidatePath("/dashboard")
+      return { saved: true }
+    } catch (error) {
+      console.error("[dashboard] markAnnouncementsRead failed", error)
+      return { error: "Unable to mark announcements as read. Please try again." }
+    }
+  }
 
   export async function setCourseSessionCompletion(sessionId: string, complete: boolean) {
     try {
@@ -188,7 +319,11 @@ function isHttpUrl(value: string) {
           { onConflict: "user_id,session_id", ignoreDuplicates: true },
         )
         : await supabase.from("course_session_completions").delete().eq("user_id", user.id).eq("session_id", session.id)
-      if (result.error) return { error: "Unable to update your course progress. Please try again." }
+      if (result.error) {
+        return { error: /row-level security|policy/i.test(result.error.message)
+          ? "Complete earlier required lessons before marking this lesson complete."
+          : "Unable to update your course progress. Please try again." }
+      }
       revalidatePath("/dashboard")
       return { saved: true }
     } catch (error) {
@@ -219,7 +354,13 @@ function isHttpUrl(value: string) {
         p_answers: answers.map((answer) => ({ question_id: answer.questionId, answer: answer.answer })) as Json,
       })
       if (error) {
-        const message = /attempt limit reached/i.test(error.message)
+        const message = /not open yet/i.test(error.message)
+          ? "This assessment has not opened yet."
+          : /assessment is closed/i.test(error.message)
+            ? "This assessment is closed."
+            : /complete the required lessons/i.test(error.message)
+              ? "Complete the required lessons before submitting this assessment."
+              : /attempt limit reached/i.test(error.message)
           ? "You have used all allowed attempts for this assessment."
           : /answer every assessment question|select one of the available answers/i.test(error.message)
             ? "Answer each question and select an available option."

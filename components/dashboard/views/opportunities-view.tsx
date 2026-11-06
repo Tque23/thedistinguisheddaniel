@@ -25,12 +25,14 @@ function Thumb({ kind }: { kind: OpportunityKind }) {
   )
 }
 
-export function OpportunitiesView({ data }: DashboardViewProps) {
+export function OpportunitiesView({ data, onToggleSavedOpportunity }: DashboardViewProps) {
   const [query, setQuery] = useState("")
   const [posted, setPosted] = useState("any")
   const [sort, setSort] = useState("newest")
   const [tab, setTab] = useState<TabId>("all")
-  const [saved, setSaved] = useState<Set<string>>(() => new Set())
+  const saved = useMemo(() => new Set(data.savedOpportunityIds), [data.savedOpportunityIds])
+  const [saveError, setSaveError] = useState("")
+  const [busySaveId, setBusySaveId] = useState<string | null>(null)
   const [selected, setSelected] = useState<Opportunity | null>(null)
   const now = useMemo(() => Date.now(), [])
 
@@ -61,13 +63,12 @@ export function OpportunitiesView({ data }: DashboardViewProps) {
     return list.sort((a, b) => (sort === "newest" ? 1 : -1) * (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
   }, [data.opportunities, query, posted, sort, tab, saved, now])
 
-  function toggleSaved(id: string) {
-    setSaved((current) => {
-      const next = new Set(current)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  async function toggleSaved(id: string) {
+    setSaveError("")
+    setBusySaveId(id)
+    const error = await onToggleSavedOpportunity(id)
+    setBusySaveId(null)
+    if (error) setSaveError(error)
   }
 
   function clear() {
@@ -94,6 +95,7 @@ export function OpportunitiesView({ data }: DashboardViewProps) {
           {!data.loading && <p className="text-xs text-muted-foreground" aria-live="polite">{visible.length} {visible.length === 1 ? "opportunity" : "opportunities"}</p>}
 
           {data.errors.opportunities && <p role="alert" className="text-sm text-[#b3261e]">{data.errors.opportunities}</p>}
+          {(data.errors.saved || saveError) && <p role="alert" className="text-sm text-[#b3261e]">{saveError || data.errors.saved}</p>}
 
           {data.loading ? (
             <div className="flex flex-col gap-3">{[0, 1, 2].map((i) => <LoadingBlock key={i} className="h-36" />)}</div>
@@ -123,7 +125,8 @@ export function OpportunitiesView({ data }: DashboardViewProps) {
                           <p className="flex items-start gap-2 text-sm text-foreground/85"><CalendarDays className="mt-0.5 size-5 shrink-0" aria-hidden /><span><span className="block text-xs text-muted-foreground">Posted</span>{longDate(item.createdAt)}</span></p>
                           <button
                             type="button"
-                            onClick={() => toggleSaved(item.id)}
+                            disabled={busySaveId === item.id}
+                            onClick={() => void toggleSaved(item.id)}
                             aria-pressed={isSaved}
                             aria-label={isSaved ? `Remove ${item.title} from saved` : `Save ${item.title}`}
                             className={cn("ddni-btn grid size-10 shrink-0 place-items-center rounded-md border border-[#e2cf9f] transition-colors hover:bg-[#fbf3df]", isSaved ? "bg-[#f5ecd6] text-[#8a6420]" : "bg-white text-[#a9792a]")}

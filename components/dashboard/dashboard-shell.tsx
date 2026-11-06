@@ -22,9 +22,13 @@ import { AnnouncementsView } from "@/components/dashboard/views/announcements-vi
 import { playfair } from "@/src/app/fonts"
 import { cn } from "@/lib/utils"
 import {
+  markAnnouncementsRead as markAnnouncementsReadAction,
   requestCourseAccess as requestCourseAccessAction,
+  setAnnouncementRead as setAnnouncementReadAction,
   setCourseSessionCompletion as setCourseSessionCompletionAction,
   submitCourseAssessment as submitCourseAssessmentAction,
+  toggleSaveOpportunity as toggleSaveOpportunityAction,
+  toggleSaveResource as toggleSaveResourceAction,
 } from "@/src/app/dashboard/actions"
 import { ProfileView } from "@/components/dashboard/views/profile-view"
 import { SettingsView } from "@/components/dashboard/views/settings-view"
@@ -70,7 +74,7 @@ export type DashboardView = (typeof DASHBOARD_VIEWS)[number]
 
 const LIGHT_VIEWS: readonly DashboardView[] = ["overview", "courses", "calendar", "library", "certificates", "network", "opportunities", "announcements", "profile", "settings"]
 
-const SESSION_TIMEOUT_MS = 5 * 60 * 1000
+const SESSION_TIMEOUT_MS = 20 * 60 * 1000
 const RESERVED_ANNOUNCEMENTS = `("__dashboard_announcement__","__landing_announcement__")`
 
 export type DashboardMember = {
@@ -104,6 +108,9 @@ export type DashboardData = {
   courses: Course[]
   enrollments: CourseEnrollment[]
   resources: Resource[]
+  savedResourceIds: string[]
+  savedOpportunityIds: string[]
+  readAnnouncementIds: string[]
   certificates: CourseCertificate[]
   learningPaths: CourseLearningPath[]
   sessions: CourseSession[]
@@ -115,7 +122,7 @@ export type DashboardData = {
   sessionCompletions: CourseSessionCompletion[]
   profile: MemberProfile
   directory: DirectoryMember[]
-  errors: Partial<Record<"opportunities" | "courses" | "enrollments" | "resources" | "certificates" | "learning" | "profile" | "directory", string>>
+  errors: Partial<Record<"opportunities" | "courses" | "enrollments" | "resources" | "saved" | "certificates" | "learning" | "profile" | "directory", string>>
 }
 
 const initialData: DashboardData = {
@@ -124,6 +131,9 @@ const initialData: DashboardData = {
   courses: [],
   enrollments: [],
   resources: [],
+  savedResourceIds: [],
+  savedOpportunityIds: [],
+  readAnnouncementIds: [],
   certificates: [],
   learningPaths: [],
   sessions: [],
@@ -196,11 +206,14 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
   const loadData = useCallback(async (userId: string) => {
     const client = createClient()
     try {
-      const [opportunities, courses, enrollments, resources, certificates, learningPaths, sessions, materials, assessments, assessmentQuestions, assessmentAttempts, sessionCompletions, profile, directory] = await Promise.all([
+      const [opportunities, courses, enrollments, resources, savedResources, savedOpportunities, announcementReads, certificates, learningPaths, sessions, materials, assessments, assessmentQuestions, assessmentAttempts, sessionCompletions, profile, directory] = await Promise.all([
       client.from("announcements").select("id, title, body, created_at").eq("published", true).not("title", "in", RESERVED_ANNOUNCEMENTS).order("created_at", { ascending: false }).limit(50),
       client.from("courses").select("*").eq("published", true).order("created_at", { ascending: false }),
       client.from("course_enrollments").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
       client.from("resources").select("*").eq("published", true).order("created_at", { ascending: false }),
+      client.from("saved_resources").select("resource_id").eq("user_id", userId),
+      client.from("saved_opportunities").select("opportunity_id").eq("user_id", userId),
+      client.from("announcement_reads").select("announcement_id").eq("user_id", userId),
       client.from("course_certificates").select("id, user_id, course_id, member_name, course_title, instructor, certificate_code, issued_at").eq("user_id", userId).order("issued_at", { ascending: false }),
       client.from("course_learning_paths").select("*").eq("published", true).order("created_at", { ascending: true }),
       client.from("course_sessions").select("*").eq("published", true).order("position", { ascending: true }),
@@ -224,6 +237,9 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
         courses: (courses.data || []).map(toCourse),
         enrollments: (enrollments.data || []).map(toEnrollment),
         resources: (resources.data || []).map(toResource),
+        savedResourceIds: (savedResources.data || []).map((item) => item.resource_id),
+        savedOpportunityIds: (savedOpportunities.data || []).map((item) => item.opportunity_id),
+        readAnnouncementIds: (announcementReads.data || []).map((item) => item.announcement_id),
         certificates: (certificates.data || []).map(toCourseCertificate),
         learningPaths: (learningPaths.data || []).map(toCourseLearningPath),
         sessions: (sessions.data || []).map(toCourseSession),
@@ -240,6 +256,9 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
           courses: courses.error ? "We couldn't load courses." : undefined,
           enrollments: enrollments.error ? "We couldn't load your course sign-ups." : undefined,
           resources: resources.error ? "We couldn't load resources." : undefined,
+          saved: savedResources.error || savedOpportunities.error || announcementReads.error
+            ? "We couldn't load your saved items or announcement read status."
+            : undefined,
           certificates: certificates.error ? "We couldn't load your certificates." : undefined,
           learning: learningError ? "We couldn't load course lessons or assessments." : undefined,
           profile: profile.error ? "We couldn't load your professional profile." : undefined,
@@ -308,6 +327,54 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
     }
   }, [loadData])
 
+  const toggleSavedResource = useCallback(async (resourceId: string) => {
+    try {
+      const result = await toggleSaveResourceAction(resourceId)
+      if (result.error) return result.error
+      await loadData(member.id)
+      return null
+    } catch (error) {
+      console.error("[dashboard] toggleSavedResource callback failed", error)
+      return "Unable to update your saved resources. Please try again."
+    }
+  }, [loadData, member.id])
+
+  const toggleSavedOpportunity = useCallback(async (opportunityId: string) => {
+    try {
+      const result = await toggleSaveOpportunityAction(opportunityId)
+      if (result.error) return result.error
+      await loadData(member.id)
+      return null
+    } catch (error) {
+      console.error("[dashboard] toggleSavedOpportunity callback failed", error)
+      return "Unable to update your saved opportunities. Please try again."
+    }
+  }, [loadData, member.id])
+
+  const setAnnouncementRead = useCallback(async (announcementId: string, read: boolean) => {
+    try {
+      const result = await setAnnouncementReadAction(announcementId, read)
+      if (result.error) return result.error
+      await loadData(member.id)
+      return null
+    } catch (error) {
+      console.error("[dashboard] setAnnouncementRead callback failed", error)
+      return "Unable to update announcement read status. Please try again."
+    }
+  }, [loadData, member.id])
+
+  const markAllAnnouncementsRead = useCallback(async (announcementIds: string[]) => {
+    try {
+      const result = await markAnnouncementsReadAction(announcementIds)
+      if (result.error) return result.error
+      await loadData(member.id)
+      return null
+    } catch (error) {
+      console.error("[dashboard] markAllAnnouncementsRead callback failed", error)
+      return "Unable to mark announcements as read. Please try again."
+    }
+  }, [loadData, member.id])
+
   const submitAssessment = useCallback(async (assessmentId: string, answers: { questionId: string; answer: string }[]) => {
     try {
       const result = await submitCourseAssessmentAction(assessmentId, answers)
@@ -328,7 +395,11 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
     onRequestCourseAccess: requestCourseAccess,
     onSetSessionCompletion: setSessionCompletion,
     onSubmitCourseAssessment: submitAssessment,
-  }), [member, data, navigate, requestCourseAccess, setSessionCompletion, submitAssessment])
+    onToggleSavedResource: toggleSavedResource,
+    onToggleSavedOpportunity: toggleSavedOpportunity,
+    onSetAnnouncementRead: setAnnouncementRead,
+    onMarkAllAnnouncementsRead: markAllAnnouncementsRead,
+  }), [member, data, navigate, requestCourseAccess, setSessionCompletion, submitAssessment, toggleSavedResource, toggleSavedOpportunity, setAnnouncementRead, markAllAnnouncementsRead])
 
   if (accessState === null) return <main className="fixed inset-0 z-[100] grid place-items-center bg-[#071520] text-white" role="status" aria-live="polite"><div className="flex flex-col items-center gap-4"><div className="motion-safe:animate-spin size-10 rounded-full border-2 border-white/20 border-t-[#d8b865]" /><span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d8b865]">Loading dashboard</span></div></main>
   if (accessState !== "active") {
@@ -347,7 +418,7 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
         <AuthFeedbackDialog
           eyebrow="Session ended"
           title="For your security, you&apos;ve been signed out."
-          description="Your dashboard session expired after 5 minutes of inactivity."
+          description="Your dashboard session expired after 20 minutes of inactivity."
           icon={Clock3}
         >
           {timeoutSignOutError && (
@@ -370,7 +441,7 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
       <SidebarProvider className="min-h-0 flex-1">
         <AppSidebar activeView={activeView} onNavigate={navigate} member={member} />
         <SidebarInset className={cn("min-h-0 min-w-0", LIGHT_VIEWS.includes(activeView) && "ddni-light")}>
-          <DashboardHeader activeView={activeView} onNavigate={navigate} member={member} data={data} />
+          <DashboardHeader activeView={activeView} onNavigate={navigate} member={member} data={data} onSetAnnouncementRead={setAnnouncementRead} onMarkAllAnnouncementsRead={markAllAnnouncementsRead} />
           <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
             <main id="dashboard-main" tabIndex={-1} className="mx-auto w-full max-w-[1440px] p-4 sm:p-5 lg:p-6">
               <MotionConfig reducedMotion="user">
@@ -411,6 +482,10 @@ export type DashboardViewProps = {
   onNavigate: (view: DashboardView) => void
   onRequestCourseAccess: (course: Course) => Promise<string | null>
   onSetSessionCompletion: (sessionId: string, complete: boolean) => Promise<string | null>
+  onToggleSavedResource: (resourceId: string) => Promise<string | null>
+  onToggleSavedOpportunity: (opportunityId: string) => Promise<string | null>
+  onSetAnnouncementRead: (announcementId: string, read: boolean) => Promise<string | null>
+  onMarkAllAnnouncementsRead: (announcementIds: string[]) => Promise<string | null>
   onSubmitCourseAssessment: (
     assessmentId: string,
     answers: { questionId: string; answer: string }[],

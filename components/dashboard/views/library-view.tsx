@@ -45,7 +45,7 @@ function ResourceCover({ resource, course }: { resource: Resource; course: Retur
   )
 }
 
-function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; saved: boolean; onToggleSave: () => void }) {
+function ResourceCard({ resource, saved, busy, onToggleSave }: { resource: Resource; saved: boolean; busy: boolean; onToggleSave: () => void }) {
   const course = matchCourse(resource)
   const TypeIcon = isMedia(resource) ? Video : FileText
   return (
@@ -65,20 +65,22 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
       <div className="mt-auto grid grid-cols-2 gap-2 sm:grid-cols-3">
         <DdniButton variant="outline" size="sm" href={resource.url || undefined} target="_blank" rel="noopener noreferrer" disabled={!resource.url} title={resource.url ? undefined : "Link coming soon"}><Eye />Preview</DdniButton>
         <DdniButton size="sm" href={resource.url || undefined} target="_blank" rel="noopener noreferrer" download disabled={!resource.url} title={resource.url ? undefined : "Link coming soon"}><Download />Download</DdniButton>
-        <DdniButton variant="outline" size="sm" onClick={onToggleSave} aria-pressed={saved} aria-label={saved ? `Remove ${resource.title} from saved` : `Save ${resource.title}`}><Bookmark className={saved ? "fill-current" : ""} />{saved ? "Saved" : "Save"}</DdniButton>
+        <DdniButton variant="outline" size="sm" onClick={onToggleSave} disabled={busy} aria-pressed={saved} aria-label={saved ? `Remove ${resource.title} from saved` : `Save ${resource.title}`}><Bookmark className={saved ? "fill-current" : ""} />{busy ? "Saving…" : saved ? "Saved" : "Save"}</DdniButton>
       </div>
       {!resource.url && <p className="text-xs leading-relaxed text-muted-foreground">Preview and download links are not available yet.</p>}
     </article>
   )
 }
 
-export function LibraryView({ data }: DashboardViewProps) {
+export function LibraryView({ data, onToggleSavedResource }: DashboardViewProps) {
   const [query, setQuery] = useState("")
   const [course, setCourse] = useState("all")
   const [topic, setTopic] = useState("all")
   const [fileType, setFileType] = useState("all")
   const [tab, setTab] = useState<TabId>("all")
-  const [saved, setSaved] = useState<Set<string>>(() => new Set())
+  const [saveError, setSaveError] = useState("")
+  const [busySaveId, setBusySaveId] = useState<string | null>(null)
+  const saved = useMemo(() => new Set(data.savedResourceIds), [data.savedResourceIds])
 
   const sorted = useMemo(() => [...data.resources].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), [data.resources])
   const fileTypes = useMemo(() => Array.from(new Set(data.resources.map((resource) => resource.type))).sort(), [data.resources])
@@ -125,13 +127,12 @@ export function LibraryView({ data }: DashboardViewProps) {
     setTab("all")
   }
 
-  function toggleSaved(id: string) {
-    setSaved((current) => {
-      const next = new Set(current)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  async function toggleSaved(id: string) {
+    setBusySaveId(id)
+    setSaveError("")
+    const error = await onToggleSavedResource(id)
+    setBusySaveId(null)
+    if (error) setSaveError(error)
   }
 
   return (
@@ -159,6 +160,7 @@ export function LibraryView({ data }: DashboardViewProps) {
       </section>
 
       {data.errors.resources && <p role="alert" className="text-sm text-[#b3261e]">{data.errors.resources}</p>}
+      {(data.errors.saved || saveError) && <p role="alert" className="text-sm text-[#b3261e]">{saveError || data.errors.saved}</p>}
 
       {data.loading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{[0, 1, 2].map((i) => <LoadingBlock key={i} className="h-72" />)}</div>
@@ -171,7 +173,7 @@ export function LibraryView({ data }: DashboardViewProps) {
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {visible.map((resource) => <ResourceCard key={resource.id} resource={resource} saved={saved.has(resource.id)} onToggleSave={() => toggleSaved(resource.id)} />)}
+          {visible.map((resource) => <ResourceCard key={resource.id} resource={resource} saved={saved.has(resource.id)} busy={busySaveId === resource.id} onToggleSave={() => void toggleSaved(resource.id)} />)}
         </div>
       )}
     </ViewContainer>

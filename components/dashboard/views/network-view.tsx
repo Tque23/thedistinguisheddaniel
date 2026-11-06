@@ -4,11 +4,10 @@ import { useMemo, useState, type FormEvent } from "react"
 import { ArrowRight, Briefcase, Building2, ExternalLink, GraduationCap, Lightbulb, MapPin, Search, Tag, UserPlus, Users2 } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { SUPPORT_EMAIL, initialsFor, isValidUrl, profileCompletion, type DirectoryMember } from "@/lib/dashboard-data"
-import { DdniButton, EmptyPanel, LoadingBlock, Panel, SelectField, TextLink, UnderlineTabs, type TabItem } from "@/components/dashboard/ddni-ui"
+import { DdniButton, EmptyPanel, LoadingBlock, Panel, SelectField, TextLink } from "@/components/dashboard/ddni-ui"
 import { ViewContainer, ViewHeader } from "@/components/dashboard/dashboard-ui"
 import type { DashboardViewProps } from "@/components/dashboard/dashboard-shell"
 
-type TabId = "discover" | "connections" | "groups"
 type Filters = { query: string; industry: string; location: string; skill: string; role: string }
 
 const EMPTY_FILTERS: Filters = { query: "", industry: "all", location: "all", skill: "all", role: "all" }
@@ -58,7 +57,6 @@ function MemberCard({ person, onView }: { person: DirectoryMember; onView: () =>
 }
 
 export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
-  const [tab, setTab] = useState<TabId>("discover")
   const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS)
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS)
   const [selected, setSelected] = useState<DirectoryMember | null>(null)
@@ -91,7 +89,6 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
   function submit(event?: FormEvent) {
     event?.preventDefault()
     setApplied(draft)
-    setTab("discover")
   }
 
   function clear() {
@@ -103,17 +100,10 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
     const next = { ...EMPTY_FILTERS, skill }
     setDraft(next)
     setApplied(next)
-    setTab("discover")
   }
 
-  const tabs: TabItem<TabId>[] = [
-    { id: "discover", label: "Discover Members", icon: Users2 },
-    { id: "connections", label: "My Connections", icon: UserPlus },
-    { id: "groups", label: "Groups", icon: Building2 },
-  ]
-
   const groupList = groups.length === 0 ? (
-    <p className="rounded-lg border border-dashed border-border p-4 text-center text-sm text-muted-foreground">Groups form around shared skills as members complete their profiles.</p>
+    <p className="rounded-lg border border-dashed border-border p-4 text-center text-sm text-muted-foreground">Shared-skill suggestions will appear as members complete their profiles. These are not member groups.</p>
   ) : (
     <ul className="flex flex-col gap-3">
       {groups.map(([skill, count], index) => {
@@ -159,13 +149,7 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
             </div>
           </form>
 
-          <UnderlineTabs
-            label="Network sections"
-            items={tabs}
-            value={tab}
-            onChange={setTab}
-          />
-          {tab === "discover" && !data.loading && (
+          {!data.loading && (
             <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground" aria-live="polite">
               <span>{members.length} {members.length === 1 ? "member" : "members"}</span>
               {filtering && <button type="button" onClick={clear} className="font-medium text-primary underline underline-offset-4">Clear filters</button>}
@@ -174,31 +158,18 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
 
           {data.errors.directory && <p role="alert" className="text-sm text-[#b3261e]">{data.errors.directory}</p>}
 
-          {tab === "discover" && (
-            data.loading ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">{[0, 1, 2].map((i) => <LoadingBlock key={i} className="h-52" />)}</div>
-            ) : members.length === 0 ? (
+          {data.loading ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">{[0, 1, 2].map((i) => <LoadingBlock key={i} className="h-52" />)}</div>
+          ) : members.length === 0 ? (
               <EmptyPanel
                 icon={Users2}
                 title={data.directory.length ? "No members match your search" : "The directory is growing"}
                 description={data.directory.length ? "Try a different name, company or area of expertise." : "Member profiles will appear here as members publish them."}
                 action={filtering ? <DdniButton variant="outline" onClick={clear}>Clear filters</DdniButton> : undefined}
               />
-            ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">{members.map((person) => <MemberCard key={person.id} person={person} onView={() => setSelected(person)} />)}</div>
-            )
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">{members.map((person) => <MemberCard key={person.id} person={person} onView={() => setSelected(person)} />)}</div>
           )}
-
-          {tab === "connections" && (
-            <EmptyPanel
-              icon={UserPlus}
-              title="No connections yet"
-              description="Reach out to members from Discover Members. Your connections will be gathered here."
-              action={<DdniButton onClick={() => setTab("discover")}>Discover members</DdniButton>}
-            />
-          )}
-
-          {tab === "groups" && (data.loading ? <LoadingBlock className="h-52" /> : <div className="max-w-xl">{groupList}</div>)}
         </div>
 
         <aside className="flex min-w-0 flex-col gap-4" aria-label="Network summary">
@@ -207,11 +178,11 @@ export function NetworkView({ member, data, onNavigate }: DashboardViewProps) {
             <div className="min-w-0">
               <p className="ddni-serif text-4xl leading-none font-bold text-foreground">{data.loading ? "—" : data.directory.length}</p>
               <p className="mt-1 text-sm text-foreground/85">{data.directory.length === 1 ? "Member" : "Members"} in the network</p>
-              <TextLink onClick={() => setTab("discover")} className="mt-1 text-[#8a6420] underline underline-offset-4">Discover members<ArrowRight className="size-3.5" /></TextLink>
+              <TextLink onClick={() => { setDraft(EMPTY_FILTERS); setApplied(EMPTY_FILTERS) }} className="mt-1 text-[#8a6420] underline underline-offset-4">Discover members<ArrowRight className="size-3.5" /></TextLink>
             </div>
           </section>
 
-          <Panel title="Suggested Groups" icon={Users2}>{data.loading ? <LoadingBlock className="h-40" /> : groupList}</Panel>
+          <Panel title="Shared skills · suggestions, not groups" icon={Users2}>{data.loading ? <LoadingBlock className="h-40" /> : groupList}</Panel>
 
           <Panel title="Your Profile" icon={Building2}>
             <div className="flex flex-col gap-3">
