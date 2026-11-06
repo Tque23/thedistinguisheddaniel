@@ -20,12 +20,12 @@ export function AuthFeedbackDialog({
   children,
 }: AuthFeedbackDialogProps) {
   return (
-    <div className="fixed inset-0 z-[60] grid place-items-center bg-[#050f18]/90 p-6 text-white backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050f18]/80 p-6 text-white backdrop-blur-md transition-all duration-200 ease-in-out">
       <motion.div
         initial={{ opacity: 0, y: 8, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.22, ease: "easeOut" }}
-        className="w-full max-w-md rounded-2xl border border-[#dcb567]/30 bg-[#0c1e2c] p-8 text-center shadow-2xl"
+        className="w-full max-w-md rounded-2xl border border-[#dcb567]/30 bg-[#0c1e2c] p-8 text-center shadow-2xl transition-all duration-200 ease-in-out"
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-feedback-title"

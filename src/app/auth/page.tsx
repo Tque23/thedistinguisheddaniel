@@ -149,6 +149,21 @@ function AuthForm() {
     setResending(false)
   }
 
+  function backToSignIn() {
+    setSignupSentEmail("")
+    setShowResendForm(false)
+    setResending(false)
+    setResendMessage("")
+    setResendError("")
+    setEmail("")
+    setPassword("")
+    setName("")
+    setError("")
+    setMessage("")
+    setLoading(false)
+    router.replace("/auth")
+  }
+
   if (confirmed) {
     return (
       <main className="relative grid min-h-screen place-items-center overflow-hidden bg-[#071520] px-6 py-12 text-white">
@@ -212,9 +227,13 @@ function AuthForm() {
             Request New Link
           </button>
         )}
-        <Link href="/auth" className="mt-5 block text-sm text-white/65 transition hover:text-[#dcb567]">
+        <button
+          type="button"
+          onClick={backToSignIn}
+          className="mt-5 block w-full text-sm text-white/65 transition hover:text-[#dcb567]"
+        >
           Back to Sign In
-        </Link>
+        </button>
       </AuthFeedbackDialog>
     )
   }
@@ -229,12 +248,13 @@ function AuthForm() {
       >
         {resendMessage && <p role="status" className="mt-4 text-sm text-[#dcb567]">{resendMessage}</p>}
         {resendError && <p role="alert" className="mt-4 text-sm text-red-300">We couldn&apos;t send another link. {resendError}</p>}
-        <Link
-          href="/auth"
-          className="mt-6 inline-flex rounded-full bg-[#dcb567] px-5 py-3 text-sm font-semibold text-[#1a1200] transition hover:opacity-90"
+        <button
+          type="button"
+          onClick={backToSignIn}
+          className="mt-6 inline-flex rounded-full bg-[#dcb567] px-5 py-3 text-sm font-semibold text-[#1a1200] transition-all duration-200 ease-in-out hover:opacity-90"
         >
           Back to Sign In
-        </Link>
+        </button>
         <button
           type="button"
           disabled={resending}
