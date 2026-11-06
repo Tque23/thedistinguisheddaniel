@@ -3,8 +3,38 @@
 import { FormEvent, Suspense, useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
 import { CourseInfo } from "@/components/course-info"
+import { AuthFeedbackDialog } from "@/components/auth/auth-feedback-dialog"
+import { requestAuth } from "@/lib/auth-client"
+import { AlertCircle, CheckCircle2 } from "lucide-react"
+
+const SENSITIVE_PARAMS = [
+  "code",
+  "token",
+  "token_hash",
+  "access_token",
+  "refresh_token",
+  "id_token",
+  "state",
+  "error_description",
+  "error_code",
+]
+const SENSITIVE_PARAM_SET = new Set(SENSITIVE_PARAMS)
+
+function safeNextPath(requestedNext: string | null) {
+  if (!requestedNext || !requestedNext.startsWith("/") || requestedNext.startsWith("//") || requestedNext.includes("\\")) {
+    return null
+  }
+  try {
+    const destination = new URL(requestedNext, "https://distinguisheddaniel.com")
+    if (destination.origin !== "https://distinguisheddaniel.com") return null
+    for (const param of SENSITIVE_PARAMS) destination.searchParams.delete(param)
+    destination.hash = ""
+    return `${destination.pathname}${destination.search}`
+  } catch {
+    return null
+  }
+}
 
 function AuthForm() {
   const router = useRouter()
@@ -15,15 +45,40 @@ function AuthForm() {
   const isForgot = mode === "forgot"
   const timedOut = searchParams.get("timeout") === "1"
   const confirmed = searchParams.get("confirmed") === "1"
+  const queryError = searchParams.get("error") ?? ""
+  const expiredLink = queryError === "link_expired" || (
+    /(?:invalid|expired|already used|has been used)/i.test(queryError)
+    && /(?:link|token|otp|confirmation)/i.test(queryError)
+  )
+  const genericAuthError = queryError === "auth_failed" || Boolean(queryError && !expiredLink)
   const [email, setEmail] = useState("")
+  const [signupSentEmail, setSignupSentEmail] = useState("")
+  const [showResendForm, setShowResendForm] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resendMessage, setResendMessage] = useState("")
+  const [resendError, setResendError] = useState("")
 
   useEffect(() => {
-    if (mode === "reset" || typeof window === "undefined") return
-    const hash = new URLSearchParams(window.location.hash.slice(1))
-    if (hash.get("type") === "recovery" || hash.has("access_token")) {
-      router.replace("/auth?mode=reset")
+    const url = new URL(window.location.href)
+    let changed = false
+    for (const param of Array.from(url.searchParams.keys())) {
+      if (SENSITIVE_PARAM_SET.has(param.toLowerCase())) {
+        url.searchParams.delete(param)
+        changed = true
+      }
     }
-  }, [mode, router])
+    if (url.hash) {
+      url.hash = ""
+      changed = true
+    }
+    if (queryError && queryError !== "link_expired" && queryError !== "auth_failed") {
+      url.searchParams.set("error", expiredLink ? "link_expired" : "auth_failed")
+      changed = true
+    }
+    if (changed) {
+      window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}`)
+    }
+  }, [expiredLink, queryError])
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
   const [error, setError] = useState("")
@@ -41,19 +96,12 @@ function AuthForm() {
     setLoading(true)
     setError("")
     setMessage("")
-    const supabase = createClient()
-    // Auth emails must always return to the public production site. Using the
-    // browser origin here can cause preview/local URLs to be embedded in emails.
-    const productionOrigin = "https://distinguisheddaniel.com"
-    const redirectTo = `${productionOrigin}/auth/callback`
-    const signupRedirectTo = `${productionOrigin}/auth/callback?confirmed=1`
-
     if (isReset) {
-      const result = await supabase.auth.updateUser({ password })
-      if (result.error) {
-        setError("Unable to update your password. Please request a new reset link and try again.")
+      const result = await requestAuth({ action: "update_password", password })
+      if (!result.ok) {
+        setError(result.error)
       } else {
-        setMessage("Your password has been updated. You can now log in.")
+        setMessage(result.message || "Your password has been updated. You can now log in.")
         setPassword("")
       }
       await finishLoading()
@@ -61,39 +109,44 @@ function AuthForm() {
     }
 
     if (isForgot) {
-      // Recovery tokens are delivered in the URL hash, so land directly on the
-      // reset screen instead of passing through a server redirect that drops it.
-      const recoveryUrl = `${productionOrigin}/auth?mode=reset`
-      const result = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: recoveryUrl,
-      })
-      if (result.error) {
-        setError("Unable to send a reset email. Please check your email and try again.")
+      const result = await requestAuth({ action: "request_password_reset", email })
+      if (!result.ok) {
+        setError(result.error)
       } else {
-        setMessage("If an account exists for that email, you'll receive a password reset link shortly.")
+        setMessage(result.message || "If an account exists for that email, you'll receive a password reset link shortly.")
       }
       await finishLoading()
       return
     }
 
     const result = isSignUp
-      ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: signupRedirectTo, data: { full_name: name } } })
-      : await supabase.auth.signInWithPassword({ email, password })
+      ? await requestAuth({ action: "sign_up", email, password, name })
+      : await requestAuth({ action: "sign_in", email, password })
 
-    if (result.error) {
-      const rawMessage = result.error.message.toLowerCase()
-      if (isSignUp && (rawMessage.includes("already registered") || rawMessage.includes("already exists"))) {
-        setMessage("Check your inbox for next steps")
-      } else {
-        setError(rawMessage.includes("invalid") ? "Invalid email or password." : result.error.message)
-      }
+    if (!result.ok) {
+      setError(result.error)
     } else if (isSignUp) {
-      setMessage("Check your inbox for next steps")
+      setSignupSentEmail(email.trim())
     } else {
-      router.push(email.trim().toLowerCase() === "admin@distinguisheddaniel.com" ? "/admin" : "/dashboard")
+      const destination = safeNextPath(searchParams.get("next"))
+        || (email.trim().toLowerCase() === "admin@distinguisheddaniel.com" ? "/admin" : "/dashboard")
+      router.push(destination)
       router.refresh()
     }
     await finishLoading()
+  }
+
+  async function resendSignupLink(targetEmail: string) {
+    setResending(true)
+    setResendMessage("")
+    setResendError("")
+    const result = await requestAuth({ action: "resend_signup", email: targetEmail.trim() })
+    if (result.ok) {
+      setResendMessage(result.message || "New link sent! Check your inbox.")
+    } else {
+      setResendError(result.error)
+    }
+    setResending(false)
   }
 
   if (confirmed) {
@@ -111,6 +164,86 @@ function AuthForm() {
           </div>
         </div>
       </main>
+    )
+  }
+
+  if (expiredLink) {
+    return (
+      <AuthFeedbackDialog
+        eyebrow="Link unavailable"
+        title="Link Expired"
+        description="This magic or signup link has expired or was already used. Request a new link to continue."
+        icon={AlertCircle}
+      >
+        {resendMessage && <p role="status" className="mt-4 text-sm text-[#dcb567]">{resendMessage}</p>}
+        {resendError && <p role="alert" className="mt-4 text-sm text-red-300">We couldn&apos;t send a new link. {resendError}</p>}
+        {showResendForm ? (
+          <form
+            className="mt-6 flex flex-col gap-3"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void resendSignupLink(email)
+            }}
+          >
+            <label htmlFor="resend-email" className="text-left text-sm text-white/70">Email address</label>
+            <input
+              id="resend-email"
+              required
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white outline-none focus:border-[#dcb567]"
+            />
+            <button
+              type="submit"
+              disabled={resending}
+              className="inline-flex justify-center rounded-full bg-[#dcb567] px-5 py-3 text-sm font-semibold text-[#1a1200] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {resending ? "Sending…" : "Resend Signup Link"}
+            </button>
+          </form>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowResendForm(true)}
+            className="mt-6 inline-flex rounded-full bg-[#dcb567] px-5 py-3 text-sm font-semibold text-[#1a1200] transition hover:opacity-90"
+          >
+            Request New Link
+          </button>
+        )}
+        <Link href="/auth" className="mt-5 block text-sm text-white/65 transition hover:text-[#dcb567]">
+          Back to Sign In
+        </Link>
+      </AuthFeedbackDialog>
+    )
+  }
+
+  if (signupSentEmail) {
+    return (
+      <AuthFeedbackDialog
+        eyebrow="Signup confirmation"
+        title="Check Your Email"
+        description={`We've sent a confirmation link to ${signupSentEmail}. Please check your inbox (and spam folder) to activate your account.`}
+        icon={CheckCircle2}
+      >
+        {resendMessage && <p role="status" className="mt-4 text-sm text-[#dcb567]">{resendMessage}</p>}
+        {resendError && <p role="alert" className="mt-4 text-sm text-red-300">We couldn&apos;t send another link. {resendError}</p>}
+        <Link
+          href="/auth"
+          className="mt-6 inline-flex rounded-full bg-[#dcb567] px-5 py-3 text-sm font-semibold text-[#1a1200] transition hover:opacity-90"
+        >
+          Back to Sign In
+        </Link>
+        <button
+          type="button"
+          disabled={resending}
+          onClick={() => void resendSignupLink(signupSentEmail)}
+          className="mt-5 block w-full text-sm text-white/65 transition hover:text-[#dcb567] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {resending ? "Sending a new link…" : "Didn't receive email? Resend"}
+        </button>
+      </AuthFeedbackDialog>
     )
   }
 
@@ -136,6 +269,11 @@ function AuthForm() {
           {timedOut && !isSignUp && !isForgot && !isReset && (
             <p role="status" className="mt-5 max-w-lg rounded-xl border border-[#d2ad55]/30 bg-[#d2ad55]/10 px-4 py-3 text-sm text-[#f3d27a]">
               Your dashboard session expired after 5 minutes of inactivity. Please log in again.
+            </p>
+          )}
+          {genericAuthError && (
+            <p role="alert" className="mt-5 max-w-lg rounded-xl border border-red-300/20 bg-red-300/10 px-4 py-3 text-sm text-red-200">
+              Authentication could not be completed. Please sign in or request a new link.
             </p>
           )}
         </div>

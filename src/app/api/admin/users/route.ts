@@ -5,7 +5,8 @@ import { createAdminClient } from "@/lib/supabase/admin"
 
 async function requireAdmin() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error) console.error("[admin/users] Admin session lookup failed", error)
   if (!user || user.app_metadata?.is_admin !== true) return null
   return user
 }
@@ -18,9 +19,15 @@ export async function GET() {
   if (!await requireAdmin()) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const adminClient = createAdminClient()
   const { data, error } = await adminClient.auth.admin.listUsers({ perPage: 1000 })
-  if (error) return NextResponse.json({ error: "Unable to load users" }, { status: 500 })
+  if (error) {
+    console.error("[admin/users] User list failed", error)
+    return NextResponse.json({ error: "Unable to load users" }, { status: 500 })
+  }
   const { data: profiles, error: profileError } = await adminClient.from("member_profiles").select("*")
-  if (profileError) return NextResponse.json({ error: "Unable to load member profiles" }, { status: 500 })
+  if (profileError) {
+    console.error("[admin/users] Member profile list failed", profileError)
+    return NextResponse.json({ error: "Unable to load member profiles" }, { status: 500 })
+  }
   const profileById = new Map((profiles || []).map((profile) => [profile.id, profile]))
   return NextResponse.json({ users: data.users.map((user) => ({ id: user.id, email: user.email, created_at: user.created_at, last_sign_in_at: user.last_sign_in_at, email_confirmed_at: user.email_confirmed_at, user_metadata: user.user_metadata, app_metadata: user.app_metadata, profile: profileById.get(user.id) || null })) })
 }
@@ -35,6 +42,7 @@ export async function PATCH(request: Request) {
   if (isRecord(body.user_metadata)) updates.user_metadata = body.user_metadata
   const adminClient = createAdminClient()
   const current = await adminClient.auth.admin.getUserById(body.id)
+  if (current.error) console.error("[admin/users] User lookup failed", current.error)
   if (current.error || !current.data.user) return NextResponse.json({ error: "User not found" }, { status: 404 })
   if (typeof body.dashboard_status === "string" && ["prepared", "updates", "active", "blocked"].includes(body.dashboard_status)) updates.user_metadata = { ...current.data.user.user_metadata, dashboard_status: body.dashboard_status }
   if (typeof body.is_admin === "boolean") updates.app_metadata = { ...current.data.user.app_metadata, is_admin: body.is_admin }
@@ -47,18 +55,27 @@ export async function PATCH(request: Request) {
     if (current.data.user.email_confirmed_at) return NextResponse.json({ error: "User is already verified" }, { status: 400 })
     if (!current.data.user.email) return NextResponse.json({ error: "User has no email address" }, { status: 400 })
     const { error } = await adminClient.auth.admin.inviteUserByEmail(current.data.user.email)
-    if (error) return NextResponse.json({ error: "Unable to send verification email" }, { status: 400 })
+    if (error) {
+      console.error("[admin/users] Verification email resend failed", error)
+      return NextResponse.json({ error: "Unable to send verification email" }, { status: 400 })
+    }
     return NextResponse.json({ ok: true })
   }
   if (body.reset_password === true) {
     const temporaryPassword = typeof body.temporary_password === "string" && body.temporary_password.length >= 8 ? body.temporary_password : `${crypto.randomUUID().slice(0, 8)}Aa!9`
     const { error } = await createAdminClient().auth.admin.updateUserById(body.id, { password: temporaryPassword })
-    if (error) return NextResponse.json({ error: "Unable to reset password" }, { status: 400 })
+    if (error) {
+      console.error("[admin/users] Password reset failed", error)
+      return NextResponse.json({ error: "Unable to reset password" }, { status: 400 })
+    }
     revalidatePath("/admin")
     return NextResponse.json({ ok: true, temporary_password: temporaryPassword })
   }
   const { data, error } = await adminClient.auth.admin.updateUserById(body.id, updates)
-  if (error) return NextResponse.json({ error: "Unable to update user" }, { status: 400 })
+  if (error) {
+    console.error("[admin/users] User update failed", error)
+    return NextResponse.json({ error: "Unable to update user" }, { status: 400 })
+  }
   if (typeof body.profile_status === "string" && ["pending_review", "approved", "rejected"].includes(body.profile_status)) {
     const { data: profile, error: profileError } = await adminClient
       .from("member_profiles")
@@ -66,10 +83,16 @@ export async function PATCH(request: Request) {
       .eq("id", body.id)
       .select("id")
       .maybeSingle()
-    if (profileError) return NextResponse.json({ error: "User was updated, but directory visibility could not be changed." }, { status: 500 })
+    if (profileError) {
+      console.error("[admin/users] Directory visibility update failed", profileError)
+      return NextResponse.json({ error: "User was updated, but directory visibility could not be changed." }, { status: 500 })
+    }
     if (!profile) return NextResponse.json({ error: "User was updated, but no professional profile was found." }, { status: 404 })
   }
-  if (typeof body.dashboard_status === "string") await adminClient.auth.admin.signOut(body.id)
+  if (typeof body.dashboard_status === "string") {
+    const { error: signOutError } = await adminClient.auth.admin.signOut(body.id)
+    if (signOutError) console.error("[admin/users] User session revocation failed", signOutError)
+  }
   revalidatePath("/admin")
   revalidatePath("/dashboard")
   revalidatePath("/")
@@ -83,7 +106,10 @@ export async function DELETE(request: Request) {
   if (!isRecord(body)) return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   if (typeof body.id !== "string" || body.id === admin.id) return NextResponse.json({ error: "Invalid user" }, { status: 400 })
   const { error } = await createAdminClient().auth.admin.deleteUser(body.id)
-  if (error) return NextResponse.json({ error: "Unable to delete user" }, { status: 400 })
+  if (error) {
+    console.error("[admin/users] User deletion failed", error)
+    return NextResponse.json({ error: "Unable to delete user" }, { status: 400 })
+  }
   revalidatePath("/admin")
   revalidatePath("/dashboard")
   return NextResponse.json({ ok: true })

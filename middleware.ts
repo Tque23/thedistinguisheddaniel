@@ -1,7 +1,22 @@
 import { updateSession } from '@/lib/supabase/proxy'
+import { NextResponse } from 'next/server'
 import { type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  const sensitiveAuthParams = new Set(['code', 'token', 'token_hash', 'access_token', 'refresh_token', 'id_token'])
+  const containsSensitiveAuthParam = Array.from(request.nextUrl.searchParams.keys())
+    .some((param) => sensitiveAuthParams.has(param.toLowerCase()))
+  if (
+    request.nextUrl.pathname === '/auth'
+    && containsSensitiveAuthParam
+  ) {
+    const callbackUrl = request.nextUrl.clone()
+    callbackUrl.pathname = '/auth/callback'
+    const response = NextResponse.redirect(callbackUrl, 303)
+    response.headers.set('Cache-Control', 'no-store')
+    response.headers.set('Referrer-Policy', 'no-referrer')
+    return response
+  }
   return await updateSession(request)
 }
 

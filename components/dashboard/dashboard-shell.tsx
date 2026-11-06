@@ -3,8 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { requestAuth } from "@/lib/auth-client"
 import { AnimatePresence, MotionConfig, motion } from "motion/react"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { AuthFeedbackDialog } from "@/components/auth/auth-feedback-dialog"
+import { Clock3 } from "lucide-react"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { AnnouncementBar } from "@/components/dashboard/announcement-bar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
@@ -143,6 +146,7 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
   const router = useRouter()
   const [activeView, setActiveView] = useState<DashboardView>("overview")
   const [isTimedOut, setIsTimedOut] = useState(false)
+  const [timeoutSignOutError, setTimeoutSignOutError] = useState("")
   const [accessState, setAccessState] = useState<"prepared" | "updates" | "active" | "blocked" | null>(null)
   const [member, setMember] = useState<DashboardMember>(initialMember)
   const [data, setData] = useState<DashboardData>(initialData)
@@ -150,7 +154,12 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const signOut = useCallback(async () => {
-    await createClient().auth.signOut()
+    setTimeoutSignOutError("")
+    const result = await requestAuth({ action: "sign_out", scope: "global" })
+    if (!result.ok) {
+      setTimeoutSignOutError(result.error)
+      return
+    }
     router.replace("/auth?timeout=1")
     router.refresh()
   }, [router])
@@ -335,14 +344,28 @@ export function DashboardShell({ member: initialMember }: { member: DashboardMem
       </a>
       <AnnouncementBar />
       {isTimedOut && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-[#050f18]/90 p-6 backdrop-blur-sm" role="status">
-          <div className="w-full max-w-md rounded-2xl border border-[#dcb567]/30 bg-[#0c1e2c] p-8 text-center shadow-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#dcb567]">Session ended</p>
-            <h2 className="mt-3 font-display text-2xl text-white">For your security, you&apos;ve been signed out.</h2>
-            <p className="mt-3 text-sm leading-6 text-white/65">Your dashboard session expired after 5 minutes of inactivity.</p>
-            <a href="/" className="mt-6 inline-flex rounded-full bg-[#dcb567] px-5 py-3 text-sm font-semibold text-[#1a1200] transition hover:opacity-90">Return to home</a>
-          </div>
-        </div>
+        <AuthFeedbackDialog
+          eyebrow="Session ended"
+          title="For your security, you&apos;ve been signed out."
+          description="Your dashboard session expired after 5 minutes of inactivity."
+          icon={Clock3}
+        >
+          {timeoutSignOutError && (
+            <>
+              <p role="alert" className="mt-4 text-sm leading-6 text-red-300">{timeoutSignOutError}</p>
+              <button
+                type="button"
+                onClick={() => void signOut()}
+                className="mt-4 inline-flex rounded-full border border-[#dcb567]/50 px-5 py-3 text-sm font-semibold text-[#f3d27a] transition hover:opacity-90"
+              >
+                Try signing out again
+              </button>
+            </>
+          )}
+          <a href="/" className="mt-6 inline-flex rounded-full bg-[#dcb567] px-5 py-3 text-sm font-semibold text-[#1a1200] transition hover:opacity-90">
+            Return to home
+          </a>
+        </AuthFeedbackDialog>
       )}
       <SidebarProvider className="min-h-0 flex-1">
         <AppSidebar activeView={activeView} onNavigate={navigate} member={member} />

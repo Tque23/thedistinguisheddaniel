@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { requestAuth } from "@/lib/auth-client"
 import { useMemo, useRef, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
@@ -47,6 +47,7 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [searchOpen, setSearchOpen] = useState(false)
+  const [signOutError, setSignOutError] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   const firstName = member.name.split(" ")[0]
 
@@ -76,7 +77,13 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
   }
 
   async function handleSignOut() {
-    await createClient().auth.signOut()
+    setSignOutError("")
+    const result = await requestAuth({ action: "sign_out", scope: "global" })
+    if (!result.ok) {
+      setSignOutError(result.error)
+      setProfileMenuOpen(true)
+      return
+    }
     router.replace("/")
     router.refresh()
   }
@@ -154,6 +161,7 @@ export function DashboardHeader({ activeView, onNavigate, member, data }: { acti
             </DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
+          {signOutError && <p role="alert" className="px-3 py-2 text-sm text-destructive">{signOutError}</p>}
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={() => goTo("profile")}><UserRound />Profile &amp; history</DropdownMenuItem>
             <DropdownMenuItem onClick={() => goTo("settings")}><Settings />Account Settings</DropdownMenuItem>

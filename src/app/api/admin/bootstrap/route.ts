@@ -26,14 +26,23 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient()
   const { data: users, error: listError } = await admin.auth.admin.listUsers({ perPage: 1000 })
-  if (listError) return NextResponse.json({ error: "Unable to check administrator account" }, { status: 500 })
+  if (listError) {
+    console.error("[admin/bootstrap] Administrator lookup failed", listError)
+    return NextResponse.json({ error: "Unable to check administrator account" }, { status: 500 })
+  }
   const existing = users.users.find((user) => user.email?.toLowerCase() === email)
   if (existing) {
     const { error } = await admin.auth.admin.updateUserById(existing.id, { password, app_metadata: { ...existing.app_metadata, is_admin: true }, user_metadata: { ...existing.user_metadata, full_name: "The Distinguished Daniel Admin" } })
-    if (error) return NextResponse.json({ error: "Unable to prepare administrator access" }, { status: 500 })
+    if (error) {
+      console.error("[admin/bootstrap] Administrator update failed", error)
+      return NextResponse.json({ error: "Unable to prepare administrator access" }, { status: 500 })
+    }
   } else {
     const { error } = await admin.auth.admin.createUser({ email, password, email_confirm: true, app_metadata: { is_admin: true }, user_metadata: { full_name: "The Distinguished Daniel Admin" } })
-    if (error) return NextResponse.json({ error: "Unable to prepare admin access" }, { status: 500 })
+    if (error) {
+      console.error("[admin/bootstrap] Administrator creation failed", error)
+      return NextResponse.json({ error: "Unable to prepare admin access" }, { status: 500 })
+    }
   }
   return NextResponse.json({ ok: true })
 }

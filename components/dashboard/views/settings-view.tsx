@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { requestAuth } from "@/lib/auth-client"
 import { saveCommunicationPreferences } from "@/src/app/dashboard/actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -104,14 +104,12 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
     if (Object.keys(errors).length) return
     setSavingPassword(true)
     setPasswordStatus(null)
-    const now = new Date().toISOString()
     try {
-      const { error } = await createClient().auth.updateUser({ password: password.next, data: { password_changed_at: now } })
-      if (error) {
-        const message = /reauth|recent/i.test(error.message) ? "For security, sign out and back in, then try again." : /different|same/i.test(error.message) ? "Choose a password you haven't used for this account." : "We couldn't update your password. Please try again."
-        return setPasswordStatus({ tone: "error", text: message })
+      const result = await requestAuth({ action: "change_password", password: password.next })
+      if (!result.ok) {
+        return setPasswordStatus({ tone: "error", text: result.error })
       }
-      onMemberChange({ passwordChangedAt: now })
+      onMemberChange({ passwordChangedAt: result.changedAt || new Date().toISOString() })
       setPassword({ next: "", confirm: "" })
       setPasswordOpen(false)
       setPasswordStatus({ tone: "success", text: "Your password has been updated." })
@@ -131,14 +129,10 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
     if (next === member.email.toLowerCase()) return setEmailError("This is already your contact email.")
     setEmailError("")
     setSavingEmail(true)
-    const now = new Date().toISOString()
     try {
-      const { error } = await createClient().auth.updateUser(
-        { email: next, data: { email_change_requested_at: now } },
-        { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/dashboard?view=settings")}` },
-      )
-      if (error) return setEmailStatus({ tone: "error", text: /already|registered|exists/i.test(error.message) ? "That email is already used by another account." : "We couldn't start the email change. Please try again." })
-      onMemberChange({ pendingEmail: next, emailChangeRequestedAt: now })
+      const result = await requestAuth({ action: "change_email", email: next })
+      if (!result.ok) return setEmailStatus({ tone: "error", text: result.error })
+      onMemberChange({ pendingEmail: next, emailChangeRequestedAt: result.changedAt || new Date().toISOString() })
       setEmailStatus({ tone: "success", text: `Confirmation sent. Follow the link sent to ${next} (and your current inbox, if asked) to finish.` })
     } catch (error) {
       console.error("[dashboard] email update failed", error)
@@ -152,8 +146,8 @@ export function SettingsView({ member, onMemberChange, onNavigate }: DashboardVi
     setSigningOut(scope)
     setSessionStatus(null)
     try {
-      const { error } = await createClient().auth.signOut({ scope })
-      if (error) return setSessionStatus({ tone: "error", text: "We couldn't sign out those sessions. Please try again." })
+      const result = await requestAuth({ action: "sign_out", scope })
+      if (!result.ok) return setSessionStatus({ tone: "error", text: result.error })
       if (scope === "global") {
         router.replace("/auth")
         router.refresh()

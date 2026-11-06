@@ -17,7 +17,7 @@ Use the dashboard semantic CSS variables in `src/app/dashboard/dashboard.css`; d
 - Brand action: `--primary: #dcb567`, `--primary-foreground: #1a1200`; focus: `--focus-ring: #f3d27a`.
 - Light reading surfaces (`.ddni-light`): `--background: #f6f7f9`, `--card: #ffffff`, `--foreground: #102338`, `--muted-foreground: #526174`, `--border: #dfe5eb`, `--primary: #795719`.
 - Build hierarchy with `bg-background`, `bg-card`, and `bg-muted/30` or `/50`. Prefer `border-border/60` to frame and whitespace to divide. Use restrained `shadow-sm` only when a surface needs lift; keep decorative gradients out of routine content.
-- Preserve the established dark/light view split and shared theme behavior for portalled UI.
+- Overview shares the light paper surface used by the member-facing dashboard views; preserve the established theme behavior for portalled UI.
 
 ## Typography and spacing
 
@@ -33,7 +33,10 @@ Use the dashboard semantic CSS variables in `src/app/dashboard/dashboard.css`; d
 - Dashboard views share a centered `max-w-5xl` container with `min-w-0` and `gap-6`; use responsive grids that collapse before their contents become cramped.
 - Major dashboard cards use `p-6`, `border-border/60`, `bg-card`, and restrained `shadow-sm`. Reset nested `CardHeader`/`CardContent` padding where the card owns the spacing.
 - Shared page headings use the display face at `text-2xl`/`sm:text-3xl`, semibold weight, tight tracking, and `text-sm` supporting copy. Action buttons use at least `min-h-11 px-4`; reserve `btn-gold` for primary actions, with outline, ghost, and destructive variants for secondary and consequential actions.
-- Profile hub: place the full-width `Profile details` / `Account history` tab bar immediately below the page heading; keep the identity banner in Profile details so the tabs stay at the top of the view. Map legacy `history` navigation and URLs to `profile`.
+- Default-sized shadcn buttons inside the dashboard use a 44px minimum height, 16px horizontal padding, and a 150ms state transition; compact links and icon controls retain their explicit sizes.
+- Resource, opportunity, announcement, network, and profile selectors share a 48px underline trigger, 14px text, 16px desktop horizontal padding, and a full-width muted bottom rule; supplementary counts and actions sit outside the selector row.
+- Non-overview view kickers use the shared settings header treatment: uppercase, tracked, primary-colored label with a short gold rule. Overview keeps its welcome hero, but its canvas, panels, and text use semantic dashboard surface tokens like the other member views.
+- Profile hub: place the full-width `Profile details` / `Account history` tab bar immediately below the page heading; keep the identity banner in Profile details so the tabs stay at the top of the view. Details is first/default. Map legacy `history` navigation and URLs to `profile`.
 - Profile details are static, semantic `<dl>` values and muted badges by default. A single `Edit Profile` action unlocks fields. In edit mode, show `Save Changes` (primary) and `Cancel`; cancel restores the last saved values.
 - Validate before opening confirmation; focus the first invalid field. Save only after the confirmation dialog asks, “Are you sure you want to update your profile details?” Keep server actions as the persistence boundary; surface failures and retain unsaved form values.
 - Email is displayed read-only in the profile editor; account email changes belong in Settings. Communication preferences are summarized and edited in Settings.
@@ -45,7 +48,7 @@ Use the dashboard semantic CSS variables in `src/app/dashboard/dashboard.css`; d
 ## Profile hierarchy
 
 1. Page title and short purpose statement.
-2. Full-width, keyboard-accessible tabs directly below the heading: Profile details first, Account history second.
+2. Full-width, keyboard-accessible tabs directly below the heading: Profile details first, Account history second (defaulting to Profile details).
 3. Keep the DDNI identity banner at the beginning of Profile details, before the editable/read-only account and professional information.
 4. Account history uses one compact account-summary band, a dated event list, and a quiet account-safety notice at the bottom. Avoid separate mini-cards for every statistic.
 5. Details groups values into Account details and Professional presence; profile strength is supporting context, not a competing hero.
